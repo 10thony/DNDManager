@@ -2,138 +2,98 @@ import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import {
-  type CreateCharacterForm,
+  type CharacterFormData,
   DND_CLASSES,
   DND_RACES,
   DND_BACKGROUNDS,
   DND_SKILLS,
-  type AbilityScores,
 } from "../types/character";
 
 interface CharacterFormProps {
   onSuccess?: () => void;
 }
 
-const initialAbilityScores: AbilityScores = {
-  strength: 10,
-  dexterity: 10,
-  constitution: 10,
-  intelligence: 10,
-  wisdom: 10,
-  charisma: 10,
-};
-
 const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
-  const createCharacter = useMutation(api.playerCharacter.createPlayerCharacter);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const createCharacter = useMutation(api.characters.createCharacter);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<CreateCharacterForm>({
+  const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
     class: "",
     race: "",
     background: "",
     level: 1,
-    hitPoints: 8,
+    hitPoints: { current: 8, maximum: 8, temporary: 0 },
     armorClass: 10,
-    proficiencyBonus: 2,
     speed: 30,
-    abilityScores: { ...initialAbilityScores },
-    savingThrows: { ...initialAbilityScores },
+    proficiencyBonus: 2,
+    abilityScores: {
+      strength: 10,
+      dexterity: 10,
+      constitution: 10,
+      intelligence: 10,
+      wisdom: 10,
+      charisma: 10,
+    },
+    savingThrows: {
+      strength: false,
+      dexterity: false,
+      constitution: false,
+      intelligence: false,
+      wisdom: false,
+      charisma: false,
+    },
     skills: [],
-    languages: [],
-    proficiencies: [],
+    languages: ["Common"],
     equipment: [],
     spells: [],
     notes: "",
   });
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Character name is required";
-    }
-    if (!formData.class) {
-      newErrors.class = "Character class is required";
-    }
-    if (!formData.race) {
-      newErrors.race = "Character race is required";
-    }
-    if (!formData.background) {
-      newErrors.background = "Character background is required";
-    }
-    if (formData.level < 1 || formData.level > 20) {
-      newErrors.level = "Level must be between 1 and 20";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await createCharacter(formData);
-      
-      // Reset form
-      setFormData({
-        name: "",
-        class: "",
-        race: "",
-        background: "",
-        level: 1,
-        hitPoints: 8,
-        armorClass: 10,
-        proficiencyBonus: 2,
-        speed: 30,
-        abilityScores: { ...initialAbilityScores },
-        savingThrows: { ...initialAbilityScores },
-        skills: [],
-        languages: [],
-        proficiencies: [],
-        equipment: [],
-        spells: [],
-        notes: "",
-      });
-      
-      onSuccess?.();
-    } catch (error) {
-      console.error("Error creating character:", error);
-      setErrors({ submit: "Failed to create character. Please try again." });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleAbilityScoreChange = (
-    type: "abilityScores" | "savingThrows",
-    ability: keyof AbilityScores,
-    value: number
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
+    const { name, value, type } = e.target;
+    
+    if (type === "checkbox") {
+      const checkbox = e.target as HTMLInputElement;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: checkbox.checked,
+      }));
+    } else if (type === "number") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: parseInt(value) || 0,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleAbilityScoreChange = (ability: string, value: number) => {
     setFormData((prev) => ({
       ...prev,
-      [type]: {
-        ...prev[type],
+      abilityScores: {
+        ...prev.abilityScores,
         [ability]: value,
       },
     }));
   };
 
-  const handleArrayFieldChange = (
-    field: "skills" | "languages" | "proficiencies" | "equipment" | "spells",
-    value: string
-  ) => {
-    const values = value.split(",").map((v) => v.trim()).filter(Boolean);
+  const handleSavingThrowChange = (ability: string, checked: boolean) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: values,
+      savingThrows: {
+        ...prev.savingThrows,
+        [ability]: checked,
+      },
     }));
   };
 
@@ -146,43 +106,155 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
     }));
   };
 
+  const handleArrayInputChange = (
+    field: "languages" | "equipment",
+    value: string
+  ) => {
+    const items = value.split(",").map((item) => item.trim()).filter(Boolean);
+    setFormData((prev) => ({
+      ...prev,
+      [field]: items,
+    }));
+  };
+
+  const validateForm = (): boolean => {
+    if (!formData.name.trim()) {
+      setError("Character name is required");
+      return false;
+    }
+    if (!formData.class) {
+      setError("Character class is required");
+      return false;
+    }
+    if (!formData.race) {
+      setError("Character race is required");
+      return false;
+    }
+    if (!formData.background) {
+      setError("Character background is required");
+      return false;
+    }
+    if (formData.level < 1 || formData.level > 20) {
+      setError("Character level must be between 1 and 20");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await createCharacter(formData);
+      
+      // Reset form
+      setFormData({
+        name: "",
+        class: "",
+        race: "",
+        background: "",
+        level: 1,
+        hitPoints: { current: 8, maximum: 8, temporary: 0 },
+        armorClass: 10,
+        speed: 30,
+        proficiencyBonus: 2,
+        abilityScores: {
+          strength: 10,
+          dexterity: 10,
+          constitution: 10,
+          intelligence: 10,
+          wisdom: 10,
+          charisma: 10,
+        },
+        savingThrows: {
+          strength: false,
+          dexterity: false,
+          constitution: false,
+          intelligence: false,
+          wisdom: false,
+          charisma: false,
+        },
+        skills: [],
+        languages: ["Common"],
+        equipment: [],
+        spells: [],
+        notes: "",
+      });
+
+      onSuccess?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create character");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getAbilityModifier = (score: number): number => {
+    return Math.floor((score - 10) / 2);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
         Create New Character
       </h2>
-      
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Character Name *
             </label>
             <input
               type="text"
+              name="name"
               value={formData.name}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter character name"
+              required
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Level *
+            </label>
+            <input
+              type="number"
+              name="level"
+              value={formData.level}
+              onChange={handleInputChange}
+              min="1"
+              max="20"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Class *
             </label>
             <select
+              name="class"
               value={formData.class}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, class: e.target.value }))
-              }
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             >
               <option value="">Select a class</option>
               {DND_CLASSES.map((cls) => (
@@ -191,21 +263,18 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
                 </option>
               ))}
             </select>
-            {errors.class && (
-              <p className="text-red-500 text-sm mt-1">{errors.class}</p>
-            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Race *
             </label>
             <select
+              name="race"
               value={formData.race}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, race: e.target.value }))
-              }
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             >
               <option value="">Select a race</option>
               {DND_RACES.map((race) => (
@@ -214,21 +283,18 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
                 </option>
               ))}
             </select>
-            {errors.race && (
-              <p className="text-red-500 text-sm mt-1">{errors.race}</p>
-            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Background *
             </label>
             <select
+              name="background"
               value={formData.background}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, background: e.target.value }))
-              }
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             >
               <option value="">Select a background</option>
               {DND_BACKGROUNDS.map((bg) => (
@@ -237,168 +303,139 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
                 </option>
               ))}
             </select>
-            {errors.background && (
-              <p className="text-red-500 text-sm mt-1">{errors.background}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Character Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Level
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="20"
-              value={formData.level}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  level: parseInt(e.target.value) || 1,
-                }))
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Hit Points
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.hitPoints}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  hitPoints: parseInt(e.target.value) || 1,
-                }))
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Armor Class
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.armorClass}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  armorClass: parseInt(e.target.value) || 10,
-                }))
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Proficiency Bonus
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.proficiencyBonus}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  proficiencyBonus: parseInt(e.target.value) || 2,
-                }))
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Speed
-            </label>
-            <input
-              type="number"
-              min="0"
-              value={formData.speed}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  speed: parseInt(e.target.value) || 30,
-                }))
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
           </div>
         </div>
 
         {/* Ability Scores */}
         <div>
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Ability Scores
           </h3>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {Object.entries(formData.abilityScores).map(([ability, value]) => (
-              <div key={ability}>
-                <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {Object.entries(formData.abilityScores).map(([ability, score]) => (
+              <div key={ability} className="text-center">
+                <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
                   {ability}
                 </label>
                 <input
                   type="number"
+                  value={score}
+                  onChange={(e) =>
+                    handleAbilityScoreChange(ability, parseInt(e.target.value) || 0)
+                  }
                   min="1"
                   max="20"
-                  value={value}
-                  onChange={(e) =>
-                    handleAbilityScoreChange(
-                      "abilityScores",
-                      ability as keyof AbilityScores,
-                      parseInt(e.target.value) || 10
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                <div className="text-xs text-gray-500 mt-1">
+                  Mod: {getAbilityModifier(score) >= 0 ? '+' : ''}
+                  {getAbilityModifier(score)}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Combat Stats */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">
+            Combat Stats
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Armor Class
+              </label>
+              <input
+                type="number"
+                name="armorClass"
+                value={formData.armorClass}
+                onChange={handleInputChange}
+                min="1"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Speed
+              </label>
+              <input
+                type="number"
+                name="speed"
+                value={formData.speed}
+                onChange={handleInputChange}
+                min="0"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Max HP
+              </label>
+              <input
+                type="number"
+                value={formData.hitPoints.maximum}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    hitPoints: {
+                      ...prev.hitPoints,
+                      maximum: parseInt(e.target.value) || 0,
+                      current: parseInt(e.target.value) || 0,
+                    },
+                  }))
+                }
+                min="1"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Proficiency Bonus
+              </label>
+              <input
+                type="number"
+                name="proficiencyBonus"
+                value={formData.proficiencyBonus}
+                onChange={handleInputChange}
+                min="1"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Saving Throws */}
         <div>
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">
-            Saving Throws
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">
+            Saving Throw Proficiencies
           </h3>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {Object.entries(formData.savingThrows).map(([ability, value]) => (
-              <div key={ability}>
-                <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
-                  {ability}
-                </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {Object.entries(formData.savingThrows).map(([ability, proficient]) => (
+              <label key={ability} className="flex items-center space-x-2">
                 <input
-                  type="number"
-                  value={value}
+                  type="checkbox"
+                  checked={proficient}
                   onChange={(e) =>
-                    handleAbilityScoreChange(
-                      "savingThrows",
-                      ability as keyof AbilityScores,
-                      parseInt(e.target.value) || 0
-                    )
+                    handleSavingThrowChange(ability, e.target.checked)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-              </div>
+                <span className="text-sm capitalize">{ability}</span>
+              </label>
             ))}
           </div>
         </div>
 
         {/* Skills */}
         <div>
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">Skills</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">
+            Skill Proficiencies
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
             {DND_SKILLS.map((skill) => (
               <label key={skill} className="flex items-center space-x-2">
                 <input
@@ -407,95 +444,66 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
                   onChange={() => handleSkillToggle(skill)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">{skill}</span>
+                <span className="text-sm">{skill}</span>
               </label>
             ))}
           </div>
         </div>
 
-        {/* Additional Fields */}
+        {/* Languages and Equipment */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Languages (comma-separated)
             </label>
             <input
               type="text"
               value={formData.languages.join(", ")}
-              onChange={(e) => handleArrayFieldChange("languages", e.target.value)}
+              onChange={(e) => handleArrayInputChange("languages", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Common, Elvish, Draconic"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Proficiencies (comma-separated)
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Equipment (comma-separated)
             </label>
             <input
               type="text"
-              value={formData.proficiencies.join(", ")}
-              onChange={(e) =>
-                handleArrayFieldChange("proficiencies", e.target.value)
-              }
+              value={formData.equipment.join(", ")}
+              onChange={(e) => handleArrayInputChange("equipment", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Light Armor, Simple Weapons"
+              placeholder="Longsword, Shield, Leather Armor"
             />
           </div>
         </div>
 
+        {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Equipment (comma-separated)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Notes
           </label>
           <textarea
-            value={formData.equipment.join(", ")}
-            onChange={(e) => handleArrayFieldChange("equipment", e.target.value)}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Longsword, Shield, Leather Armor, Backpack"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Spells (comma-separated, optional)
-          </label>
-          <textarea
-            value={formData.spells?.join(", ") || ""}
-            onChange={(e) => handleArrayFieldChange("spells", e.target.value)}
-            rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Fireball, Magic Missile, Cure Wounds"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Notes (optional)
-          </label>
-          <textarea
-            value={formData.notes || ""}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, notes: e.target.value }))
-            }
+            name="notes"
+            value={formData.notes}
+            onChange={handleInputChange}
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Character backstory, personality traits, etc."
+            placeholder="Additional character notes, backstory, etc."
           />
         </div>
 
-        {errors.submit && (
-          <div className="text-red-500 text-sm">{errors.submit}</div>
-        )}
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Creating Character..." : "Create Character"}
-        </button>
+        {/* Submit Button */}
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Creating..." : "Create Character"}
+          </button>
+        </div>
       </form>
     </div>
   );

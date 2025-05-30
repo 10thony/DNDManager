@@ -1,6 +1,6 @@
-import type { Doc } from "../../convex/_generated/dataModel";
+import type { Doc, Id } from "../../convex/_generated/dataModel";
 
-export type PlayerCharacter = Doc<"playerCharacters">;
+export type PlayerCharacter = Doc<"characters">;
 
 export interface AbilityScores {
   strength: number;
@@ -11,23 +11,44 @@ export interface AbilityScores {
   charisma: number;
 }
 
-export interface CreateCharacterForm {
+export interface SavingThrows {
+  strength: boolean;
+  dexterity: boolean;
+  constitution: boolean;
+  intelligence: boolean;
+  wisdom: boolean;
+  charisma: boolean;
+}
+
+export interface HitPoints {
+  current: number;
+  maximum: number;
+  temporary: number;
+}
+
+export interface Spell {
+  name: string;
+  level: number;
+  school: string;
+  description: string;
+}
+
+export interface CharacterFormData {
   name: string;
   class: string;
   race: string;
   background: string;
   level: number;
-  hitPoints: number;
+  hitPoints: HitPoints;
   armorClass: number;
-  proficiencyBonus: number;
   speed: number;
+  proficiencyBonus: number;
   abilityScores: AbilityScores;
-  savingThrows: AbilityScores;
+  savingThrows: SavingThrows;
   skills: string[];
   languages: string[];
-  proficiencies: string[];
   equipment: string[];
-  spells?: string[];
+  spells?: Spell[];
   notes?: string;
 }
 
