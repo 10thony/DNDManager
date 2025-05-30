@@ -1,7 +1,3 @@
-import type { Doc, Id } from "../../convex/_generated/dataModel";
-
-export type PlayerCharacter = Doc<"characters">;
-
 export interface AbilityScores {
   strength: number;
   dexterity: number;
@@ -11,49 +7,49 @@ export interface AbilityScores {
   charisma: number;
 }
 
-export interface SavingThrows {
-  strength: boolean;
-  dexterity: boolean;
-  constitution: boolean;
-  intelligence: boolean;
-  wisdom: boolean;
-  charisma: boolean;
-}
-
-export interface HitPoints {
-  current: number;
-  maximum: number;
-  temporary: number;
-}
-
-export interface Spell {
+export interface PlayerCharacter {
+  _id?: string;
   name: string;
+  race: string;
+  class: string;
+  background: string;
+  alignment?: string;
+  abilityScores: AbilityScores;
+  skills: string[];
+  savingThrows: string[];
+  proficiencies: string[];
+  traits?: string[];
+  languages?: string[];
+  equipment?: string[];
   level: number;
-  school: string;
-  description: string;
+  hitPoints: number;
+  armorClass: number;
+  proficiencyBonus: number;
+  createdAt: number;
 }
 
 export interface CharacterFormData {
   name: string;
-  class: string;
   race: string;
+  class: string;
   background: string;
-  level: number;
-  hitPoints: HitPoints;
-  armorClass: number;
-  speed: number;
-  proficiencyBonus: number;
+  alignment: string;
   abilityScores: AbilityScores;
-  savingThrows: SavingThrows;
-  skills: string[];
-  languages: string[];
-  equipment: string[];
-  spells?: Spell[];
-  notes?: string;
 }
 
-export const DND_CLASSES = [
-  "Artificer",
+export const RACES = [
+  "Human",
+  "Elf",
+  "Dwarf",
+  "Halfling",
+  "Dragonborn",
+  "Gnome",
+  "Half-Elf",
+  "Half-Orc",
+  "Tiefling",
+] as const;
+
+export const CLASSES = [
   "Barbarian",
   "Bard",
   "Cleric",
@@ -68,19 +64,7 @@ export const DND_CLASSES = [
   "Wizard",
 ] as const;
 
-export const DND_RACES = [
-  "Dragonborn",
-  "Dwarf",
-  "Elf",
-  "Gnome",
-  "Half-Elf",
-  "Half-Orc",
-  "Halfling",
-  "Human",
-  "Tiefling",
-] as const;
-
-export const DND_BACKGROUNDS = [
+export const BACKGROUNDS = [
   "Acolyte",
   "Criminal",
   "Folk Hero",
@@ -95,7 +79,19 @@ export const DND_BACKGROUNDS = [
   "Sailor",
 ] as const;
 
-export const DND_SKILLS = [
+export const ALIGNMENTS = [
+  "Lawful Good",
+  "Neutral Good",
+  "Chaotic Good",
+  "Lawful Neutral",
+  "True Neutral",
+  "Chaotic Neutral",
+  "Lawful Evil",
+  "Neutral Evil",
+  "Chaotic Evil",
+] as const;
+
+export const SKILLS = [
   "Acrobatics",
   "Animal Handling",
   "Arcana",

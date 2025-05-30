@@ -1,0 +1,250 @@
+.character-detail {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .character-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .character-title h1 {
+    margin: 0;
+    color: #495057;
+    font-size: 2rem;
+  }
+  
+  .character-subtitle {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+  }
+  
+  .character-actions {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .character-detail-content {
+    margin-bottom: 2rem;
+  }
+  
+  .character-info-grid {
+    display: grid;
+    gap: 2rem;
+  }
+  
+  .info-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+  
+  .info-section h2 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1.25rem;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+  }
+  
+  .info-section h3 {
+    margin: 1rem 0 0.5rem 0;
+    color: #495057;
+    font-size: 1rem;
+  }
+  
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .info-item {
+    background: white;
+    padding: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+  }
+  
+  .info-item strong {
+    color: #495057;
+  }
+  
+  .combat-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: space-around;
+  }
+  
+  .combat-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    min-width: 100px;
+  }
+  
+  .combat-stat .stat-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  
+  .combat-stat .stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .ability-scores-section {
+    grid-column: 1 / -1;
+  }
+  
+  .ability-scores-detail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+  }
+  
+  .ability-score-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+  
+  .ability-name {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  
+  .ability-score-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem;
+  }
+  
+  .ability-modifier {
+    font-size: 1rem;
+    color: #6c757d;
+    font-weight: 500;
+  }
+  
+  .proficiencies-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .proficiency-category {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+  }
+  
+  .proficiency-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .proficiency-item {
+    background: #e9ecef;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .trait-list,
+  .equipment-list {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    margin: 0;
+  }
+  
+  .trait-list li,
+  .equipment-list li {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+  }
+  
+  .language-list {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    font-size: 0.95rem;
+  }
+  
+  .character-meta {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+    color: #6c757d;
+  }
+  
+  .loading,
+  .error {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.1rem;
+  }
+  
+  .error {
+    color: #dc3545;
+  }
+  
+  @media (max-width: 768px) {
+    .character-detail {
+      padding: 1rem;
+    }
+  
+    .character-detail-header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  
+    .character-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+  
+    .combat-stats {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  
+    .ability-scores-detail {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  

@@ -1,28 +1,31 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import Home from "./pages/Home";
-import CreateCharacter from "./pages/CreateCharacter";
-import Characters from "./pages/Characters";
+import CharacterCreationForm from "./components/CharacterCreationForm";
+import CharacterList from "./components/CharacterList";
+import CharacterDetail from "./components/CharacterDetail";
+import Navigation from "./components/Navigation";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 
-function App() {
+const App: React.FC = () => {
   return (
     <ConvexProvider client={convex}>
       <Router>
-        <div className="App">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/create-character" element={<CreateCharacter />} />
-            <Route path="/characters" element={<Characters />} />
-            <Route path="/characters/:id" element={<Characters />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+        <div className="app">
+          <Navigation />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Navigate to="/characters" replace />} />
+              <Route path="/characters" element={<CharacterList />} />
+              <Route path="/characters/:id" element={<CharacterDetail />} />
+              <Route path="/create-character" element={<CharacterCreationForm />} />
+            </Routes>
+          </main>
         </div>
       </Router>
     </ConvexProvider>
   );
-}
+};
 
 export default App;
