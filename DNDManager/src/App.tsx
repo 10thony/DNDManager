@@ -1,6 +1,7 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
+import { ConvexProvider, ConvexReactClient, useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
 import CharacterCreationForm from "./components/CharacterCreationForm";
 import CharacterList from "./components/CharacterList";
 import CharacterDetail from "./components/CharacterDetail";
@@ -21,6 +22,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/newItem" element={<ItemCreationWrapper />} />
               <Route path="/items" element={<ItemList />} />
+              <Route path="/items/:id" element={<ItemDetailsWrapper />} />
               <Route path="/characters" element={<CharacterList />} />
               <Route path="/characters/:id" element={<CharacterDetail />} />
               <Route path="/create-character" element={<CharacterCreationForm />} />
@@ -52,6 +54,18 @@ const ItemCreationWrapper: React.FC = () => {
       onCancel={handleCancel}
     />
   );
+};
+
+// Wrapper component to handle item details
+const ItemDetailsWrapper: React.FC = () => {
+  const { id } = useParams();
+  const item = useQuery(api.items.getItem, { itemId: id });
+
+  if (!item) {
+    return <div className="loading">Loading item details...</div>;
+  }
+
+  return <ItemDetails item={item} />;
 };
 
 export default App;
