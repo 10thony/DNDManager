@@ -14,7 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as characters from "../characters.js";
-import type * as playerCharacter from "../playerCharacter.js";
+import type * as items from "../items.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -26,7 +26,7 @@ import type * as playerCharacter from "../playerCharacter.js";
  */
 declare const fullApi: ApiFromModules<{
   characters: typeof characters;
-  playerCharacter: typeof playerCharacter;
+  items: typeof items;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

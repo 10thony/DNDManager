@@ -28,6 +28,22 @@ const Navigation: React.FC = () => {
           >
             Create Character
           </Link>
+          <Link
+            to="/newItem"
+            className={`nav-link ${
+              location.pathname === "/newItem" ? "active" : ""
+            }`}
+          >
+            Create Item
+          </Link>
+          <Link
+            to="/items"
+            className={`nav-link ${
+              location.pathname === "/items" ? "active" : ""
+            }`}
+          >
+            Items
+          </Link>
         </div>
       </div>
     </nav>

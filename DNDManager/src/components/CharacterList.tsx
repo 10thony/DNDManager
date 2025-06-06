@@ -10,6 +10,8 @@ const CharacterList: React.FC = () => {
   const characters = useQuery(api.characters.getAllCharacters);
   const deleteCharacter = useMutation(api.characters.deleteCharacter);
 
+  console.log("Characters data:", characters); // Debug log
+
   const handleDelete = async (characterId: string) => {
     if (window.confirm("Are you sure you want to delete this character?")) {
       try {
@@ -21,6 +23,7 @@ const CharacterList: React.FC = () => {
   };
 
   if (characters === undefined) {
+    console.log("Characters are undefined - still loading"); // Debug log
     return (
       <div className="character-list">
         <div className="loading">Loading characters...</div>
@@ -28,13 +31,21 @@ const CharacterList: React.FC = () => {
     );
   }
 
+  if (characters === null) {
+    console.log("Characters are null - error occurred"); // Debug log
+    return (
+      <div className="character-list">
+        <div className="error">Error loading characters. Please try again later.</div>
+      </div>
+    );
+  }
+
+  console.log("Number of characters:", characters.length); // Debug log
+
   return (
     <div className="character-list">
       <div className="character-list-header">
         <h1>Your Characters</h1>
-        <Link to="/create-character" className="btn btn-primary">
-          Create New Character
-        </Link>
       </div>
 
       {characters.length === 0 ? (

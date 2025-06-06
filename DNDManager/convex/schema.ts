@@ -28,4 +28,14 @@ export default defineSchema({
     proficiencyBonus: v.number(),
     createdAt: v.number(),
   }),
+  items: defineTable({
+    name: v.string(),
+    type: v.string(), // Consider using v.union for strict types if desired
+    rarity: v.string(), // Consider using v.union
+    description: v.string(),
+    effects: v.optional(v.string()),
+    weight: v.optional(v.number()),
+    cost: v.optional(v.number()),
+    attunement: v.optional(v.boolean()),
+  }),
 });
