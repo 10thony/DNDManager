@@ -16,12 +16,17 @@ const CELL_COLORS = {
   occupied: 'bg-blue-500',
 };
 
+const DEFAULT_CELL_SIZE = 40; // Default cell size in pixels
+const MIN_CELL_SIZE = 20;
+const MAX_CELL_SIZE = 100;
+
 export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
   const [selectedState, setSelectedState] = useState<CellState>('inbounds');
   const [isCreating, setIsCreating] = useState(!mapId);
   const [mapName, setMapName] = useState('');
   const [width, setWidth] = useState(10);
   const [height, setHeight] = useState(10);
+  const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
 
   const createMap = useMutation(api.maps.createMap);
   const updateMapCells = useMutation(api.maps.updateMapCells);
@@ -71,6 +76,14 @@ export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
     } catch (error) {
       console.error('Failed to update cell:', error);
     }
+  };
+
+  const handleZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCellSize(parseInt(e.target.value));
+  };
+
+  const resetZoom = () => {
+    setCellSize(DEFAULT_CELL_SIZE);
   };
 
   if (isCreating) {
@@ -147,19 +160,45 @@ export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
         </div>
       </div>
 
-      <div 
-        className="grid gap-1"
-        style={{
-          gridTemplateColumns: `repeat(${map.width}, minmax(0, 1fr))`,
-        }}
-      >
-        {map.cells.map((cell) => (
-          <div
-            key={`${cell.x}-${cell.y}`}
-            className={`aspect-square cursor-pointer ${CELL_COLORS[cell.state]} hover:opacity-80`}
-            onClick={() => handleCellClick(cell.x, cell.y)}
-          />
-        ))}
+      <div className="mb-4 flex items-center gap-4">
+        <label className="text-sm font-medium">Zoom:</label>
+        <input
+          type="range"
+          min={MIN_CELL_SIZE}
+          max={MAX_CELL_SIZE}
+          value={cellSize}
+          onChange={handleZoomChange}
+          className="w-48"
+        />
+        <span className="text-sm text-gray-600">{cellSize}px</span>
+        <button
+          onClick={resetZoom}
+          className="text-sm text-blue-500 hover:text-blue-600"
+        >
+          Reset
+        </button>
+      </div>
+
+      <div className="overflow-auto border rounded-lg">
+        <div 
+          className="grid gap-1 p-4 transition-all duration-200"
+          style={{
+            gridTemplateColumns: `repeat(${map.width}, ${cellSize}px)`,
+            width: 'fit-content',
+          }}
+        >
+          {map.cells.map((cell) => (
+            <div
+              key={`${cell.x}-${cell.y}`}
+              className={`cursor-pointer ${CELL_COLORS[cell.state]} hover:opacity-80 transition-colors duration-150`}
+              style={{
+                width: cellSize,
+                height: cellSize,
+              }}
+              onClick={() => handleCellClick(cell.x, cell.y)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
