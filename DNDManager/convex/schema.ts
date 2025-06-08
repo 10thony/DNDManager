@@ -30,8 +30,33 @@ export default defineSchema({
   }),
   items: defineTable({
     name: v.string(),
-    type: v.string(), // Consider using v.union for strict types if desired
-    rarity: v.string(), // Consider using v.union
+    type: v.union(
+      v.literal("Weapon"),
+      v.literal("Armor"),
+      v.literal("Potion"),
+      v.literal("Scroll"),
+      v.literal("Wondrous Item"),
+      v.literal("Ring"),
+      v.literal("Rod"),
+      v.literal("Staff"),
+      v.literal("Wand"),
+      v.literal("Ammunition"),
+      v.literal("Adventuring Gear"),
+      v.literal("Tool"),
+      v.literal("Mount"),
+      v.literal("Vehicle"),
+      v.literal("Treasure"),
+      v.literal("Other")
+    ),
+    rarity: v.union(
+      v.literal("Common"),
+      v.literal("Uncommon"),
+      v.literal("Rare"),
+      v.literal("Very Rare"),
+      v.literal("Legendary"),
+      v.literal("Artifact"),
+      v.literal("Unique")
+    ),
     description: v.string(),
     effects: v.optional(v.string()),
     weight: v.optional(v.number()),
