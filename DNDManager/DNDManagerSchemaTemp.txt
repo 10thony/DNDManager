@@ -1,0 +1,355 @@
+// Enums for clarity and type safety
+export enum CampaignStatus {
+  Active = "Active",
+  OnHiatus = "On Hiatus",
+  Completed = "Completed",
+  Archived = "Archived",
+}
+
+export enum InteractionType {
+  Combat = "Combat",
+  Social = "Social",
+  Puzzle = "Puzzle",
+  Exploration = "Exploration",
+  Other = "Other",
+}
+
+export enum ItemType {
+  Weapon = "Weapon",
+  Armor = "Armor",
+  Potion = "Potion",
+  Scroll = "Scroll",
+  WondrousItem = "Wondrous Item",
+  Tool = "Tool",
+  Currency = "Currency",
+  Gem = "Gem",
+  Container = "Container",
+  Other = "Other",
+}
+
+export enum Rarity {
+  Common = "Common",
+  Uncommon = "Uncommon",
+  Rare = "Rare",
+  VeryRare = "Very Rare",
+  Legendary = "Legendary",
+  Artifact = "Artifact",
+  Varies = "Varies",
+  Unknown = "Unknown",
+}
+
+export enum ReferenceType {
+  Map = "Map",
+  Image = "Image",
+  Document = "Document",
+  Book = "Book",
+  Website = "Website",
+  Audio = "Audio",
+  Video = "Video",
+  Other = "Other",
+}
+
+// NEW: Enum for Alignment
+export enum Alignment {
+  LawfulGood = "Lawful Good",
+  NeutralGood = "Neutral Good",
+  ChaoticGood = "Chaotic Good",
+  LawfulNeutral = "Lawful Neutral",
+  TrueNeutral = "True Neutral",
+  ChaoticNeutral = "Chaotic Neutral",
+  LawfulEvil = "Lawful Evil",
+  NeutralEvil = "Neutral Evil",
+  ChaoticEvil = "Chaotic Evil",
+  Unaligned = "Unaligned",
+}
+
+// NEW: Enum for Location Types (example, add more as needed)
+export enum LocationType {
+  Town = "Town",
+  City = "City",
+  Village = "Village",
+  Dungeon = "Dungeon",
+  Forest = "Forest",
+  Mountain = "Mountain",
+  Tavern = "Tavern",
+  Shop = "Shop",
+  Temple = "Temple",
+  Other = "Other",
+}
+
+// Import Id type from Convex for type safety
+import type { Id } from "./_generated/dataModel";
+
+/**
+ * Interface for a geographical or significant place within the campaign.
+ * Will be stored in the 'locations' Convex table.
+ */
+export interface LocationSchema {
+  _id: Id<"locations">; // Renamed from locationId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  name: string;
+  type: LocationType; // Changed to use new LocationType enum
+  description: string;
+  notableNpcIds: Id<"npcs">[]; // Using Id type for references
+  linkedLocations: Id<"locations">[]; // Using Id type for references
+  interactionsAtLocation: Id<"interactions">[]; // Using Id type for references
+  imageUrls: string[]; // Made non-optional, default to empty array if none
+  secrets: string; // Made non-optional, default to empty string if none
+}
+
+/**
+ * Interface for a major or minor objective for the player characters.
+ * Will be stored in the 'quests' Convex table.
+ */
+export interface QuestSchema {
+  _id: Id<"quests">; // Renamed from questId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  name: string;
+  description: string;
+  objective: string;
+  status: "Not Started" | "In Progress" | "Completed" | "Failed" | "Abandoned";
+  reward: string; // Remains string for flexibility, could be a structured object (see notes)
+  linkedNpcIds: Id<"npcs">[];
+  linkedLocationIds: Id<"locations">[];
+  linkedInteractionIds: Id<"interactions">[];
+  parentQuestId?: Id<"quests">; // Optional
+  subQuestIds: Id<"quests">[]; // Made non-optional, default to empty array if none
+  priority: "High" | "Medium" | "Low";
+  dmNotes: string; // Made non-optional, default to empty string if none
+}
+
+/**
+ * Interface for a specific event or encounter that happens within the campaign.
+ * Can be part of a quest or standalone.
+ * Will be stored in the 'interactions' Convex table.
+ */
+export interface InteractionSchema {
+  _id: Id<"interactions">; // Renamed from interactionId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  name: string;
+  type: InteractionType;
+  description: string;
+  involvedNpcIds: Id<"npcs">[];
+  linkedLocationId: Id<"locations">;
+  outcome: string; // Made non-optional, default to empty string if none
+  linkedQuestIds: Id<"quests">[];
+  sessionLogEntryId?: Id<"session_logs">; // Optional reference to a specific session log
+  lootItemIds: Id<"items">[]; // Made non-optional, default to empty array if none
+  xpAward: number; // Made non-optional, default to 0 if no XP
+  dmNotes: string; // Made non-optional, default to empty string if none
+}
+
+/**
+ * Interface for a player character.
+ * This can be quite detailed, mimicking a D&D 5e character sheet.
+ * Will be stored in the 'player_characters' Convex table.
+ */
+export interface PlayerCharacterSchema {
+  _id: Id<"player_characters">; // Renamed from characterId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  name: string;
+  race: string;
+  class: string;
+  level: number;
+  alignment: Alignment; // Changed to use new Alignment enum
+  background: string;
+  playerUserId: Id<"users">; // Changed to Id<'users'> assuming a 'users' table in Convex
+  hp: {
+    current: number;
+    max: number;
+    temporary: number; // Made non-optional, default to 0 if none
+  };
+  abilities: {
+    STR: number;
+    DEX: number;
+    CON: number;
+    INT: number;
+    WIS: number;
+    CHA: number;
+  };
+  proficiencyBonus: number;
+  armorClass: number;
+  initiativeBonus: number;
+  speed: number;
+  inventoryItemIds: Id<"items">[];
+  spellsKnownIds: Id<"spells">[]; // Made non-optional, default to empty array if no spells (assuming a SpellSchema)
+  proficiencies: string[]; // Made non-optional, default to empty array if none
+  featuresAndTraits: string; // Made non-optional, default to empty string if none
+  backstory: string;
+  goals: string;
+  ideals: string;
+  bonds: string;
+  flaws: string;
+  imageUrl: string; // Made non-optional, default to empty string if none
+  statusEffects: string[]; // Made non-optional, default to empty array if none
+}
+
+/**
+ * Interface for an item found or used in the campaign.
+ * Will be stored in the 'items' Convex table.
+ */
+export interface ItemSchema {
+  _id: Id<"items">; // Renamed from itemId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  name: string;
+  type: ItemType;
+  rarity: Rarity;
+  description: string;
+  attunementRequired: boolean;
+  valueGp: number;
+  weightLbs: number;
+  imageUrl: string; // Made non-optional, default to empty string if none
+  properties: string[]; // Made non-optional, default to empty array if none
+  locationId?: Id<"locations">; // Optional: if it's currently at a specific location
+  ownerId?: Id<"player_characters"> | Id<"npcs">; // Optional: PC or NPC ID if the item belongs to someone
+  magicItemEffects: string; // Made non-optional, default to empty string if none
+}
+
+/**
+ * Interface for a Non-Player Character (NPC).
+ * Will be stored in the 'npcs' Convex table.
+ */
+export interface NpcSchema {
+  _id: Id<"npcs">; // Renamed from npcId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  name: string;
+  race: string;
+  description: string;
+  alignment: Alignment; // Changed to use new Alignment enum
+  roles: string[]; // Made non-optional, default to empty array if none
+  affiliationIds: Id<"factions">[];
+  currentLocationId: Id<"locations">; // Must have a current location
+  personalityTraits: string;
+  ideals: string; // Made non-optional, default to empty string if none
+  bonds: string; // Made non-optional, default to empty string if none
+  flaws: string; // Made non-optional, default to empty string if none
+  statBlockRef: string;
+  imageUrl: string; // Made non-optional, default to empty string if none
+  isHostile: boolean;
+  goals: string; // Made non-optional, default to empty string if none
+  secrets: string; // Made non-optional, default to empty string if none
+}
+
+/**
+ * Interface for a group or organization within the campaign world.
+ * Will be stored in the 'factions' Convex table.
+ */
+export interface FactionSchema {
+  _id: Id<"factions">; // Renamed from factionId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  name: string;
+  description: string;
+  alignment: Alignment; // Changed to use new Alignment enum
+  leaderNpcId?: Id<"npcs">; // Optional
+  goals: string[]; // Made non-optional, default to empty array if none
+  ideology: string; // Made non-optional, default to empty string if none
+  // Note: relations key 'factionId: string' won't be type-checked as Id<'factions'> by TS
+  relations: {
+    [factionId: string]: "Friendly" | "Neutral" | "Hostile" | "Unknown";
+  };
+  notableMemberNpcIds: Id<"npcs">[]; // Made non-optional, default to empty array if none
+  headquartersLocationId?: Id<"locations">; // Optional
+  symbolsAndMottos: string; // Made non-optional, default to empty string if none
+}
+
+/**
+ * Interface for important lore, history, or background information.
+ * Will be stored in the 'lore_entries' Convex table.
+ */
+export interface LoreEntrySchema {
+  _id: Id<"lore_entries">; // Renamed from loreId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  title: string;
+  category: string; // Could be an enum if categories are fixed
+  content: string;
+  relatedNpcIds: Id<"npcs">[];
+  relatedLocationIds: Id<"locations">[];
+  relatedQuestIds: Id<"quests">[];
+  discoveredBy: Id<"player_characters">[]; // Made non-optional, default to empty array if none
+  visibility: "Always Visible" | "Player Discovered" | "DM-Only";
+  source: string; // Made non-optional, default to empty string if none
+}
+
+/**
+ * Interface for a single game session record.
+ * Will be stored in the 'session_logs' Convex table.
+ */
+export interface SessionLogEntrySchema {
+  _id: Id<"session_logs">; // Renamed from sessionId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  sessionNumber: number;
+  date: number; // Changed to number (timestamp) for better sorting/querying in Convex
+  summary: string;
+  involvedPcIds: Id<"player_characters">[];
+  keyEvents: string[]; // Made non-optional, default to empty array if none
+  nextSessionGoals: string; // Made non-optional, default to empty string if none
+  dmNotes: string; // Made non-optional, default to empty string if none
+}
+
+/**
+ * Interface for external references (maps, images, sourcebook links).
+ * Will be stored in the 'references' Convex table.
+ */
+export interface ReferenceSchema {
+  _id: Id<"references">; // Renamed from referenceId to _id, using Convex's Id type
+  campaignId: Id<"campaigns">; // NEW: Link to the parent campaign
+  name: string;
+  type: ReferenceType;
+  url: string; // Made non-optional, default to empty string if none
+  description: string;
+  fileId: string; // Made non-optional, default to empty string if not using file storage
+  tags: string[]; // Made non-optional, default to empty array if none
+  // Linked IDs should point to specific Convex IDs for strong typing
+  linkedIds: Array<
+    | Id<"locations">
+    | Id<"npcs">
+    | Id<"quests">
+    | Id<"items">
+    | Id<"lore_entries">
+    | Id<"interactions">
+    | Id<"player_characters">
+    | Id<"factions">
+    | Id<"session_logs">
+  >; // More specific union of possible linked entities
+}
+
+/**
+ * The main Campaign Schema.
+ * Will be stored in the 'campaigns' Convex table.
+ * IMPORTANT: Child collections (locations, quests, etc.) are NOT embedded here.
+ * They are separate Convex tables, linked via their `campaignId` field.
+ */
+export interface CampaignSchema {
+  _id: Id<"campaigns">; // Renamed from campaignId to _id, using Convex's Id type
+  campaignName: string;
+  description: string;
+  isPublic: boolean;
+
+  currentLocationId?: Id<"locations">; // Optional, especially at campaign start
+  currentQuestIds: Id<"quests">[]; // Made non-optional, default to empty array
+
+  campaignStatus: CampaignStatus;
+  // sessionLog is now a separate collection ('session_logs') linked via campaignId
+
+  // Campaign Components (These are now separate Convex tables, not embedded arrays)
+  // For example, to get all locations for a campaign, you'd query the 'locations' table
+  // where 'campaignId' matches this campaign's _id.
+  // locations: LocationSchema[]; // REMOVED (now a separate table)
+  // quests: QuestSchema[];       // REMOVED (now a separate table)
+  // interactions: InteractionSchema[]; // REMOVED
+  // playerCharacters: PlayerCharacterSchema[]; // REMOVED
+  // items: ItemSchema[];         // REMOVED
+  // npcs: NpcSchema[];           // REMOVED
+  // factions: FactionSchema[];   // REMOVED
+  // loreEntries: LoreEntrySchema[]; // REMOVED
+  // references: ReferenceSchema[]; // REMOVED
+
+  // DM Tools & Notes
+  dmNotes: string; // Made non-optional, default to empty string
+  houseRules: string; // Made non-optional, default to empty string
+
+  // Metadata
+  // createdAt: string; // Handled by Convex's _creationTime
+  // lastModified: string; // Manual update in mutations, or derive from _creationTime for simple cases
+  creatorUserId: Id<"users">; // Changed to Id<'users'> assuming a 'users' table in Convex
+}

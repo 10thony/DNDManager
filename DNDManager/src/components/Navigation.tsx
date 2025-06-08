@@ -46,6 +46,14 @@ const Navigation: React.FC = () => {
             Items
           </Link>
           <Link
+            to="/locations"
+            className={`nav-link ${
+              location.pathname === "/locations" ? "active" : ""
+            }`}
+          >
+            Locations
+          </Link>
+          <Link
             to="/maps"
             className={`nav-link ${
               location.pathname.startsWith("/maps") ? "active" : ""

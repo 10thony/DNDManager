@@ -12,6 +12,10 @@ import ItemList from "./components/ItemList";
 import { Id } from "../convex/_generated/dataModel";
 import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { Maps } from "./pages/Maps";
+import LocationList from "./components/LocationList";
+import LocationForm from "./components/LocationForm";
+import LocationDetails from "./components/LocationDetails";
+import AppInitializer from "./components/AppInitializer";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -38,6 +42,7 @@ const App: React.FC = () => {
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <ConvexProvider client={convex}>
+        <AppInitializer />
         <Router>
           <div className="app">
             <Navigation />
@@ -78,6 +83,21 @@ const App: React.FC = () => {
                     <CharacterCreationForm />
                   </ProtectedRoute>
                 } />
+                <Route path="/locations" element={
+                  <ProtectedRoute>
+                    <LocationList />
+                  </ProtectedRoute>
+                } />
+                <Route path="/locations/new" element={
+                  <ProtectedRoute>
+                    <LocationForm />
+                  </ProtectedRoute>
+                } />
+                <Route path="/locations/:locationId" element={
+                  <ProtectedRoute>
+                    <LocationDetails />
+                  </ProtectedRoute>
+                } />
                 <Route path="/" element={<Navigate to="/characters" replace />} />
               </Routes>
             </main>
@@ -104,6 +124,28 @@ const ItemCreationWrapper: React.FC = () => {
 
   return (
     <ItemsPage 
+      onSubmitSuccess={handleSubmitSuccess}
+      onCancel={handleCancel}
+    />
+  );
+};
+
+// Wrapper component to handle location creation
+const LocationCreationWrapper: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleSubmitSuccess = () => {
+    // Navigate to the locations list
+    navigate("/locations");
+  };
+
+  const handleCancel = () => {
+    // Navigate back to the locations list
+    navigate("/locations");
+  };
+
+  return (
+    <LocationForm 
       onSubmitSuccess={handleSubmitSuccess}
       onCancel={handleCancel}
     />

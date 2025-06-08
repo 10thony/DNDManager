@@ -88,4 +88,46 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
+  locations: defineTable({
+    campaignId: v.id("campaigns"),
+    name: v.string(),
+    type: v.union(
+      v.literal("Town"),
+      v.literal("City"),
+      v.literal("Village"),
+      v.literal("Dungeon"),
+      v.literal("Castle"),
+      v.literal("Forest"),
+      v.literal("Mountain"),
+      v.literal("Temple"),
+      v.literal("Ruins"),
+      v.literal("Camp"),
+      v.literal("Other")
+    ),
+    description: v.string(),
+    notableNpcIds: v.array(v.id("npcs")),
+    linkedLocations: v.array(v.id("locations")),
+    interactionsAtLocation: v.array(v.id("interactions")),
+    imageUrls: v.array(v.string()),
+    secrets: v.string(),
+    mapId: v.optional(v.id("maps")), // Use v.optional for the reference to the map
+    creatorId: v.string(), // clerkId of the creator
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }),
+  campaigns: defineTable({
+    name: v.string(),
+    creatorId: v.string(), // clerkId of the creator
+    createdAt: v.number(),
+  }),
+  npcs: defineTable({
+    name: v.string(),
+    creatorId: v.string(), // clerkId of the creator
+    createdAt: v.number(),
+  }),
+  interactions: defineTable({
+    name: v.string(),
+    creatorId: v.string(), // clerkId of the creator
+    createdAt: v.number(),
+  }),
 });
