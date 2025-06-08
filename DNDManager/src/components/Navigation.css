@@ -51,6 +51,15 @@
     background-color: #007bff;
   }
   
+  .nav-link.sign-out {
+    background-color: #dc3545;
+    color: #ffffff;
+  }
+  
+  .nav-link.sign-out:hover {
+    background-color: #c82333;
+  }
+  
   @media (max-width: 768px) {
     .nav-container {
       padding: 0 1rem;

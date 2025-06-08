@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { SignOutButton } from "@clerk/clerk-react";
 import "./Navigation.css";
 
 const Navigation: React.FC = () => {
@@ -44,6 +45,9 @@ const Navigation: React.FC = () => {
           >
             Items
           </Link>
+          <SignOutButton>
+            <button className="nav-link sign-out">Sign Out</button>
+          </SignOutButton>
         </div>
       </div>
     </nav>
