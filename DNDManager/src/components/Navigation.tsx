@@ -45,6 +45,14 @@ const Navigation: React.FC = () => {
           >
             Items
           </Link>
+          <Link
+            to="/maps"
+            className={`nav-link ${
+              location.pathname.startsWith("/maps") ? "active" : ""
+            }`}
+          >
+            Maps
+          </Link>
           <SignOutButton>
             <button className="nav-link sign-out">Sign Out</button>
           </SignOutButton>

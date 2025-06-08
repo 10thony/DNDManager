@@ -11,6 +11,7 @@ import ItemDetails from "./components/ItemDetails";
 import ItemList from "./components/ItemList";
 import { Id } from "../convex/_generated/dataModel";
 import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import { Maps } from "./pages/Maps";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -42,6 +43,11 @@ const App: React.FC = () => {
             <Navigation />
             <main className="main-content">
               <Routes>
+                <Route path="/maps/*" element={
+                  <ProtectedRoute>
+                    <Maps />
+                  </ProtectedRoute>
+                } />
                 <Route path="/newItem" element={
                   <ProtectedRoute>
                     <ItemCreationWrapper />

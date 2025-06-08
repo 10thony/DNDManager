@@ -71,4 +71,21 @@ export default defineSchema({
     cost: v.optional(v.number()),
     attunement: v.optional(v.boolean()),
   }),
+  maps: defineTable({
+    name: v.string(),
+    width: v.number(),
+    height: v.number(),
+    cells: v.array(v.object({
+      x: v.number(),
+      y: v.number(),
+      state: v.union(
+        v.literal("inbounds"),
+        v.literal("outbounds"),
+        v.literal("occupied")
+      )
+    })),
+    createdBy: v.string(), // clerkId of the creator
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }),
 });
