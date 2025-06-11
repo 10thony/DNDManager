@@ -26,6 +26,7 @@ export const createPlayerCharacter = mutation({
     hitPoints: v.number(),
     armorClass: v.number(),
     proficiencyBonus: v.number(),
+    actions: v.array(v.id("actions")),
   },
   handler: async (ctx, args) => {
     const characterId = await ctx.db.insert("playerCharacters", {

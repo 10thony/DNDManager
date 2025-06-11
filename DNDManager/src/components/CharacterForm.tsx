@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { CharacterFormData, PlayerCharacter, CLASSES, RACES } from "../types/character";
+import { Id } from "../../convex/_generated/dataModel";
 import "./CharacterForm.css";
 
 interface CharacterFormProps {
@@ -12,6 +13,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
   const createCharacter = useMutation(api.characters.createPlayerCharacter);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedActions, setSelectedActions] = useState<Id<"actions">[]>([]);
 
   const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
@@ -27,6 +29,11 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
       wisdom: 10,
       charisma: 10,
     },
+  });
+
+  // Get available actions based on class
+  const availableActions = useQuery(api.actions.getActionsByClass, {
+    className: formData.class || "",
   });
 
   const handleInputChange = (
@@ -49,6 +56,16 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
     }));
   };
 
+  const handleActionToggle = (actionId: Id<"actions">) => {
+    setSelectedActions((prev) => {
+      if (prev.includes(actionId)) {
+        return prev.filter(id => id !== actionId);
+      } else {
+        return [...prev, actionId];
+      }
+    });
+  };
+
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
       setError("Character name is required");
@@ -66,6 +83,10 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
       setError("Character background is required");
       return false;
     }
+    if (selectedActions.length === 0) {
+      setError("At least one action must be selected");
+      return false;
+    }
     return true;
   };
 
@@ -80,6 +101,13 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
     setIsLoading(true);
 
     try {
+      // Ensure we have at least one action selected
+      if (selectedActions.length === 0) {
+        setError("At least one action must be selected");
+        setIsLoading(false);
+        return;
+      }
+
       const characterData = {
         name: formData.name.trim(),
         race: formData.race,
@@ -94,14 +122,18 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
         hitPoints: 8, // Base HP, will be calculated based on class and constitution
         armorClass: 10, // Base AC, will be calculated based on dexterity
         proficiencyBonus: 2, // Base proficiency bonus for level 1
+        actions: selectedActions, // This is now guaranteed to have at least one action
+        equipment: [], // Optional field
+        languages: [], // Optional field
+        traits: [], // Optional field
       };
 
-      console.log("Creating character with data:", characterData); // Debug log
+      console.log("Creating character with data:", characterData);
       const result = await createCharacter(characterData);
-      console.log("Character created successfully:", result); // Debug log
+      console.log("Character created successfully:", result);
       onSuccess?.();
     } catch (err) {
-      console.error("Error creating character:", err); // Debug log
+      console.error("Error creating character:", err);
       setError(err instanceof Error ? err.message : "Failed to create character");
     } finally {
       setIsLoading(false);
@@ -208,6 +240,33 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
             </div>
           ))}
         </div>
+
+        {formData.class && (
+          <div className="actions-section">
+            <h3>Available Actions</h3>
+            <div className="actions-grid">
+              {availableActions?.map((action) => (
+                <div key={action._id} className="action-card">
+                  <label className="action-label">
+                    <input
+                      type="checkbox"
+                      checked={selectedActions.includes(action._id)}
+                      onChange={() => handleActionToggle(action._id)}
+                    />
+                    <div className="action-content">
+                      <h4>{action.name}</h4>
+                      <p>{action.description}</p>
+                      <div className="action-meta">
+                        <span className="action-type">{action.type}</span>
+                        <span className="action-cost">{action.actionCost}</span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button type="submit" disabled={isLoading}>
           {isLoading ? "Creating..." : "Create Character"}

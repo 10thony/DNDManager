@@ -16,6 +16,8 @@ import LocationList from "./components/LocationList";
 import LocationForm from "./components/LocationForm";
 import LocationDetails from "./components/LocationDetails";
 import AppInitializer from "./components/AppInitializer";
+import ActionCreationForm from "./components/ActionCreationForm";
+import ActionsList from "./components/ActionsList";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -98,6 +100,11 @@ const App: React.FC = () => {
                     <LocationDetails />
                   </ProtectedRoute>
                 } />
+                <Route path="/actions" element={
+                  <ProtectedRoute>
+                    <ActionsList />
+                  </ProtectedRoute>
+                } />
                 <Route path="/" element={<Navigate to="/characters" replace />} />
               </Routes>
             </main>
@@ -162,6 +169,28 @@ const ItemDetailsWrapper: React.FC = () => {
   }
 
   return <ItemDetails item={item} />;
+};
+
+// Wrapper component to handle action creation
+const ActionCreationWrapper: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleSubmitSuccess = () => {
+    // Navigate to the actions list (you'll need to create this)
+    navigate("/actions");
+  };
+
+  const handleCancel = () => {
+    // Navigate back to the actions list
+    navigate("/actions");
+  };
+
+  return (
+    <ActionCreationForm 
+      onSubmitSuccess={handleSubmitSuccess}
+      onCancel={handleCancel}
+    />
+  );
 };
 
 export default App;

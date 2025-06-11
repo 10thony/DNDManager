@@ -34,6 +34,98 @@ export default defineSchema({
     hitPoints: v.number(),
     armorClass: v.number(),
     proficiencyBonus: v.number(),
+    actions: v.array(v.id("actions")), // Reference to available actions
+    createdAt: v.number(),
+  }),
+  actions: defineTable({
+    name: v.string(),
+    description: v.string(),
+    actionCost: v.union(
+      v.literal("Action"),
+      v.literal("Bonus Action"),
+      v.literal("Reaction"),
+      v.literal("No Action"),
+      v.literal("Special")
+    ),
+    type: v.union(
+      v.literal("MELEE_ATTACK"),
+      v.literal("RANGED_ATTACK"),
+      v.literal("SPELL"),
+      v.literal("COMMONLY_AVAILABLE_UTILITY"),
+      v.literal("CLASS_FEATURE"),
+      v.literal("BONUS_ACTION"),
+      v.literal("REACTION"),
+      v.literal("OTHER")
+    ),
+    requiresConcentration: v.boolean(),
+    sourceBook: v.string(),
+    // Attack specific fields
+    attackBonusAbilityScore: v.optional(v.string()),
+    isProficient: v.optional(v.boolean()),
+    damageRolls: v.optional(v.array(v.object({
+      dice: v.object({
+        count: v.number(),
+        type: v.union(
+          v.literal("D4"),
+          v.literal("D6"),
+          v.literal("D8"),
+          v.literal("D10"),
+          v.literal("D12"),
+          v.literal("D20")
+        )
+      }),
+      modifier: v.number(),
+      damageType: v.union(
+        v.literal("BLUDGEONING"),
+        v.literal("PIERCING"),
+        v.literal("SLASHING"),
+        v.literal("ACID"),
+        v.literal("COLD"),
+        v.literal("FIRE"),
+        v.literal("FORCE"),
+        v.literal("LIGHTNING"),
+        v.literal("NECROTIC"),
+        v.literal("POISON"),
+        v.literal("PSYCHIC"),
+        v.literal("RADIANT"),
+        v.literal("THUNDER")
+      )
+    }))),
+    // Spell specific fields
+    spellLevel: v.optional(v.union(
+      v.literal(0),
+      v.literal(1),
+      v.literal(2),
+      v.literal(3),
+      v.literal(4),
+      v.literal(5),
+      v.literal(6),
+      v.literal(7),
+      v.literal(8),
+      v.literal(9)
+    )),
+    castingTime: v.optional(v.string()),
+    range: v.optional(v.string()),
+    components: v.optional(v.object({
+      verbal: v.boolean(),
+      somatic: v.boolean(),
+      material: v.optional(v.string())
+    })),
+    duration: v.optional(v.string()),
+    savingThrow: v.optional(v.object({
+      ability: v.string(),
+      onSave: v.string()
+    })),
+    spellEffectDescription: v.optional(v.string()),
+    // Class feature specific fields
+    className: v.optional(v.string()),
+    usesPer: v.optional(v.union(
+      v.literal("Short Rest"),
+      v.literal("Long Rest"),
+      v.literal("Day"),
+      v.literal("Special")
+    )),
+    maxUses: v.optional(v.union(v.number(), v.string())),
     createdAt: v.number(),
   }),
   items: defineTable({

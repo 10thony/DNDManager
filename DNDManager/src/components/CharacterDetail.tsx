@@ -2,7 +2,8 @@ import React from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { getAbilityModifier } from "../types/dndRules";
+import { getAbilityModifier, ActionType, AbilityScore, PlayerCharacterAction, DamageDiceType, DamageType } from "../types/dndRules";
+import ActionList from "./ActionList";
 import "./CharacterDetail.css";
 
 const CharacterDetail: React.FC = () => {
@@ -11,6 +12,104 @@ const CharacterDetail: React.FC = () => {
   const character = useQuery(api.characters.getCharacterById, {
     id: id as any,
   });
+  const actions = useQuery(api.actions.getActionsByClass, {
+    className: character?.class || "",
+  });
+
+  // Transform Convex actions to PlayerCharacterAction format
+  const transformedActions = (actions?.map(action => {
+    const baseAction = {
+      id: action._id,
+      name: action.name,
+      description: action.description,
+      actionCost: action.actionCost,
+      requiresConcentration: action.requiresConcentration,
+      sourceBook: action.sourceBook,
+    };
+
+    switch (action.type) {
+      case "SPELL":
+        if (!action.spellLevel || !action.castingTime || !action.range || !action.components || !action.duration) {
+          console.warn(`Incomplete spell action data for ${action.name}`);
+          return null;
+        }
+        return {
+          ...baseAction,
+          type: ActionType.Spell,
+          spellLevel: action.spellLevel,
+          castingTime: action.castingTime,
+          range: action.range,
+          components: action.components,
+          duration: action.duration,
+          savingThrow: action.savingThrow ? {
+            ability: action.savingThrow.ability as AbilityScore,
+            onSave: action.savingThrow.onSave
+          } : undefined,
+          damageRolls: action.damageRolls?.map(roll => ({
+            dice: {
+              count: roll.dice.count,
+              type: roll.dice.type as DamageDiceType
+            },
+            modifier: roll.modifier,
+            damageType: roll.damageType as DamageType
+          })) || [],
+          spellEffectDescription: action.spellEffectDescription || action.description,
+        } as const;
+      case "CLASS_FEATURE":
+        if (!action.className) {
+          console.warn(`Missing className for class feature ${action.name}`);
+          return null;
+        }
+        return {
+          ...baseAction,
+          type: ActionType.ClassFeature,
+          className: action.className,
+          usesPer: action.usesPer,
+          maxUses: action.maxUses,
+        } as const;
+      case "MELEE_ATTACK":
+      case "RANGED_ATTACK":
+        if (!action.attackBonusAbilityScore || !action.isProficient || !action.damageRolls) {
+          console.warn(`Incomplete attack action data for ${action.name}`);
+          return null;
+        }
+        return {
+          ...baseAction,
+          type: action.type === "MELEE_ATTACK" ? ActionType.MeleeAttack : ActionType.RangedAttack,
+          attackBonusAbilityScore: action.attackBonusAbilityScore as AbilityScore,
+          isProficient: action.isProficient,
+          damageRolls: action.damageRolls.map(roll => ({
+            dice: {
+              count: roll.dice.count,
+              type: roll.dice.type as DamageDiceType
+            },
+            modifier: roll.modifier,
+            damageType: roll.damageType as DamageType
+          })),
+        } as const;
+      case "COMMONLY_AVAILABLE_UTILITY":
+        return {
+          ...baseAction,
+          type: ActionType.Utility,
+        } as const;
+      case "BONUS_ACTION":
+        return {
+          ...baseAction,
+          type: ActionType.BonusAction,
+        } as const;
+      case "REACTION":
+        return {
+          ...baseAction,
+          type: ActionType.Reaction,
+        } as const;
+      default:
+        return {
+          ...baseAction,
+          type: ActionType.Other,
+        } as const;
+    }
+  }).filter((action): action is NonNullable<typeof action> => action !== null) || []) as PlayerCharacterAction[];
+
   const deleteCharacter = useMutation(api.characters.deleteCharacter);
 
   const handleDelete = async () => {
@@ -204,6 +303,18 @@ const CharacterDetail: React.FC = () => {
               </ul>
             </div>
           )}
+
+          {/* Actions Section */}
+          <div className="info-section">
+            <h2>Actions & Abilities</h2>
+            {transformedActions.length > 0 ? (
+              <ActionList actions={transformedActions} />
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                No actions available for this character.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

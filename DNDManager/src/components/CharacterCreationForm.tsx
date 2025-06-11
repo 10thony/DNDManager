@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
 import {
   CharacterFormData,
   AbilityScores,
@@ -25,7 +26,7 @@ import "./CharacterCreationForm.css";
 
 const CharacterCreationForm: React.FC = () => {
   const navigate = useNavigate();
-  const createCharacter = useMutation(api.characters.createCharacter);
+  const createCharacter = useMutation(api.characters.createPlayerCharacter);
 
   const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
@@ -158,6 +159,7 @@ const CharacterCreationForm: React.FC = () => {
         ),
         armorClass: calculateArmorClass(finalAbilityScores.dexterity),
         proficiencyBonus: getProficiencyBonus(1),
+        actions: [] as Id<"actions">[], // Properly typed empty array of action IDs
       };
 
       await createCharacter(characterData);

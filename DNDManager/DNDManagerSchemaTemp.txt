@@ -95,6 +95,7 @@ export interface LocationSchema {
   interactionsAtLocation: Id<"interactions">[]; // Using Id type for references
   imageUrls: string[]; // Made non-optional, default to empty array if none
   secrets: string; // Made non-optional, default to empty string if none
+  mapId: Id<"maps"> | null; // NEW: Reference to a Map object, can be null if no map is associated
 }
 
 /**
