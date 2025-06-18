@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { Link } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { PlayerCharacter } from "../types/character";
 import { getAbilityModifier } from "../types/dndRules";
+import CharacterForm from "./CharacterForm";
 import "./CharacterList.css";
 
 const CharacterList: React.FC = () => {
+  const [isCreating, setIsCreating] = useState(false);
   const characters = useQuery(api.characters.getAllCharacters);
   const deleteCharacter = useMutation(api.characters.deleteCharacter);
 
@@ -21,6 +23,30 @@ const CharacterList: React.FC = () => {
       }
     }
   };
+
+  const handleCancel = () => {
+    setIsCreating(false);
+  };
+
+  const handleSubmitSuccess = () => {
+    setIsCreating(false);
+  };
+
+  if (isCreating) {
+    return (
+      <div className="character-list">
+        <div className="character-list-header">
+          <button
+            onClick={handleCancel}
+            className="back-button"
+          >
+            ← Back to Characters
+          </button>
+        </div>
+        <CharacterForm onSuccess={handleSubmitSuccess} />
+      </div>
+    );
+  }
 
   if (characters === undefined) {
     console.log("Characters are undefined - still loading"); // Debug log
@@ -46,15 +72,24 @@ const CharacterList: React.FC = () => {
     <div className="character-list">
       <div className="character-list-header">
         <h1>Your Characters</h1>
+        <button
+          className="create-button"
+          onClick={() => setIsCreating(true)}
+        >
+          Create New Character
+        </button>
       </div>
 
       {characters.length === 0 ? (
         <div className="empty-state">
           <h2>No Characters Yet</h2>
           <p>Create your first D&D character to get started!</p>
-          <Link to="/create-character" className="btn btn-primary">
+          <button
+            onClick={() => setIsCreating(true)}
+            className="btn btn-primary"
+          >
             Create Character
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="characters-grid">

@@ -38,24 +38,6 @@ const Navigation: React.FC<NavigationProps> = ({ isCollapsed, setIsCollapsed }) 
               {isCollapsed ? "👥" : "Characters"}
             </Link>
             <Link
-              to="/create-character"
-              className={`nav-link ${
-                location.pathname === "/create-character" ? "active" : ""
-              }`}
-              title="Create Character"
-            >
-              {isCollapsed ? "➕" : "Create Character"}
-            </Link>
-            <Link
-              to="/newItem"
-              className={`nav-link ${
-                location.pathname === "/newItem" ? "active" : ""
-              }`}
-              title="Create Item"
-            >
-              {isCollapsed ? "🔧" : "Create Item"}
-            </Link>
-            <Link
               to="/items"
               className={`nav-link ${
                 location.pathname === "/items" ? "active" : ""

@@ -15,16 +15,10 @@ const Home: React.FC = () => {
         </p>
         <div className="space-y-4">
           <button
-            onClick={() => navigate("/create-character")}
+            onClick={() => navigate("/characters")}
             className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Create New Character
-          </button>
-          <button
-            onClick={() => navigate("/characters")}
-            className="w-full px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          >
-            View All Characters
+            View Characters
           </button>
         </div>
       </div>

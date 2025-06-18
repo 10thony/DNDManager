@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ConvexProvider, ConvexReactClient, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
-import CharacterCreationForm from "./components/CharacterCreationForm";
 import CharacterList from "./components/CharacterList";
 import CharacterDetail from "./components/CharacterDetail";
 import Navigation from "./components/Navigation";
-import ItemsPage from "./components/ItemCreationForm"
 import ItemDetails from "./components/ItemDetails";
 import ItemList from "./components/ItemList";
 import { Id } from "../convex/_generated/dataModel";
@@ -56,11 +54,6 @@ const App: React.FC = () => {
                     <Maps />
                   </ProtectedRoute>
                 } />
-                <Route path="/newItem" element={
-                  <ProtectedRoute>
-                    <ItemCreationWrapper />
-                  </ProtectedRoute>
-                } />
                 <Route path="/items" element={
                   <ProtectedRoute>
                     <ItemList />
@@ -79,11 +72,6 @@ const App: React.FC = () => {
                 <Route path="/characters/:id" element={
                   <ProtectedRoute>
                     <CharacterDetail />
-                  </ProtectedRoute>
-                } />
-                <Route path="/create-character" element={
-                  <ProtectedRoute>
-                    <CharacterCreationForm />
                   </ProtectedRoute>
                 } />
                 <Route path="/locations" element={
@@ -113,50 +101,6 @@ const App: React.FC = () => {
         </Router>
       </ConvexProvider>
     </ClerkProvider>
-  );
-};
-
-// Wrapper component to handle navigation
-const ItemCreationWrapper: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleSubmitSuccess = (itemId: string) => {
-    // Navigate to the item details page or items list
-    navigate(`/items/${itemId}`);
-  };
-
-  const handleCancel = () => {
-    // Navigate back to the items list
-    navigate("/items");
-  };
-
-  return (
-    <ItemsPage 
-      onSubmitSuccess={handleSubmitSuccess}
-      onCancel={handleCancel}
-    />
-  );
-};
-
-// Wrapper component to handle location creation
-const LocationCreationWrapper: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleSubmitSuccess = () => {
-    // Navigate to the locations list
-    navigate("/locations");
-  };
-
-  const handleCancel = () => {
-    // Navigate back to the locations list
-    navigate("/locations");
-  };
-
-  return (
-    <LocationForm 
-      onSubmitSuccess={handleSubmitSuccess}
-      onCancel={handleCancel}
-    />
   );
 };
 
