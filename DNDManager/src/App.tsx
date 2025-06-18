@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ConvexProvider, ConvexReactClient, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
@@ -41,14 +41,15 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 const App: React.FC = () => {
+  const [navCollapsed, setNavCollapsed] = useState(false);
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <ConvexProvider client={convex}>
         <AppInitializer />
         <Router>
           <div className="app">
-            <Navigation />
-            <main className="main-content">
+            <Navigation isCollapsed={navCollapsed} setIsCollapsed={setNavCollapsed} />
+            <main className={`main-content${navCollapsed ? " collapsed" : ""}`}>
               <Routes>
                 <Route path="/maps/*" element={
                   <ProtectedRoute>

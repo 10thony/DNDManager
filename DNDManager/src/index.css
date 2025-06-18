@@ -15,3 +15,39 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* App layout styles for side navigation */
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+/* When navigation is collapsed, adjust main content */
+.navigation.collapsed + .main-content {
+  margin-left: 0;
+}
+
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+    margin-top: 60px; /* Space for the toggle button */
+  }
+
+  .navigation.collapsed + .main-content {
+    margin-top: 60px;
+  }
+}
