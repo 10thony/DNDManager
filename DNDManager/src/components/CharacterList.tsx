@@ -118,6 +118,7 @@ const CharacterList: React.FC = () => {
                   <span className="race">{character.race}</span>
                   <span className="class">{character.class}</span>
                   <span className="level">Level {character.level}</span>
+                  <span className="character-type">{character.characterType}</span>
                 </div>
                 <div className="character-background">
                   {character.background}

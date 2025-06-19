@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SignOutButton } from "@clerk/clerk-react";
+import DarkModeToggle from "./DarkModeToggle";
 import "./Navigation.css";
 
 interface NavigationProps {
@@ -73,6 +74,7 @@ const Navigation: React.FC<NavigationProps> = ({ isCollapsed, setIsCollapsed }) 
             >
               {isCollapsed ? "🗺️" : "Maps"}
             </Link>
+            <DarkModeToggle isCollapsed={isCollapsed} />
             <SignOutButton>
               <button className="nav-link sign-out" title="Sign Out">
                 {isCollapsed ? "🚪" : "Sign Out"}

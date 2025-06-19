@@ -4,19 +4,20 @@
   }
   
   .item-card {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 15px;
-    margin: 10px;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease-in-out;
-    cursor: pointer;
+    @apply border border-gray-300 rounded-lg p-4 m-2.5 bg-white shadow-sm transition-all duration-200 cursor-pointer;
+  }
+
+  .dark .item-card {
+    @apply border-gray-600 bg-gray-800;
   }
   
   .item-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    @apply shadow-md;
+  }
+
+  .dark .item-card:hover {
+    @apply shadow-lg shadow-gray-900/50;
   }
   
   .item-card-header {
@@ -30,6 +31,11 @@
     margin: 0;
     font-size: 1.2rem;
     font-weight: bold;
+    @apply text-gray-800 transition-colors duration-200;
+  }
+
+  .dark .item-card-name {
+    @apply text-gray-200;
   }
   
   .item-card-rarity {
@@ -56,6 +62,10 @@
   
   .item-card-type {
     margin: 0;
-    color: #555;
+    @apply text-gray-600 transition-colors duration-200;
+  }
+
+  .dark .item-card-type {
+    @apply text-gray-400;
   }
   

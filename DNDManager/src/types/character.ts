@@ -14,6 +14,7 @@ export interface PlayerCharacter {
   class: string;
   background: string;
   alignment?: string;
+  characterType: "PlayerCharacter" | "NonPlayerCharacter";
   abilityScores: AbilityScores;
   skills: string[];
   savingThrows: string[];
@@ -34,6 +35,7 @@ export interface CharacterFormData {
   class: string;
   background: string;
   alignment: string;
+  characterType: "PlayerCharacter" | "NonPlayerCharacter";
   abilityScores: AbilityScores;
 }
 

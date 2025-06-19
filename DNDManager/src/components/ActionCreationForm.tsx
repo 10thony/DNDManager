@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import "./ActionCreationForm.css";
 
 interface ActionCreationFormProps {
   onSubmitSuccess: () => void;
@@ -20,24 +21,31 @@ const ActionCreationForm: React.FC<ActionCreationFormProps> = ({
     ids: editingActionId ? [editingActionId] : [],
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    actionCost: "Action",
-    type: "COMMONLY_AVAILABLE_UTILITY",
+    actionCost: "Action" as "Action" | "Bonus Action" | "Reaction" | "No Action" | "Special",
+    type: "COMMONLY_AVAILABLE_UTILITY" as "MELEE_ATTACK" | "RANGED_ATTACK" | "SPELL" | "COMMONLY_AVAILABLE_UTILITY" | "CLASS_FEATURE" | "BONUS_ACTION" | "REACTION" | "OTHER",
     requiresConcentration: false,
     sourceBook: "PHB",
     // Optional fields based on type
     className: "",
-    usesPer: "Long Rest",
+    usesPer: "Long Rest" as "Short Rest" | "Long Rest" | "Day" | "Special" | undefined,
     maxUses: "",
-    spellLevel: 0 as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9,
+    spellLevel: 0 as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | undefined,
     castingTime: "",
     range: "",
     components: {
       verbal: false,
       somatic: false,
-      material: "",
+      material: "" as string | undefined,
+    } as {
+      verbal: boolean;
+      somatic: boolean;
+      material?: string;
     },
     duration: "",
     savingThrow: {
@@ -48,12 +56,39 @@ const ActionCreationForm: React.FC<ActionCreationFormProps> = ({
 
   useEffect(() => {
     if (action && action[0]) {
-      setFormData(action[0]);
+      const actionData = action[0];
+      setFormData({
+        name: actionData.name,
+        description: actionData.description,
+        actionCost: actionData.actionCost,
+        type: actionData.type,
+        requiresConcentration: actionData.requiresConcentration,
+        sourceBook: actionData.sourceBook,
+        className: actionData.className || "",
+        usesPer: actionData.usesPer,
+        maxUses: actionData.maxUses?.toString() || "",
+        spellLevel: actionData.spellLevel,
+        castingTime: actionData.castingTime || "",
+        range: actionData.range || "",
+        components: actionData.components || {
+          verbal: false,
+          somatic: false,
+          material: "",
+        },
+        duration: actionData.duration || "",
+        savingThrow: actionData.savingThrow || {
+          ability: "",
+          onSave: "",
+        },
+      });
     }
   }, [action]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
     try {
       if (editingActionId) {
         await updateAction({
@@ -66,6 +101,9 @@ const ActionCreationForm: React.FC<ActionCreationFormProps> = ({
       onSubmitSuccess();
     } catch (error) {
       console.error("Error saving action:", error);
+      setError(error instanceof Error ? error.message : "Failed to save action");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,229 +123,282 @@ const ActionCreationForm: React.FC<ActionCreationFormProps> = ({
     }
   };
 
+  const handleComponentChange = (component: string, value: boolean | string) => {
+    setFormData(prev => ({
+      ...prev,
+      components: {
+        ...prev.components,
+        [component]: value,
+      },
+    }));
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">{editingActionId ? "Edit Action" : "Create New Action"}</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
+    <div className="action-form">
+      <div className="form-header">
+        <button type="button" onClick={onCancel} className="back-button">
+          ← Back to Actions List
+        </button>
+        <h2 className="form-section-title">
+          {editingActionId ? "Edit Action" : "Create New Action"}
+        </h2>
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            rows={4}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
+      {error && <div className="form-error">{error}</div>}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Action Cost</label>
-          <select
-            name="actionCost"
-            value={formData.actionCost}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="Action">Action</option>
-            <option value="Bonus Action">Bonus Action</option>
-            <option value="Reaction">Reaction</option>
-            <option value="No Action">No Action</option>
-            <option value="Special">Special</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Type</label>
-          <select
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="COMMONLY_AVAILABLE_UTILITY">Commonly Available Utility</option>
-            <option value="CLASS_FEATURE">Class Feature</option>
-            <option value="SPELL">Spell</option>
-          </select>
-        </div>
-
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            name="requiresConcentration"
-            checked={formData.requiresConcentration}
-            onChange={handleChange}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label className="ml-2 block text-sm text-gray-900">Requires Concentration</label>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Source Book</label>
-          <input
-            type="text"
-            name="sourceBook"
-            value={formData.sourceBook}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-
-        {formData.type === "CLASS_FEATURE" && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Class Name</label>
+      <form onSubmit={handleSubmit}>
+        {/* Basic Information Section */}
+        <div className="form-section">
+          <div className="form-section-title">Basic Information</div>
+          <div className="form-row">
+            <div className="form-col">
+              <label htmlFor="name" className="form-label">Action Name *</label>
               <input
                 type="text"
-                name="className"
-                value={formData.className}
+                id="name"
+                name="name"
+                className="form-input"
+                value={formData.name}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Uses Per</label>
+            <div className="form-col">
+              <label htmlFor="actionCost" className="form-label">Action Cost *</label>
               <select
-                name="usesPer"
-                value={formData.usesPer}
+                id="actionCost"
+                name="actionCost"
+                className="form-select"
+                value={formData.actionCost}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                required
               >
-                <option value="Long Rest">Long Rest</option>
-                <option value="Short Rest">Short Rest</option>
-                <option value="Day">Day</option>
+                <option value="Action">Action</option>
+                <option value="Bonus Action">Bonus Action</option>
+                <option value="Reaction">Reaction</option>
+                <option value="No Action">No Action</option>
                 <option value="Special">Special</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Max Uses</label>
-              <input
-                type="text"
-                name="maxUses"
-                value={formData.maxUses}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-          </>
-        )}
-
-        {formData.type === "SPELL" && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Spell Level</label>
+            <div className="form-col">
+              <label htmlFor="type" className="form-label">Type *</label>
               <select
-                name="spellLevel"
-                value={formData.spellLevel}
+                id="type"
+                name="type"
+                className="form-select"
+                value={formData.type}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => (
-                  <option key={level} value={level}>
-                    {level === 0 ? "Cantrip" : `Level ${level}`}
-                  </option>
-                ))}
+                <option value="COMMONLY_AVAILABLE_UTILITY">Commonly Available Utility</option>
+                <option value="CLASS_FEATURE">Class Feature</option>
+                <option value="SPELL">Spell</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Casting Time</label>
+          </div>
+
+          <div className="form-row">
+            <div className="form-col">
+              <label htmlFor="sourceBook" className="form-label">Source Book *</label>
               <input
                 type="text"
-                name="castingTime"
-                value={formData.castingTime}
+                id="sourceBook"
+                name="sourceBook"
+                className="form-input"
+                value={formData.sourceBook}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Range</label>
-              <input
-                type="text"
-                name="range"
-                value={formData.range}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Duration</label>
-              <input
-                type="text"
-                name="duration"
-                value={formData.duration}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Components</h3>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="components.verbal"
-                  checked={formData.components.verbal}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label className="ml-2 block text-sm text-gray-900">Verbal</label>
+            <div className="form-col">
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="requiresConcentration"
+                    checked={formData.requiresConcentration}
+                    onChange={handleChange}
+                    className="checkbox-input"
+                  />
+                  <span className="checkbox-text">Requires Concentration</span>
+                </label>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="components.somatic"
-                  checked={formData.components.somatic}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label className="ml-2 block text-sm text-gray-900">Somatic</label>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Material Components</label>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-col full-width">
+              <label htmlFor="description" className="form-label">Description *</label>
+              <textarea
+                id="description"
+                name="description"
+                className="form-textarea"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                rows={4}
+                placeholder="Enter a detailed description of the action..."
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Class Feature Section */}
+        {formData.type === "CLASS_FEATURE" && (
+          <div className="form-section">
+            <div className="form-section-title">Class Feature Details</div>
+            <div className="form-row">
+              <div className="form-col">
+                <label htmlFor="className" className="form-label">Class Name *</label>
                 <input
                   type="text"
-                  name="components.material"
-                  value={formData.components.material}
+                  id="className"
+                  name="className"
+                  className="form-input"
+                  value={formData.className}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="form-col">
+                <label htmlFor="usesPer" className="form-label">Uses Per</label>
+                <select
+                  id="usesPer"
+                  name="usesPer"
+                  className="form-select"
+                  value={formData.usesPer}
+                  onChange={handleChange}
+                >
+                  <option value="Long Rest">Long Rest</option>
+                  <option value="Short Rest">Short Rest</option>
+                  <option value="Day">Day</option>
+                  <option value="Special">Special</option>
+                </select>
+              </div>
+              <div className="form-col">
+                <label htmlFor="maxUses" className="form-label">Max Uses</label>
+                <input
+                  type="text"
+                  id="maxUses"
+                  name="maxUses"
+                  className="form-input"
+                  value={formData.maxUses}
+                  onChange={handleChange}
+                  placeholder="e.g., 3, 1/rest, etc."
                 />
               </div>
             </div>
-          </>
+          </div>
         )}
 
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            {editingActionId ? "Save Changes" : "Create Action"}
+        {/* Spell Section */}
+        {formData.type === "SPELL" && (
+          <div className="form-section">
+            <div className="form-section-title">Spell Details</div>
+            <div className="form-row">
+              <div className="form-col">
+                <label htmlFor="spellLevel" className="form-label">Spell Level *</label>
+                <select
+                  id="spellLevel"
+                  name="spellLevel"
+                  className="form-select"
+                  value={formData.spellLevel}
+                  onChange={handleChange}
+                  required
+                >
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => (
+                    <option key={level} value={level}>
+                      {level === 0 ? "Cantrip" : `Level ${level}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-col">
+                <label htmlFor="castingTime" className="form-label">Casting Time *</label>
+                <input
+                  type="text"
+                  id="castingTime"
+                  name="castingTime"
+                  className="form-input"
+                  value={formData.castingTime}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., 1 action, 1 minute"
+                />
+              </div>
+              <div className="form-col">
+                <label htmlFor="range" className="form-label">Range *</label>
+                <input
+                  type="text"
+                  id="range"
+                  name="range"
+                  className="form-input"
+                  value={formData.range}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., Self, 60 feet, Touch"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-col">
+                <label htmlFor="duration" className="form-label">Duration *</label>
+                <input
+                  type="text"
+                  id="duration"
+                  name="duration"
+                  className="form-input"
+                  value={formData.duration}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., Instantaneous, 1 hour, Concentration"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-col full-width">
+                <label className="form-label">Components</label>
+                <div className="components-grid">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.components.verbal}
+                      onChange={(e) => handleComponentChange("verbal", e.target.checked)}
+                      className="checkbox-input"
+                    />
+                    <span className="checkbox-text">Verbal (V)</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.components.somatic}
+                      onChange={(e) => handleComponentChange("somatic", e.target.checked)}
+                      className="checkbox-input"
+                    />
+                    <span className="checkbox-text">Somatic (S)</span>
+                  </label>
+                  <div className="material-component">
+                    <label htmlFor="material" className="form-label">Material Components</label>
+                    <input
+                      type="text"
+                      id="material"
+                      className="form-input"
+                      value={formData.components.material}
+                      onChange={(e) => handleComponentChange("material", e.target.value)}
+                      placeholder="e.g., A piece of iron, 50gp worth of diamond dust"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="form-actions">
+          <button type="submit" className="btn-primary" disabled={isLoading}>
+            {isLoading ? "Saving..." : (editingActionId ? "Save Changes" : "Create Action")}
           </button>
         </div>
       </form>

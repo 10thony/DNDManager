@@ -5,6 +5,7 @@ import { LocationType, locationTypes } from "../../convex/locations";
 import { Id } from "../../convex/_generated/dataModel";
 import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import "./LocationForm.css";
 
 interface LocationFormProps {
   onSubmitSuccess?: () => void;
@@ -62,121 +63,135 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Create New Location</h2>
+    <form onSubmit={handleSubmit} className="location-form">
+      <h2 className="location-form-title">Create New Location</h2>
       
-      <div>
-        <label className="block mb-1">Campaign</label>
-        <select
-          value={formData.campaignId}
-          onChange={(e) => setFormData({ ...formData, campaignId: e.target.value as Id<"campaigns"> })}
-          className="w-full p-2 border rounded"
-          required
-        >
-          <option value="">Select a campaign</option>
-          {campaigns.map((campaign) => (
-            <option key={campaign._id} value={campaign._id}>
-              {campaign.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block mb-1">Name</label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full p-2 border rounded"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1">Type</label>
-        <select
-          value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value as LocationType })}
-          className="w-full p-2 border rounded"
-          required
-        >
-          {locationTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block mb-1">Description</label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full p-2 border rounded"
-          rows={4}
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1">Notable NPCs</label>
-        <select
-          multiple
-          value={formData.notableNpcIds}
-          onChange={(e) => {
-            const selected = Array.from(e.target.selectedOptions, option => option.value as Id<"npcs">);
-            setFormData({ ...formData, notableNpcIds: selected });
-          }}
-          className="w-full p-2 border rounded"
-        >
-          {npcs.map((npc) => (
-            <option key={npc._id} value={npc._id}>
-              {npc.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block mb-1">Secrets</label>
-        <textarea
-          value={formData.secrets}
-          onChange={(e) => setFormData({ ...formData, secrets: e.target.value })}
-          className="w-full p-2 border rounded"
-          rows={3}
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1">Map</label>
-        <div className="flex gap-2 items-center">
+      <div className="form-section">
+        <h3 className="form-section-title">Basic Information</h3>
+        
+        <div className="form-group">
+          <label className="form-label">Campaign</label>
           <select
-            value={formData.mapId || ""}
-            onChange={(e) => setFormData({ ...formData, mapId: e.target.value ? (e.target.value as Id<"maps">) : undefined })}
-            className="w-full p-2 border rounded"
+            value={formData.campaignId}
+            onChange={(e) => setFormData({ ...formData, campaignId: e.target.value as Id<"campaigns"> })}
+            className="form-select"
+            required
           >
-            <option value="">Select a map (optional)</option>
-            {maps.map((map) => (
-              <option key={map._id} value={map._id}>
-                {map.name}
+            <option value="">Select a campaign</option>
+            {campaigns.map((campaign) => (
+              <option key={campaign._id} value={campaign._id}>
+                {campaign.name}
               </option>
             ))}
           </select>
-          <Link
-            to="/maps/new"
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 whitespace-nowrap"
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Name</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="form-input"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Type</label>
+          <select
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value as LocationType })}
+            className="form-select"
+            required
           >
-            Create New Map
-          </Link>
+            {locationTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Description</label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            className="form-textarea"
+            rows={4}
+            required
+          />
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="form-section">
+        <h3 className="form-section-title">Additional Details</h3>
+        
+        <div className="form-group">
+          <label className="form-label">Notable NPCs</label>
+          <select
+            multiple
+            value={formData.notableNpcIds}
+            onChange={(e) => {
+              const selected = Array.from(e.target.selectedOptions, option => option.value as Id<"npcs">);
+              setFormData({ ...formData, notableNpcIds: selected });
+            }}
+            className="form-select"
+          >
+            {npcs.map((npc) => (
+              <option key={npc._id} value={npc._id}>
+                {npc.name}
+              </option>
+            ))}
+          </select>
+          <div className="form-helper">Hold Ctrl/Cmd to select multiple NPCs</div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Secrets</label>
+          <textarea
+            value={formData.secrets}
+            onChange={(e) => setFormData({ ...formData, secrets: e.target.value })}
+            className="form-textarea"
+            rows={3}
+            placeholder="Any hidden information or secrets about this location..."
+          />
+        </div>
+      </div>
+
+      <div className="form-section">
+        <h3 className="form-section-title">Map Association</h3>
+        
+        <div className="form-group">
+          <label className="form-label">Map</label>
+          <div className="map-selection-group">
+            <select
+              value={formData.mapId || ""}
+              onChange={(e) => setFormData({ ...formData, mapId: e.target.value ? (e.target.value as Id<"maps">) : undefined })}
+              className="form-select map-select"
+            >
+              <option value="">Select a map (optional)</option>
+              {maps.map((map) => (
+                <option key={map._id} value={map._id}>
+                  {map.name}
+                </option>
+              ))}
+            </select>
+            <Link
+              to="/maps/new"
+              className="create-map-btn"
+            >
+              Create New Map
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="form-actions">
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="btn-primary"
         >
           Create Location
         </button>
@@ -184,7 +199,7 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            className="btn-secondary"
           >
             Cancel
           </button>

@@ -1,0 +1,211 @@
+/* Global Dark Mode Styles */
+
+/* Form elements */
+.dark input,
+.dark textarea,
+.dark select {
+  @apply bg-gray-700 border-gray-600 text-gray-200;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  @apply border-blue-500 ring-blue-500;
+}
+
+/* Buttons */
+.dark .btn {
+  @apply transition-colors duration-200;
+}
+
+.dark .btn-primary {
+  @apply bg-blue-500 hover:bg-blue-600 text-white;
+}
+
+.dark .btn-secondary {
+  @apply bg-gray-500 hover:bg-gray-600 text-white;
+}
+
+.dark .btn-danger {
+  @apply bg-red-500 hover:bg-red-600 text-white;
+}
+
+.dark .btn-success {
+  @apply bg-green-500 hover:bg-green-600 text-white;
+}
+
+/* Cards and containers */
+.dark .card,
+.dark .container {
+  @apply bg-gray-800 border-gray-700 text-gray-200;
+}
+
+/* Tables */
+.dark table {
+  @apply bg-gray-800 text-gray-200;
+}
+
+.dark th {
+  @apply bg-gray-700 text-gray-200 border-gray-600;
+}
+
+.dark td {
+  @apply border-gray-600;
+}
+
+.dark tr:hover {
+  @apply bg-gray-700;
+}
+
+/* Links */
+.dark a {
+  @apply text-blue-400 hover:text-blue-300;
+}
+
+/* Headers */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  @apply text-gray-200;
+}
+
+/* Paragraphs and text */
+.dark p {
+  @apply text-gray-300;
+}
+
+.dark small {
+  @apply text-gray-400;
+}
+
+/* Lists */
+.dark ul,
+.dark ol {
+  @apply text-gray-300;
+}
+
+.dark li {
+  @apply text-gray-300;
+}
+
+/* Code blocks */
+.dark code {
+  @apply bg-gray-700 text-gray-200;
+}
+
+.dark pre {
+  @apply bg-gray-800 border-gray-700 text-gray-200;
+}
+
+/* Dividers */
+.dark hr {
+  @apply border-gray-700;
+}
+
+/* Placeholders */
+.dark ::placeholder {
+  @apply text-gray-400;
+}
+
+/* Scrollbars */
+.dark ::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.dark ::-webkit-scrollbar-track {
+  @apply bg-gray-800;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+/* Focus states */
+.dark *:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-800;
+}
+
+/* Transitions for smooth theme switching */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Specific component overrides */
+.dark .loading,
+.dark .error,
+.dark .success {
+  @apply text-gray-300;
+}
+
+.dark .badge {
+  @apply bg-gray-600 text-gray-200;
+}
+
+.dark .tooltip {
+  @apply bg-gray-800 border-gray-700 text-gray-200;
+}
+
+/* Map components */
+.dark .map-container {
+  @apply bg-gray-800 border-gray-700;
+}
+
+/* Character sheet specific */
+.dark .character-sheet {
+  @apply bg-gray-800 text-gray-200;
+}
+
+.dark .stat-block {
+  @apply bg-gray-700 border-gray-600;
+}
+
+/* Item details */
+.dark .item-details {
+  @apply bg-gray-800 text-gray-200;
+}
+
+.dark .item-properties {
+  @apply bg-gray-700 border-gray-600;
+}
+
+/* Location components */
+.dark .location-card {
+  @apply bg-gray-800 border-gray-700 text-gray-200;
+}
+
+/* Action components */
+.dark .action-card {
+  @apply bg-gray-800 border-gray-700 text-gray-200;
+}
+
+/* Utility classes for dark mode */
+.dark .bg-surface {
+  @apply bg-gray-800;
+}
+
+.dark .bg-surface-secondary {
+  @apply bg-gray-700;
+}
+
+.dark .text-primary {
+  @apply text-gray-200;
+}
+
+.dark .text-secondary {
+  @apply text-gray-400;
+}
+
+.dark .border-primary {
+  @apply border-gray-700;
+}
+
+.dark .border-secondary {
+  @apply border-gray-600;
+} 

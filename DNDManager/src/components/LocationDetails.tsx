@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { useParams, Link } from "react-router-dom";
 import { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@clerk/clerk-react";
+import "./LocationForm.css";
 
 type CellState = 'inbounds' | 'outbounds' | 'occupied';
 
@@ -30,7 +31,7 @@ interface MapPreviewProps {
 const MapPreview: React.FC<MapPreviewProps> = ({ map }) => {
   return (
     <div 
-      className="grid gap-0.5 p-2 transition-all duration-200"
+      className="map-preview-grid"
       style={{
         gridTemplateColumns: `repeat(${map.width}, ${DEFAULT_CELL_SIZE}px)`,
         width: 'fit-content',
@@ -39,7 +40,7 @@ const MapPreview: React.FC<MapPreviewProps> = ({ map }) => {
       {map.cells.map((cell) => (
         <div
           key={`${cell.x}-${cell.y}`}
-          className={`${CELL_COLORS[cell.state]} transition-colors duration-150`}
+          className={`map-preview-cell ${cell.state}`}
           style={{
             width: DEFAULT_CELL_SIZE,
             height: DEFAULT_CELL_SIZE,
@@ -63,94 +64,97 @@ export default function LocationDetails() {
   const associatedMap = location.mapId ? maps.find(m => m._id === location.mapId) : null;
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">{location.name}</h2>
-        <div className="flex gap-2">
+    <div className="location-details-container">
+      <div className="location-details-header">
+        <h2 className="location-details-title">{location.name}</h2>
+        <div className="location-details-actions">
           <Link
             to={`/locations/${locationId}/edit`}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="btn-primary"
           >
             Edit Location
           </Link>
           <Link
             to="/locations"
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            className="btn-secondary"
           >
             Back to Locations
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Location Details</h3>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="mb-2"><span className="font-medium">Type:</span> {location.type}</p>
-              <p className="mb-2"><span className="font-medium">Description:</span></p>
-              <p className="text-gray-700">{location.description}</p>
-            </div>
+      <div className="location-details-grid">
+        <div className="location-info-section">
+          <h3 className="location-info-title">Location Details</h3>
+          <div className="location-info-content">
+            <p className="location-detail-item">
+              <span className="location-info-label">Type:</span>
+              <span className="location-detail-value">{location.type}</span>
+            </p>
+            <p className="location-detail-item">
+              <span className="location-info-label">Description:</span>
+            </p>
+            <p className="location-detail-value">{location.description}</p>
           </div>
-
-          {location.secrets && (
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Secrets</h3>
-              <div className="bg-white p-4 rounded-lg shadow">
-                <p className="text-gray-700">{location.secrets}</p>
-              </div>
-            </div>
-          )}
-
-          {location.notableNpcIds.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Notable NPCs</h3>
-              <div className="bg-white p-4 rounded-lg shadow">
-                <ul className="list-disc list-inside">
-                  {location.notableNpcIds.map((npcId: Id<"npcs">) => (
-                    <li key={npcId} className="text-gray-600">
-                      {npcId} {/* Replace with actual NPC name when available */}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Map</h3>
+        <div className="location-info-section">
+          <h3 className="location-info-title">Map</h3>
           {associatedMap ? (
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h4 className="font-medium mb-2">{associatedMap.name}</h4>
-              <div className="aspect-square bg-gray-100 rounded overflow-auto">
+            <div className="location-info-content">
+              <h4 className="location-info-label">{associatedMap.name}</h4>
+              <div className="map-preview-container">
                 <div className="flex justify-center items-center p-4">
                   <MapPreview map={associatedMap} />
                 </div>
               </div>
-              <div className="mt-2 text-sm text-gray-600">
+              <div className="map-info">
                 <p>Dimensions: {associatedMap.width} × {associatedMap.height}</p>
                 <p>Last Updated: {new Date(associatedMap.updatedAt).toLocaleDateString()}</p>
               </div>
               <Link
                 to={`/maps/${associatedMap._id}`}
-                className="mt-2 inline-block text-blue-500 hover:text-blue-600"
+                className="map-link"
               >
                 View Full Map
               </Link>
             </div>
           ) : (
-            <div className="bg-white p-4 rounded-lg shadow text-center">
-              <p className="text-gray-500">No map associated with this location</p>
+            <div className="no-map-container">
+              <p>No map associated with this location</p>
               <Link
                 to="/maps/new"
-                className="mt-2 inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                className="create-map-btn"
               >
                 Create New Map
               </Link>
             </div>
           )}
         </div>
+
+        {location.secrets && (
+          <div className="location-info-section">
+            <h3 className="location-info-title">Secrets</h3>
+            <div className="location-info-content">
+              <p>{location.secrets}</p>
+            </div>
+          </div>
+        )}
+
+        {location.notableNpcIds.length > 0 && (
+          <div className="location-info-section">
+            <h3 className="location-info-title">Notable NPCs</h3>
+            <div className="location-info-content">
+              <ul className="location-npcs-list">
+                {location.notableNpcIds.map((npcId: Id<"npcs">) => (
+                  <li key={npcId} className="location-npc-item">
+                    {npcId} {/* Replace with actual NPC name when available */}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
