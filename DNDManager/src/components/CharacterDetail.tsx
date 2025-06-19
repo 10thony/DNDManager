@@ -5,6 +5,7 @@ import { api } from "../../convex/_generated/api";
 import { getAbilityModifier, ActionType, AbilityScore, PlayerCharacterAction, DamageDiceType, DamageType } from "../types/dndRules";
 import ActionList from "./ActionList";
 import "./CharacterDetail.css";
+import "./ActionsList.css";
 
 const CharacterDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -126,7 +127,7 @@ const CharacterDetail: React.FC = () => {
   if (character === undefined) {
     return (
       <div className="character-detail">
-        <div className="loading">Loading character...</div>
+        <div className="loading text-center py-8 text-lg">Loading character...</div>
       </div>
     );
   }
@@ -134,10 +135,12 @@ const CharacterDetail: React.FC = () => {
   if (character === null) {
     return (
       <div className="character-detail">
-        <div className="error">Character not found</div>
-        <Link to="/characters" className="btn btn-primary">
-          Back to Characters
-        </Link>
+        <div className="error text-center py-8 text-lg text-red-500">Character not found</div>
+        <div className="text-center">
+          <Link to="/characters" className="btn btn-primary">
+            Back to Characters
+          </Link>
+        </div>
       </div>
     );
   }
@@ -168,24 +171,24 @@ const CharacterDetail: React.FC = () => {
             <h2>Basic Information</h2>
             <div className="info-grid">
               <div className="info-item">
-                <strong>Race:</strong> {character.race}
+                <strong>Race:</strong> <span className="text-primary">{character.race}</span>
               </div>
               <div className="info-item">
-                <strong>Class:</strong> {character.class}
+                <strong>Class:</strong> <span className="text-primary">{character.class}</span>
               </div>
               <div className="info-item">
-                <strong>Background:</strong> {character.background}
+                <strong>Background:</strong> <span className="text-primary">{character.background}</span>
               </div>
               {character.alignment && (
                 <div className="info-item">
-                  <strong>Alignment:</strong> {character.alignment}
+                  <strong>Alignment:</strong> <span className="text-primary">{character.alignment}</span>
                 </div>
               )}
               <div className="info-item">
-                <strong>Level:</strong> {character.level}
+                <strong>Level:</strong> <span className="text-primary">{character.level}</span>
               </div>
               <div className="info-item">
-                <strong>Proficiency Bonus:</strong> +{character.proficiencyBonus}
+                <strong>Proficiency Bonus:</strong> <span className="text-primary">+{character.proficiencyBonus}</span>
               </div>
             </div>
           </div>
@@ -278,7 +281,7 @@ const CharacterDetail: React.FC = () => {
               <h2>Traits</h2>
               <ul className="trait-list">
                 {character.traits.map((trait, index) => (
-                  <li key={index}>{trait}</li>
+                  <li key={index} className="text-primary">{trait}</li>
                 ))}
               </ul>
             </div>
@@ -288,7 +291,7 @@ const CharacterDetail: React.FC = () => {
             <div className="info-section">
               <h2>Languages</h2>
               <div className="language-list">
-                {character.languages.join(", ")}
+                <span className="text-primary">{character.languages.join(", ")}</span>
               </div>
             </div>
           )}
@@ -298,7 +301,7 @@ const CharacterDetail: React.FC = () => {
               <h2>Equipment</h2>
               <ul className="equipment-list">
                 {character.equipment.map((item, index) => (
-                  <li key={index}>{item}</li>
+                  <li key={index} className="text-primary">{item}</li>
                 ))}
               </ul>
             </div>
@@ -310,7 +313,7 @@ const CharacterDetail: React.FC = () => {
             {transformedActions.length > 0 ? (
               <ActionList actions={transformedActions} />
             ) : (
-              <div className="text-center py-4 text-gray-500">
+              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
                 No actions available for this character.
               </div>
             )}
@@ -319,7 +322,7 @@ const CharacterDetail: React.FC = () => {
       </div>
 
       <div className="character-meta">
-        <small>
+        <small className="text-gray-600 dark:text-gray-400">
           Created: {new Date(character.createdAt).toLocaleDateString()}
         </small>
       </div>

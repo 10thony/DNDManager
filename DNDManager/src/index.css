@@ -24,6 +24,34 @@ code {
     monospace;
 }
 
+/* Global form styles */
+.form-input, .form-select {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  font-size: 1rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  @apply transition-colors duration-200;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px #2563eb22;
+}
+
+.dark .form-input, .dark .form-select {
+  background: #23272f;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+.dark .form-input:focus, .dark .form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px #3b82f622;
+}
+
 /* App layout styles for side navigation */
 .app {
   display: flex;

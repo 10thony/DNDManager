@@ -97,7 +97,7 @@ export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
               type="text"
               value={mapName}
               onChange={(e) => setMapName(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="form-input"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -109,7 +109,7 @@ export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
                 max="30"
                 value={width}
                 onChange={(e) => setWidth(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
-                className="w-full p-2 border rounded"
+                className="form-input"
               />
             </div>
             <div>
@@ -120,7 +120,7 @@ export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
                 max="30"
                 value={height}
                 onChange={(e) => setHeight(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
-                className="w-full p-2 border rounded"
+                className="form-input"
               />
             </div>
           </div>
@@ -145,7 +145,7 @@ export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
           <select
             value={selectedState}
             onChange={(e) => setSelectedState(e.target.value as CellState)}
-            className="p-2 border rounded"
+            className="form-select"
           >
             <option value="inbounds">Inbounds</option>
             <option value="outbounds">Outbounds</option>

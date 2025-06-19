@@ -242,8 +242,11 @@
   .character-meta {
     text-align: center;
     padding-top: 1rem;
-    border-top: 1px solid #dee2e6;
-    color: #6c757d;
+    @apply border-t border-gray-300 transition-colors duration-200;
+  }
+  
+  .dark .character-meta {
+    @apply border-gray-600;
   }
   
   .loading,
@@ -251,10 +254,32 @@
     text-align: center;
     padding: 3rem;
     font-size: 1.1rem;
+    @apply transition-colors duration-200;
+  }
+  
+  .loading {
+    @apply text-gray-700;
+  }
+  
+  .dark .loading {
+    @apply text-gray-300;
   }
   
   .error {
-    color: #dc3545;
+    @apply text-red-500;
+  }
+  
+  .dark .error {
+    @apply text-red-400;
+  }
+  
+  /* Text utility classes for dark mode */
+  .text-primary {
+    @apply text-gray-700 transition-colors duration-200;
+  }
+  
+  .dark .text-primary {
+    @apply text-gray-200;
   }
   
   @media (max-width: 768px) {

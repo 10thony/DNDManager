@@ -6,63 +6,65 @@ interface ActionProps {
 }
 
 const Action: React.FC<ActionProps> = ({ action }) => {
-  const getActionTypeColor = (type: string) => {
+  const getActionTypeBadge = (type: string) => {
     switch (type) {
       case 'MELEE_ATTACK':
       case 'RANGED_ATTACK':
-        return 'bg-red-100 text-red-800';
+        return 'action-type-badge';
       case 'SPELL':
-        return 'bg-blue-100 text-blue-800';
+        return 'action-type-badge';
       case 'CLASS_FEATURE':
-        return 'bg-purple-100 text-purple-800';
+        return 'action-type-badge';
       case 'COMMONLY_AVAILABLE_UTILITY':
-        return 'bg-green-100 text-green-800';
+        return 'action-type-badge';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'action-type-badge';
     }
   };
 
-  const getActionCostColor = (cost: string) => {
+  const getActionCostBadge = (cost: string) => {
     switch (cost) {
       case 'Action':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'action-cost-badge';
       case 'Bonus Action':
-        return 'bg-orange-100 text-orange-800';
+        return 'action-cost-badge';
       case 'Reaction':
-        return 'bg-pink-100 text-pink-800';
+        return 'action-cost-badge';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'action-cost-badge';
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold text-gray-900">{action.name}</h3>
+    <div className="action-card">
+      <div className="action-header">
+        <div className="action-title-section">
+          <h3 className="action-name">{action.name}</h3>
+        </div>
         <div className="flex gap-2">
-          <span className={`px-2 py-1 rounded text-xs font-medium ${getActionTypeColor(action.type)}`}>
+          <span className={getActionTypeBadge(action.type)}>
             {action.type.replace(/_/g, ' ')}
           </span>
-          <span className={`px-2 py-1 rounded text-xs font-medium ${getActionCostColor(action.actionCost)}`}>
+          <span className={getActionCostBadge(action.actionCost)}>
             {action.actionCost}
           </span>
         </div>
       </div>
 
-      <p className="text-gray-600 text-sm mb-3">{action.description}</p>
+      <p className="action-description">{action.description}</p>
 
       {action.type === 'SPELL' && 'spellLevel' in action && (
-        <div className="mb-2">
-          <span className="text-sm font-medium text-gray-700">Level {action.spellLevel}</span>
+        <div className="spell-info mb-2">
+          <span className="spell-level">Level {action.spellLevel}</span>
           {action.requiresConcentration && (
-            <span className="ml-2 text-sm text-purple-600">(Concentration)</span>
+            <span className="concentration-badge ml-2">(Concentration)</span>
           )}
         </div>
       )}
 
       {action.type === 'CLASS_FEATURE' && 'className' in action && (
-        <div className="mb-2">
-          <span className="text-sm font-medium text-gray-700">{action.className} Feature</span>
+        <div className="class-info mb-2">
+          <span className="class-name">{action.className} Feature</span>
           {action.usesPer && (
             <span className="ml-2 text-sm text-gray-500">
               ({action.maxUses} uses per {action.usesPer})
@@ -72,11 +74,11 @@ const Action: React.FC<ActionProps> = ({ action }) => {
       )}
 
       {'damageRolls' in action && action.damageRolls && action.damageRolls.length > 0 && (
-        <div className="mt-2">
+        <div className="action-details mt-2">
           <h4 className="text-sm font-medium text-gray-700 mb-1">Damage:</h4>
           <div className="flex flex-wrap gap-2">
             {action.damageRolls.map((roll, index) => (
-              <div key={index} className="bg-gray-50 px-2 py-1 rounded text-sm">
+              <div key={index} className="bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded text-sm">
                 {roll.dice.count}d{roll.dice.type} + {roll.modifier} {roll.damageType.toLowerCase()}
               </div>
             ))}
@@ -85,7 +87,7 @@ const Action: React.FC<ActionProps> = ({ action }) => {
       )}
 
       {action.sourceBook && (
-        <div className="mt-2 text-xs text-gray-500">
+        <div className="source-book mt-2">
           Source: {action.sourceBook}
         </div>
       )}
