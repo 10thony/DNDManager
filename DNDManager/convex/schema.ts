@@ -16,7 +16,10 @@ export default defineSchema({
     class: v.string(),
     background: v.string(),
     alignment: v.optional(v.string()),
-    characterType: v.union(v.literal("PlayerCharacter"), v.literal("NonPlayerCharacter")),
+    characterType: v.union(
+      v.literal("PlayerCharacter"),
+      v.literal("NonPlayerCharacter")
+    ),
     abilityScores: v.object({
       strength: v.float64(),
       dexterity: v.float64(),
@@ -32,11 +35,22 @@ export default defineSchema({
     languages: v.optional(v.array(v.string())),
     equipment: v.optional(v.array(v.string())),
     level: v.float64(),
+    experiencePoints: v.number(),
+    xpHistory: v.optional(
+      v.array(
+        v.object({
+          amount: v.number(),
+          source: v.string(),
+          date: v.number(),
+        })
+      )
+    ),
     hitPoints: v.float64(),
     armorClass: v.float64(),
     proficiencyBonus: v.float64(),
-    actions: v.array(v.id("actions")), // Reference to available actions
+    actions: v.array(v.id("actions")),
     createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
   }),
   actions: defineTable({
     name: v.string(),
@@ -60,7 +74,6 @@ export default defineSchema({
     ),
     requiresConcentration: v.boolean(),
     sourceBook: v.string(),
-    // Attack specific fields
     attackBonusAbilityScore: v.optional(v.string()),
     isProficient: v.optional(v.boolean()),
     damageRolls: v.optional(v.array(v.object({
@@ -92,7 +105,6 @@ export default defineSchema({
         v.literal("THUNDER")
       )
     }))),
-    // Spell specific fields
     spellLevel: v.optional(v.union(
       v.literal(0),
       v.literal(1),
@@ -118,7 +130,6 @@ export default defineSchema({
       onSave: v.string()
     })),
     spellEffectDescription: v.optional(v.string()),
-    // Class feature specific fields
     className: v.optional(v.string()),
     usesPer: v.optional(v.union(
       v.literal("Short Rest"),
@@ -177,7 +188,7 @@ export default defineSchema({
         v.literal("occupied")
       )
     })),
-    createdBy: v.string(), // clerkId of the creator
+    createdBy: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
@@ -203,24 +214,85 @@ export default defineSchema({
     interactionsAtLocation: v.array(v.id("interactions")),
     imageUrls: v.array(v.string()),
     secrets: v.string(),
-    mapId: v.optional(v.id("maps")), // Use v.optional for the reference to the map
-    creatorId: v.string(), // clerkId of the creator
+    mapId: v.optional(v.id("maps")),
+    creatorId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
   campaigns: defineTable({
     name: v.string(),
-    creatorId: v.string(), // clerkId of the creator
+    creatorId: v.string(),
     createdAt: v.number(),
   }),
   npcs: defineTable({
     name: v.string(),
-    creatorId: v.string(), // clerkId of the creator
+    creatorId: v.string(),
     createdAt: v.number(),
+  }),
+  quests: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    campaignId: v.optional(v.id("campaigns")),
+    creatorId: v.string(),
+    status: v.union(
+      v.literal("NotStarted"),
+      v.literal("InProgress"),
+      v.literal("Completed"),
+      v.literal("Failed")
+    ),
+    locationId: v.optional(v.id("locations")),
+    taskIds: v.array(v.id("questTasks")),
+    requiredItemIds: v.optional(v.array(v.id("items"))),
+    involvedNpcIds: v.optional(v.array(v.id("npcs"))),
+    participantIds: v.optional(v.array(v.id("playerCharacters"))),
+    interactions: v.optional(v.array(v.id("interactions"))),
+    rewards: v.optional(
+      v.object({
+        xp: v.optional(v.number()),
+        gold: v.optional(v.number()),
+        itemIds: v.optional(v.array(v.id("items"))),
+      })
+    ),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  questTasks: defineTable({
+    questId: v.id("quests"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    type: v.union(
+      v.literal("Fetch"),
+      v.literal("Kill"),
+      v.literal("Speak"),
+      v.literal("Explore"),
+      v.literal("Puzzle"),
+      v.literal("Deliver"),
+      v.literal("Escort"),
+      v.literal("Custom")
+    ),
+    status: v.union(
+      v.literal("NotStarted"),
+      v.literal("InProgress"),
+      v.literal("Completed"),
+      v.literal("Failed")
+    ),
+    dependsOn: v.optional(v.array(v.id("questTasks"))),
+    assignedTo: v.optional(v.array(v.id("playerCharacters"))),
+    locationId: v.optional(v.id("locations")),
+    targetNpcId: v.optional(v.id("npcs")),
+    requiredItemIds: v.optional(v.array(v.id("items"))),
+    interactions: v.optional(v.array(v.id("interactions"))),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
   }),
   interactions: defineTable({
     name: v.string(),
-    creatorId: v.string(), // clerkId of the creator
+    description: v.optional(v.string()),
+    creatorId: v.string(),
+    questId: v.optional(v.id("quests")),
+    questTaskId: v.optional(v.id("questTasks")),
+    playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
+    npcIds: v.optional(v.array(v.id("npcs"))),
     createdAt: v.number(),
   }),
 });

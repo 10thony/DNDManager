@@ -16,9 +16,12 @@ import type {
 import type * as actions from "../actions.js";
 import type * as characters from "../characters.js";
 import type * as init from "../init.js";
+import type * as interactions from "../interactions.js";
 import type * as items from "../items.js";
 import type * as locations from "../locations.js";
 import type * as maps from "../maps.js";
+import type * as questTasks from "../questTasks.js";
+import type * as quests from "../quests.js";
 import type * as users from "../users.js";
 
 /**
@@ -33,9 +36,12 @@ declare const fullApi: ApiFromModules<{
   actions: typeof actions;
   characters: typeof characters;
   init: typeof init;
+  interactions: typeof interactions;
   items: typeof items;
   locations: typeof locations;
   maps: typeof maps;
+  questTasks: typeof questTasks;
+  quests: typeof quests;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

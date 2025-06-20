@@ -220,6 +220,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
         savingThrows: [], // Will be populated based on class
         proficiencies: [], // Will be populated based on race/class
         level: 1,
+        experiencePoints: 0, // Starting experience points for level 1
         hitPoints: 8, // Base HP, will be calculated based on class and constitution
         armorClass: 10, // Base AC, will be calculated based on dexterity
         proficiencyBonus: 2, // Base proficiency bonus for level 1

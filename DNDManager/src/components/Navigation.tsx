@@ -66,6 +66,15 @@ const Navigation: React.FC<NavigationProps> = ({ isCollapsed, setIsCollapsed }) 
               {isCollapsed ? "🗺️" : "Locations"}
             </Link>
             <Link
+              to="/quests"
+              className={`nav-link ${
+                location.pathname.startsWith("/quests") ? "active" : ""
+              }`}
+              title="Quests"
+            >
+              {isCollapsed ? "📜" : "Quests"}
+            </Link>
+            <Link
               to="/maps"
               className={`nav-link ${
                 location.pathname.startsWith("/maps") ? "active" : ""

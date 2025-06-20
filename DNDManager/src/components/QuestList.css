@@ -1,0 +1,322 @@
+.quest-list {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  @apply transition-colors duration-200;
+}
+
+.quest-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.quest-list-header h1 {
+  margin: 0;
+  @apply text-gray-700 text-2xl font-semibold transition-colors duration-200;
+}
+
+.dark .quest-list-header h1 {
+  @apply text-gray-200;
+}
+
+.quests-subtitle {
+  margin: 0.5rem 0 0 0;
+  @apply text-gray-600 text-sm transition-colors duration-200;
+}
+
+.dark .quests-subtitle {
+  @apply text-gray-400;
+}
+
+.create-quest-btn {
+  @apply bg-blue-600 hover:bg-blue-700 text-white border-none px-6 py-3 rounded-lg text-base font-medium cursor-pointer transition-colors duration-200;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dark .create-quest-btn {
+  @apply bg-blue-500 hover:bg-blue-600;
+}
+
+.button-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.quests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.quest-card {
+  @apply bg-white border border-gray-200 rounded-xl p-6 transition-all duration-200 shadow-sm;
+  cursor: default;
+}
+
+.dark .quest-card {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.quest-card:hover {
+  @apply transform -translate-y-1 shadow-lg;
+}
+
+.dark .quest-card:hover {
+  @apply shadow-xl shadow-gray-900/50;
+}
+
+.quest-card:hover {
+  @apply border-blue-500;
+}
+
+.quest-card-content {
+  cursor: pointer;
+}
+
+.quest-card-content:hover {
+  @apply text-blue-600;
+}
+
+.dark .quest-card-content:hover {
+  @apply text-blue-400;
+}
+
+.quest-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.quest-name {
+  margin: 0;
+  @apply text-gray-700 text-xl font-semibold flex-1 transition-colors duration-200;
+}
+
+.dark .quest-name {
+  @apply text-gray-200;
+}
+
+.quest-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-not-started {
+  @apply bg-gray-100 text-gray-700;
+}
+
+.dark .status-not-started {
+  @apply bg-gray-700 text-gray-300;
+}
+
+.status-in-progress {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.dark .status-in-progress {
+  @apply bg-blue-900 text-blue-300;
+}
+
+.status-completed {
+  @apply bg-green-100 text-green-700;
+}
+
+.dark .status-completed {
+  @apply bg-green-900 text-green-300;
+}
+
+.status-failed {
+  @apply bg-red-100 text-red-700;
+}
+
+.dark .status-failed {
+  @apply bg-red-900 text-red-300;
+}
+
+.quest-description {
+  @apply text-gray-600 mb-4 leading-relaxed text-sm transition-colors duration-200;
+}
+
+.dark .quest-description {
+  @apply text-gray-400;
+}
+
+.quest-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  @apply text-gray-500 transition-colors duration-200;
+}
+
+.dark .quest-meta {
+  @apply text-gray-400;
+}
+
+.quest-tasks {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quest-tasks::before {
+  content: "📋";
+  font-size: 1rem;
+}
+
+.quest-date {
+  font-style: italic;
+}
+
+.quest-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid;
+  @apply border-gray-200;
+}
+
+.dark .quest-actions {
+  @apply border-gray-700;
+}
+
+.edit-button,
+.delete-button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.edit-button {
+  @apply bg-blue-600 hover:bg-blue-700 text-white;
+}
+
+.dark .edit-button {
+  @apply bg-blue-500 hover:bg-blue-600;
+}
+
+.delete-button {
+  @apply bg-red-600 hover:bg-red-700 text-white;
+}
+
+.dark .delete-button {
+  @apply bg-red-500 hover:bg-red-600;
+}
+
+.delete-button:disabled {
+  @apply bg-gray-400 cursor-not-allowed;
+}
+
+.dark .delete-button:disabled {
+  @apply bg-gray-600;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  @apply text-gray-600 transition-colors duration-200;
+}
+
+.dark .empty-state {
+  @apply text-gray-400;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  margin: 0 0 0.5rem 0;
+  @apply text-gray-700 text-xl font-semibold transition-colors duration-200;
+}
+
+.dark .empty-state h3 {
+  @apply text-gray-200;
+}
+
+.empty-state p {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  gap: 1rem;
+  @apply text-gray-600 transition-colors duration-200;
+}
+
+.dark .loading-state {
+  @apply text-gray-400;
+}
+
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid;
+  @apply border-gray-300 border-t-blue-600 rounded-full animate-spin;
+}
+
+.dark .loading-spinner {
+  @apply border-gray-600 border-t-blue-400;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .quest-list {
+    padding: 1rem;
+  }
+  
+  .quest-list-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quest-list-header h1 {
+    text-align: center;
+  }
+  
+  .quests-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quest-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .quest-status {
+    align-self: flex-start;
+  }
+} 

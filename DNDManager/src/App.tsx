@@ -16,6 +16,9 @@ import LocationDetails from "./components/LocationDetails";
 import AppInitializer from "./components/AppInitializer";
 import ActionCreationForm from "./components/ActionCreationForm";
 import ActionsList from "./components/ActionsList";
+import QuestList from "./components/QuestList";
+import QuestDetail from "./components/QuestDetail";
+import QuestTaskCreationForm from "./components/QuestTaskCreationForm";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
@@ -94,6 +97,21 @@ const App: React.FC = () => {
                   <Route path="/actions" element={
                     <ProtectedRoute>
                       <ActionsList />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/quests" element={
+                    <ProtectedRoute>
+                      <QuestList />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/quests/:questId" element={
+                    <ProtectedRoute>
+                      <QuestDetail />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/quests/:questId/tasks/new" element={
+                    <ProtectedRoute>
+                      <QuestTaskCreationForm />
                     </ProtectedRoute>
                   } />
                   <Route path="/" element={<Navigate to="/characters" replace />} />
