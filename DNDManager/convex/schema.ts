@@ -221,8 +221,17 @@ export default defineSchema({
   }),
   campaigns: defineTable({
     name: v.string(),
-    creatorId: v.string(),
+    creatorId: v.id("users"),
+    description: v.optional(v.string()),
+    worldSetting: v.optional(v.string()),
+    startDate: v.optional(v.number()),
+    participantPlayerCharacterIds: v.optional(
+      v.array(v.id("playerCharacters"))
+    ),
+    participantUserIds: v.optional(v.array(v.id("users"))),
+    tags: v.optional(v.array(v.id("tags"))),
     createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
   }),
   npcs: defineTable({
     name: v.string(),
@@ -294,5 +303,321 @@ export default defineSchema({
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     npcIds: v.optional(v.array(v.id("npcs"))),
     createdAt: v.number(),
+  }),
+  sessions: defineTable({
+    campaignId: v.id("campaigns"),
+    date: v.number(),
+    participantPlayerCharacterIds: v.array(v.id("playerCharacters")),
+    participantUserIds: v.array(v.id("users")),
+    summary: v.optional(v.string()),
+    xpAwards: v.optional(
+      v.array(
+        v.object({
+          playerCharacterId: v.id("playerCharacters"),
+          xp: v.number(),
+        })
+      )
+    ),
+    lootAwards: v.optional(
+      v.array(
+        v.object({
+          playerCharacterId: v.id("playerCharacters"),
+          gold: v.optional(v.number()),
+          itemIds: v.optional(v.array(v.id("items"))),
+        })
+      )
+    ),
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  timelineEvents: defineTable({
+    campaignId: v.id("campaigns"),
+    title: v.string(),
+    description: v.string(),
+    date: v.number(),
+    type: v.optional(
+      v.union(
+        v.literal("Battle"),
+        v.literal("Alliance"),
+        v.literal("Discovery"),
+        v.literal("Disaster"),
+        v.literal("Political"),
+        v.literal("Cultural"),
+        v.literal("Custom")
+      )
+    ),
+    relatedLocationIds: v.optional(v.array(v.id("locations"))),
+    relatedNpcIds: v.optional(v.array(v.id("npcs"))),
+    relatedFactionIds: v.optional(v.array(v.id("factions"))),
+    relatedQuestIds: v.optional(v.array(v.id("quests"))),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  factions: defineTable({
+    campaignId: v.id("campaigns"),
+    name: v.string(),
+    description: v.string(),
+    leaderNpcIds: v.optional(v.array(v.id("npcs"))),
+    alliedFactionIds: v.optional(v.array(v.id("factions"))),
+    enemyFactionIds: v.optional(v.array(v.id("factions"))),
+    goals: v.optional(v.array(v.string())),
+    reputation: v.optional(
+      v.array(
+        v.object({
+          playerCharacterId: v.id("playerCharacters"),
+          score: v.number(),
+        })
+      )
+    ),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  monsters: defineTable({
+    // link to campaign
+    campaignId: v.id("campaigns"),
+
+    // basic identification
+    name: v.string(),
+    source: v.optional(v.string()),
+    page: v.optional(v.string()),
+
+    // use our shared size type here
+    size: v.union(
+      v.literal("Tiny"),
+      v.literal("Small"),
+      v.literal("Medium"),
+      v.literal("Large"),
+      v.literal("Huge"),
+      v.literal("Gargantuan")
+    ),
+    type: v.string(),
+    tags: v.optional(v.array(v.string())),
+    alignment: v.string(),
+
+    armorClass: v.number(),
+    armorType: v.optional(v.string()),
+    hitPoints: v.number(),
+    hitDice: v.object({
+      count: v.number(),
+      die: v.union(
+        v.literal("d4"),
+        v.literal("d6"),
+        v.literal("d8"),
+        v.literal("d10"),
+        v.literal("d12")
+      ),
+    }),
+    proficiencyBonus: v.number(),
+
+    speed: v.object({
+      walk: v.optional(v.string()),
+      swim: v.optional(v.string()),
+      fly: v.optional(v.string()),
+      burrow: v.optional(v.string()),
+      climb: v.optional(v.string()),
+    }),
+
+    abilityScores: v.object({
+      strength: v.number(),
+      dexterity: v.number(),
+      constitution: v.number(),
+      intelligence: v.number(),
+      wisdom: v.number(),
+      charisma: v.number(),
+    }),
+
+    savingThrows: v.optional(v.array(v.string())),
+    skills: v.optional(v.array(v.string())),
+
+    damageVulnerabilities: v.optional(v.array(v.string())),
+    damageResistances: v.optional(v.array(v.string())),
+    damageImmunities: v.optional(v.array(v.string())),
+    conditionImmunities: v.optional(v.array(v.string())),
+
+    senses: v.object({
+      darkvision: v.optional(v.string()),
+      blindsight: v.optional(v.string()),
+      tremorsense: v.optional(v.string()),
+      truesight: v.optional(v.string()),
+      passivePerception: v.number(),
+    }),
+
+    languages: v.optional(v.string()),
+    challengeRating: v.string(),
+    experiencePoints: v.optional(v.number()),
+
+    traits: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          description: v.string(),
+        })
+      )
+    ),
+    actions: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          description: v.string(),
+        })
+      )
+    ),
+    reactions: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          description: v.string(),
+        })
+      )
+    ),
+
+    legendaryActions: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          description: v.string(),
+        })
+      )
+    ),
+    lairActions: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          description: v.string(),
+        })
+      )
+    ),
+    regionalEffects: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          description: v.string(),
+        })
+      )
+    ),
+
+    environment: v.optional(v.array(v.string())),
+
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  spells: defineTable({
+    campaignId: v.id("campaigns"),
+    name: v.string(),
+    level: v.union(
+      v.literal(0),
+      v.literal(1),
+      v.literal(2),
+      v.literal(3),
+      v.literal(4),
+      v.literal(5),
+      v.literal(6),
+      v.literal(7),
+      v.literal(8),
+      v.literal(9)
+    ),
+    school: v.union(
+      v.literal("Abjuration"),
+      v.literal("Conjuration"),
+      v.literal("Divination"),
+      v.literal("Enchantment"),
+      v.literal("Evocation"),
+      v.literal("Illusion"),
+      v.literal("Necromancy"),
+      v.literal("Transmutation")
+    ),
+    classes: v.array(v.string()),
+    castingTime: v.string(),
+    range: v.string(),
+    components: v.object({
+      verbal: v.boolean(),
+      somatic: v.boolean(),
+      material: v.optional(v.string()),
+    }),
+    ritual: v.boolean(),
+    concentration: v.boolean(),
+    duration: v.string(),
+    description: v.string(),
+    higherLevel: v.optional(v.string()),
+    source: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  deities: defineTable({
+    campaignId: v.id("campaigns"),
+    name: v.string(),
+    alignment: v.string(),
+    domains: v.array(v.string()),
+    symbol: v.string(),
+    description: v.string(),
+    relationships: v.optional(
+      v.array(
+        v.object({
+          deityId: v.id("deities"),
+          relationship: v.string(),
+        })
+      )
+    ),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  journals: defineTable({
+    campaignId: v.id("campaigns"),
+    title: v.string(),
+    content: v.string(),
+    authorUserId: v.id("users"),
+    authorPlayerCharacterId: v.optional(v.id("playerCharacters")),
+    dateCreated: v.number(),
+    lastEdited: v.optional(v.number()),
+  }),
+  mediaAssets: defineTable({
+    campaignId: v.id("campaigns"),
+    name: v.string(),
+    type: v.union(
+      v.literal("Image"),
+      v.literal("Audio"),
+      v.literal("Video"),
+      v.literal("Map"),
+      v.literal("Handout"),
+      v.literal("Other")
+    ),
+    url: v.string(),
+    description: v.optional(v.string()),
+    tags: v.optional(v.array(v.id("tags"))),
+    uploadedBy: v.id("users"),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  storyArcs: defineTable({
+    campaignId: v.id("campaigns"),
+    name: v.string(),
+    description: v.string(),
+    startDate: v.optional(v.number()),
+    endDate: v.optional(v.number()),
+    relatedQuestIds: v.optional(v.array(v.id("quests"))),
+    relatedEventIds: v.optional(v.array(v.id("timelineEvents"))),
+    tags: v.optional(v.array(v.id("tags"))),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  tags: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    color: v.optional(v.string()),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+  }),
+  milestones: defineTable({
+    campaignId: v.id("campaigns"),
+    name: v.string(),
+    description: v.string(),
+    targetDate: v.number(),
+    achieved: v.boolean(),
+    achievedAt: v.optional(v.number()),
+    relatedEventIds: v.optional(v.array(v.id("timelineEvents"))),
+    relatedQuestIds: v.optional(v.array(v.id("quests"))),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
   }),
 });
