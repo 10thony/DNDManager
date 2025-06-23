@@ -21,6 +21,8 @@ import QuestDetail from "./components/QuestDetail";
 import QuestTaskCreationForm from "./components/QuestTaskCreationForm";
 import MonsterList from "./components/MonsterList";
 import MonsterDetail from "./components/MonsterDetail";
+import InteractionList from "./components/InteractionList";
+import InteractionDetail from "./components/InteractionDetail";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
@@ -101,6 +103,16 @@ const App: React.FC = () => {
                       <ActionsList />
                     </ProtectedRoute>
                   } />
+                  <Route path="/interactions" element={
+                    <ProtectedRoute>
+                      <InteractionList />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/interactions/:id" element={
+                    <ProtectedRoute>
+                      <InteractionDetailWrapper />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/quests" element={
                     <ProtectedRoute>
                       <QuestList />
@@ -147,6 +159,13 @@ const ItemDetailsWrapper: React.FC = () => {
   }
 
   return <ItemDetails item={item} />;
+};
+
+// Wrapper component to handle interaction details
+const InteractionDetailWrapper: React.FC = () => {
+  const { id } = useParams();
+
+  return <InteractionDetail interactionId={id as Id<"interactions">} />;
 };
 
 // Wrapper component to handle action creation

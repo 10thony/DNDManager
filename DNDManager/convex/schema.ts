@@ -52,6 +52,48 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
+  npcs: defineTable({
+    name: v.string(),
+    race: v.string(),
+    class: v.string(),
+    background: v.string(),
+    alignment: v.optional(v.string()),
+    characterType: v.union(
+      v.literal("PlayerCharacter"),
+      v.literal("NonPlayerCharacter")
+    ),
+    abilityScores: v.object({
+      strength: v.float64(),
+      dexterity: v.float64(),
+      constitution: v.float64(),
+      intelligence: v.float64(),
+      wisdom: v.float64(),
+      charisma: v.float64(),
+    }),
+    skills: v.array(v.string()),
+    savingThrows: v.array(v.string()),
+    proficiencies: v.array(v.string()),
+    traits: v.optional(v.array(v.string())),
+    languages: v.optional(v.array(v.string())),
+    equipment: v.optional(v.array(v.string())),
+    level: v.float64(),
+    experiencePoints: v.number(),
+    xpHistory: v.optional(
+      v.array(
+        v.object({
+          amount: v.number(),
+          source: v.string(),
+          date: v.number(),
+        })
+      )
+    ),
+    hitPoints: v.float64(),
+    armorClass: v.float64(),
+    proficiencyBonus: v.float64(),
+    actions: v.array(v.id("actions")),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
   actions: defineTable({
     name: v.string(),
     description: v.string(),
@@ -225,18 +267,29 @@ export default defineSchema({
     description: v.optional(v.string()),
     worldSetting: v.optional(v.string()),
     startDate: v.optional(v.number()),
+  
     participantPlayerCharacterIds: v.optional(
       v.array(v.id("playerCharacters"))
     ),
     participantUserIds: v.optional(v.array(v.id("users"))),
     tags: v.optional(v.array(v.id("tags"))),
+
+    locationIds: v.optional(v.array(v.id("locations"))),
+    questIds: v.optional(v.array(v.id("quests"))),
+    sessionIds: v.optional(v.array(v.id("sessions"))),
+    npcIds: v.optional(v.array(v.id("npcs"))),
+    factionIds: v.optional(v.array(v.id("factions"))),
+    monsterIds: v.optional(v.array(v.id("monsters"))),
+    spellIds: v.optional(v.array(v.id("spells"))),
+    deityIds: v.optional(v.array(v.id("deities"))),
+    journalIds: v.optional(v.array(v.id("journals"))),
+    mediaAssetIds: v.optional(v.array(v.id("mediaAssets"))),
+    storyArcIds: v.optional(v.array(v.id("storyArcs"))),
+    milestoneIds: v.optional(v.array(v.id("milestones"))),
+    timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
+  
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
-  }),
-  npcs: defineTable({
-    name: v.string(),
-    creatorId: v.string(),
-    createdAt: v.number(),
   }),
   quests: defineTable({
     name: v.string(),
