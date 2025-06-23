@@ -40,12 +40,27 @@ export const createPlayerCharacter = mutation({
     actions: v.array(v.id("actions")),
   },
   handler: async (ctx, args) => {
-    const characterId = await ctx.db.insert("playerCharacters", {
-      ...args,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-    return characterId;
+    const { characterType, ...characterData } = args;
+    
+    if (characterType === "NonPlayerCharacter") {
+      // Create NPC in the npcs table
+      const npcId = await ctx.db.insert("npcs", {
+        ...characterData,
+        characterType,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      return npcId;
+    } else {
+      // Create player character in the playerCharacters table
+      const characterId = await ctx.db.insert("playerCharacters", {
+        ...characterData,
+        characterType,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      return characterId;
+    }
   },
 });
 

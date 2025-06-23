@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import {
@@ -26,6 +27,7 @@ import "./CharacterCreationForm.css";
 
 const CharacterCreationForm: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
   const createCharacter = useMutation(api.characters.createPlayerCharacter);
 
   const [formData, setFormData] = useState<CharacterFormData>({
@@ -34,6 +36,7 @@ const CharacterCreationForm: React.FC = () => {
     class: "",
     background: "",
     alignment: "",
+    characterType: "PlayerCharacter",
     abilityScores: {
       strength: 10,
       dexterity: 10,
@@ -109,6 +112,9 @@ const CharacterCreationForm: React.FC = () => {
     if (!formData.background) {
       newErrors.background = "Background selection is required";
     }
+    if (!formData.characterType) {
+      newErrors.characterType = "Character type is required";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -153,13 +159,17 @@ const CharacterCreationForm: React.FC = () => {
         savingThrows: getClassSavingThrows(formData.class),
         proficiencies: [], // Could be expanded based on race/class
         level: 1,
+        experiencePoints: 0, // Starting XP for new characters
         hitPoints: calculateHitPoints(
           formData.class,
           finalAbilityScores.constitution
         ),
         armorClass: calculateArmorClass(finalAbilityScores.dexterity),
         proficiencyBonus: getProficiencyBonus(1),
-        actions: [] as Id<"actions">[], // Properly typed empty array of action IDs
+        actions: [] as Id<"actions">[], 
+        characterType: formData.characterType,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       await createCharacter(characterData);
@@ -278,6 +288,23 @@ const CharacterCreationForm: React.FC = () => {
               </select>
             </div>
           </div>
+
+          <div className="form-group">
+            <label htmlFor="characterType">Character Type *</label>
+            <select
+              id="characterType"
+              name="characterType"
+              value={formData.characterType}
+              onChange={handleInputChange}
+              className={errors.characterType ? "error" : ""}
+            >
+              <option value="PlayerCharacter">Player Character</option>
+              <option value="NonPlayerCharacter">Non-Player Character (NPC)</option>
+            </select>
+            {errors.characterType && (
+              <span className="error-message">{errors.characterType}</span>
+            )}
+          </div>
         </div>
 
         {/* Ability Scores */}
@@ -347,7 +374,7 @@ const CharacterCreationForm: React.FC = () => {
         {/* Character Preview */}
         {formData.race && formData.class && formData.background && (
           <div className="form-section">
-            <h2>Character Preview</h2>
+            <h2>Character Preview - {formData.characterType === "PlayerCharacter" ? "Player Character" : "NPC"}</h2>
             <div className="character-preview">
               <div className="preview-stats">
                 <div className="stat">
@@ -361,6 +388,11 @@ const CharacterCreationForm: React.FC = () => {
                 <div className="stat">
                   <strong>Proficiency Bonus:</strong> +{getProficiencyBonus(1)}
                 </div>
+                {formData.characterType === "PlayerCharacter" && (
+                  <div className="stat">
+                    <strong>Starting Experience Points:</strong> 0
+                  </div>
+                )}
               </div>
               <div className="preview-proficiencies">
                 <div>
@@ -398,7 +430,10 @@ const CharacterCreationForm: React.FC = () => {
             disabled={isSubmitting}
             className="btn btn-primary"
           >
-            {isSubmitting ? "Creating..." : "Create Character"}
+            {isSubmitting 
+              ? `Creating ${formData.characterType === "PlayerCharacter" ? "Character" : "NPC"}...` 
+              : `Create ${formData.characterType === "PlayerCharacter" ? "Character" : "NPC"}`
+            }
           </button>
         </div>
       </form>

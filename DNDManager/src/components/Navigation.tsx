@@ -101,6 +101,15 @@ const Navigation: React.FC<NavigationProps> = ({ isCollapsed, setIsCollapsed }) 
             >
               {isCollapsed ? "👹" : "Monsters"}
             </Link>
+            <Link
+              to="/npcs"
+              className={`nav-link ${
+                location.pathname.startsWith("/npcs") ? "active" : ""
+              }`}
+              title="NPCs"
+            >
+              {isCollapsed ? "👤" : "NPCs"}
+            </Link>
             <DarkModeToggle isCollapsed={isCollapsed} />
             <SignOutButton>
               <button className="nav-link sign-out" title="Sign Out">

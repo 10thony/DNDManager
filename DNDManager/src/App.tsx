@@ -13,7 +13,6 @@ import { Maps } from "./pages/Maps";
 import LocationList from "./components/LocationList";
 import LocationForm from "./components/LocationForm";
 import LocationDetails from "./components/LocationDetails";
-import AppInitializer from "./components/AppInitializer";
 import ActionCreationForm from "./components/ActionCreationForm";
 import ActionsList from "./components/ActionsList";
 import QuestList from "./components/QuestList";
@@ -23,6 +22,7 @@ import MonsterList from "./components/MonsterList";
 import MonsterDetail from "./components/MonsterDetail";
 import InteractionList from "./components/InteractionList";
 import InteractionDetail from "./components/InteractionDetail";
+import NPCsList from "./components/NPCsList";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
@@ -52,7 +52,6 @@ const App: React.FC = () => {
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <ConvexProvider client={convex}>
         <DarkModeProvider>
-          <AppInitializer />
           <Router>
             <div className="app">
               <Navigation isCollapsed={navCollapsed} setIsCollapsed={setNavCollapsed} />
@@ -136,6 +135,11 @@ const App: React.FC = () => {
                   <Route path="/monsters/:id" element={
                     <ProtectedRoute>
                       <MonsterDetail />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/npcs" element={
+                    <ProtectedRoute>
+                      <NPCsList />
                     </ProtectedRoute>
                   } />
                   <Route path="/" element={<Navigate to="/characters" replace />} />
