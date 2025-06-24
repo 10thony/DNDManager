@@ -23,6 +23,9 @@ import MonsterDetail from "./components/MonsterDetail";
 import InteractionList from "./components/InteractionList";
 import InteractionDetail from "./components/InteractionDetail";
 import NPCsList from "./components/NPCsList";
+import FactionList from "./components/FactionList";
+import FactionDetail from "./components/FactionDetail";
+import FactionCreationForm from "./components/FactionCreationForm";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
@@ -140,6 +143,21 @@ const App: React.FC = () => {
                   <Route path="/npcs" element={
                     <ProtectedRoute>
                       <NPCsList />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/factions" element={
+                    <ProtectedRoute>
+                      <FactionList />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/factions/new" element={
+                    <ProtectedRoute>
+                      <FactionCreationForm />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/factions/:factionId" element={
+                    <ProtectedRoute>
+                      <FactionDetail />
                     </ProtectedRoute>
                   } />
                   <Route path="/" element={<Navigate to="/characters" replace />} />

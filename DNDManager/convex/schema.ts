@@ -49,6 +49,7 @@ export default defineSchema({
     armorClass: v.float64(),
     proficiencyBonus: v.float64(),
     actions: v.array(v.id("actions")),
+    factionId: v.optional(v.id("factions")),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),

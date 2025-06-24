@@ -1,0 +1,12 @@
+can you use the schema declarations to create the following components
+
+factions - ❌ Missing:
+FactionList component
+FactionDetail component
+FactionForm/FactionCreationForm component
+
+make sure the create FactionCreationForm is reachable from the FactionListand the FactionList is reachable from the existing navigation component. all themeing must adhere to the standards set in place in the app. (see the css files ive added as context and the other components for reference on styling layout etc)
+
+make sure you update the player character form and schema to include a faction selection element as well as the character card in the character list screen to display the faction
+
+let me know if you need any additonal context before proceeding
