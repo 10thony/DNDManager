@@ -1,4 +1,6 @@
 import React from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import type { PlayerCharacter } from "../types/character";
 
 interface CharacterCardProps {
@@ -7,6 +9,10 @@ interface CharacterCardProps {
 }
 
 const CharacterCard: React.FC<CharacterCardProps> = ({ character, onClick }) => {
+  // const factions = useQuery(api.factions.getFactionsByIds, {
+  //   ids: character.factionId ? [character.factionId as any] : [],
+  // });
+
   const getAbilityModifier = (score: number): number => {
     return Math.floor((score - 10) / 2);
   };
@@ -14,6 +20,8 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, onClick }) => 
   const formatModifier = (modifier: number): string => {
     return modifier >= 0 ? `+${modifier}` : `${modifier}`;
   };
+
+  // const faction = factions && factions.length > 0 ? factions[0] : null;
 
   return (
     <div
@@ -27,6 +35,11 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, onClick }) => 
             Level {character.level} {character.race} {character.class}
           </p>
           <p className="text-sm text-gray-500">{character.background}</p>
+          {/* {faction && (
+            <p className="text-sm text-blue-600 font-medium">
+              🏛️ {faction.name}
+            </p>
+          )} */}
         </div>
         <div className="text-right">
           <div className="text-sm text-gray-500">AC</div>
@@ -38,12 +51,12 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, onClick }) => 
         <div className="text-center">
           <div className="text-sm text-gray-500">HP</div>
           <div className="font-semibold">
-            {character.hitPoints.current}/{character.hitPoints.maximum}
+            {character.hitPoints}
           </div>
         </div>
         <div className="text-center">
-          <div className="text-sm text-gray-500">Speed</div>
-          <div className="font-semibold">{character.speed} ft</div>
+          <div className="text-sm text-gray-500">AC</div>
+          <div className="font-semibold">{character.armorClass}</div>
         </div>
         <div className="text-center">
           <div className="text-sm text-gray-500">Prof. Bonus</div>
@@ -76,7 +89,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, onClick }) => 
         </div>
       )}
 
-      {character.languages.length > 0 && (
+      {character.languages && character.languages.length > 0 && (
         <div className="mb-2">
           <div className="text-sm text-gray-500 mb-1">Languages:</div>
           <div className="text-sm text-gray-700">

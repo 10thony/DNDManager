@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
@@ -29,6 +29,7 @@ const CharacterCreationForm: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const createCharacter = useMutation(api.characters.createPlayerCharacter);
+  // const factions = useQuery(api.factions?.getFactions);
 
   const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
@@ -45,6 +46,7 @@ const CharacterCreationForm: React.FC = () => {
       wisdom: 10,
       charisma: 10,
     },
+    factionId: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -168,6 +170,7 @@ const CharacterCreationForm: React.FC = () => {
         proficiencyBonus: getProficiencyBonus(1),
         actions: [] as Id<"actions">[], 
         characterType: formData.characterType,
+        factionId: formData.factionId ? (formData.factionId as Id<"factions">) : undefined,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -305,6 +308,25 @@ const CharacterCreationForm: React.FC = () => {
               <span className="error-message">{errors.characterType}</span>
             )}
           </div>
+
+          {/* {factions && factions.length > 0 && (
+            <div className="form-group">
+              <label htmlFor="factionId">Faction (Optional)</label>
+              <select
+                id="factionId"
+                name="factionId"
+                value={formData.factionId}
+                onChange={handleInputChange}
+              >
+                <option value="">No Faction</option>
+                {factions.map((faction) => (
+                  <option key={faction._id} value={faction._id}>
+                    {faction.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )} */}
         </div>
 
         {/* Ability Scores */}

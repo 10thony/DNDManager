@@ -26,6 +26,7 @@ export interface PlayerCharacter {
   hitPoints: number;
   armorClass: number;
   proficiencyBonus: number;
+  factionId?: string;
   createdAt: number;
 }
 
@@ -37,6 +38,7 @@ export interface CharacterFormData {
   alignment: string;
   characterType: "PlayerCharacter" | "NonPlayerCharacter";
   abilityScores: AbilityScores;
+  factionId?: string;
 }
 
 export const RACES = [

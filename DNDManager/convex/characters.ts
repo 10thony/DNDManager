@@ -38,6 +38,7 @@ export const createPlayerCharacter = mutation({
     armorClass: v.float64(),
     proficiencyBonus: v.float64(),
     actions: v.array(v.id("actions")),
+    factionId: v.optional(v.id("factions")),
   },
   handler: async (ctx, args) => {
     const { characterType, ...characterData } = args;
@@ -122,6 +123,7 @@ export const updateCharacter = mutation({
     armorClass: v.optional(v.float64()),
     proficiencyBonus: v.optional(v.float64()),
     actions: v.optional(v.array(v.id("actions"))),
+    factionId: v.optional(v.id("factions")),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
