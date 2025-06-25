@@ -21,11 +21,6 @@ export const createFaction = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
     const factionId = await ctx.db.insert("factions", {
       ...args,
       createdAt: Date.now(),
@@ -41,11 +36,6 @@ export const getFactions = query({
     campaignId: v.optional(v.id("campaigns")),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
     const factions = await ctx.db.query("factions").collect();
     
     // Filter by campaign if provided
@@ -92,11 +82,6 @@ export const getFactionById = query({
     factionId: v.id("factions"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
     const faction = await ctx.db.get(args.factionId);
     if (!faction) {
       throw new Error("Faction not found");
@@ -149,11 +134,6 @@ export const updateFaction = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
     const { factionId, ...updateData } = args;
     
     await ctx.db.patch(factionId, {
@@ -170,11 +150,6 @@ export const deleteFaction = mutation({
     factionId: v.id("factions"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
     await ctx.db.delete(args.factionId);
   },
 });
@@ -184,11 +159,6 @@ export const getFactionsByIds = query({
     ids: v.array(v.id("factions")),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
     const factions = await Promise.all(
       args.ids.map(id => ctx.db.get(id))
     );

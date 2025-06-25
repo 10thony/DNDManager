@@ -16,6 +16,7 @@ import type {
 import type * as actions from "../actions.js";
 import type * as campaigns from "../campaigns.js";
 import type * as characters from "../characters.js";
+import type * as factions from "../factions.js";
 import type * as init from "../init.js";
 import type * as interactions from "../interactions.js";
 import type * as items from "../items.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   actions: typeof actions;
   campaigns: typeof campaigns;
   characters: typeof characters;
+  factions: typeof factions;
   init: typeof init;
   interactions: typeof interactions;
   items: typeof items;
