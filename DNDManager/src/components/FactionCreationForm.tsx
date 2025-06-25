@@ -15,9 +15,14 @@ const FactionCreationForm: React.FC<FactionCreationFormProps> = ({
   const navigate = useNavigate();
   const createFaction = useMutation(api.factions.createFaction);
   const updateFaction = useMutation(api.factions.updateFaction);
-  const faction = useQuery(api.factions.getFactionById, {
-    factionId: editingFactionId!,
-  });
+  const faction = useQuery(
+    api.factions.getFactionById,
+    editingFactionId ? { factionId: editingFactionId } : "skip"
+  );
+
+  // Fetch NPCs and factions for dropdowns
+  const npcs = useQuery(api.npcs.getAllNpcs);
+  const factions = useQuery(api.factions.getFactions);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +94,23 @@ const FactionCreationForm: React.FC<FactionCreationFormProps> = ({
     }));
   };
 
+  const handleMultiSelectChange = (field: keyof typeof formData, value: string, checked: boolean) => {
+    setFormData(prev => {
+      const currentArray = prev[field] as string[];
+      if (checked) {
+        return {
+          ...prev,
+          [field]: [...currentArray, value],
+        };
+      } else {
+        return {
+          ...prev,
+          [field]: currentArray.filter(id => id !== value),
+        };
+      }
+    });
+  };
+
   const addGoal = () => {
     if (newGoal.trim()) {
       setFormData(prev => ({
@@ -109,6 +131,9 @@ const FactionCreationForm: React.FC<FactionCreationFormProps> = ({
   const handleCancel = () => {
     navigate("/factions");
   };
+
+  // Filter out the current faction from the factions list when editing
+  const availableFactions = factions?.filter(f => !editingFactionId || f._id !== editingFactionId) || [];
 
   return (
     <div className="faction-form">
@@ -213,26 +238,91 @@ const FactionCreationForm: React.FC<FactionCreationFormProps> = ({
         {/* Relationships Section */}
         <div className="form-section">
           <div className="form-section-title">Relationships</div>
+          
+          {/* Leader NPCs */}
           <div className="form-row">
-            <div className="form-col">
+            <div className="form-col full-width">
               <label className="form-label">Leader NPCs</label>
-              <p className="form-help-text">
-                Select NPCs who lead this faction (coming soon)
-              </p>
-            </div>
-            <div className="form-col">
-              <label className="form-label">Allied Factions</label>
-              <p className="form-help-text">
-                Select factions allied with this one (coming soon)
-              </p>
+              <div className="multi-select-container">
+                {npcs && npcs.length > 0 ? (
+                  <div className="checkbox-group">
+                    {npcs.map((npc) => (
+                      <label key={npc._id} className="checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={formData.leaderNpcIds.includes(npc._id)}
+                          onChange={(e) => handleMultiSelectChange(
+                            'leaderNpcIds', 
+                            npc._id, 
+                            e.target.checked
+                          )}
+                        />
+                        <span className="checkbox-label">{npc.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="form-help-text">No NPCs available. Create some NPCs first.</p>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Allied Factions */}
           <div className="form-row">
-            <div className="form-col">
-              <label className="form-label">Enemy Factions</label>
-              <p className="form-help-text">
-                Select factions opposed to this one (coming soon)
-              </p>
+            <div className="form-col full-width">
+              <label className="form-label">Allied Factions (Optional)</label>
+              <div className="multi-select-container">
+                {availableFactions.length > 0 ? (
+                  <div className="checkbox-group">
+                    {availableFactions.map((faction) => (
+                      <label key={faction._id} className="checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={formData.alliedFactionIds.includes(faction._id)}
+                          onChange={(e) => handleMultiSelectChange(
+                            'alliedFactionIds', 
+                            faction._id, 
+                            e.target.checked
+                          )}
+                        />
+                        <span className="checkbox-label">{faction.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="form-help-text">No other factions available to ally with.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Enemy Factions */}
+          <div className="form-row">
+            <div className="form-col full-width">
+              <label className="form-label">Enemy Factions (Optional)</label>
+              <div className="multi-select-container">
+                {availableFactions.length > 0 ? (
+                  <div className="checkbox-group">
+                    {availableFactions.map((faction) => (
+                      <label key={faction._id} className="checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={formData.enemyFactionIds.includes(faction._id)}
+                          onChange={(e) => handleMultiSelectChange(
+                            'enemyFactionIds', 
+                            faction._id, 
+                            e.target.checked
+                          )}
+                        />
+                        <span className="checkbox-label">{faction.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="form-help-text">No other factions available to set as enemies.</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
