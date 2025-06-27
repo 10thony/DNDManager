@@ -1,5 +1,5 @@
-import React from "react";
-import { useQuery } from "convex/react";
+import React, { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
@@ -8,6 +8,7 @@ import "./QuestDetail.css";
 const QuestDetail: React.FC = () => {
   const navigate = useNavigate();
   const { questId } = useParams<{ questId: string }>();
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   
   const quest = useQuery(api.quests.getQuestById, { id: questId as Id<"quests"> });
   const tasks = useQuery(api.questTasks.getQuestTasksByQuest, { questId: questId as Id<"quests"> });
@@ -15,6 +16,25 @@ const QuestDetail: React.FC = () => {
   const items = useQuery(api.items.getItems);
   const npcs = useQuery(api.locations.getNPCs);
   const characters = useQuery(api.characters.getAllCharacters);
+  
+  const updateQuestStatus = useMutation(api.quests.updateQuestStatus);
+
+  const handleStatusChange = async (newStatus: "NotStarted" | "InProgress" | "Completed" | "Failed") => {
+    if (!questId) return;
+    
+    setIsUpdatingStatus(true);
+    try {
+      await updateQuestStatus({
+        id: questId as Id<"quests">,
+        status: newStatus,
+      });
+    } catch (error) {
+      console.error("Error updating quest status:", error);
+      alert("Failed to update quest status. Please try again.");
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -94,9 +114,23 @@ const QuestDetail: React.FC = () => {
       <div className="quest-header">
         <div className="quest-header-content">
           <h1>{quest.name}</h1>
-          <span className={`quest-status ${getStatusColor(quest.status)}`}>
-            {getStatusText(quest.status)}
-          </span>
+          <div className="quest-status-section">
+            <span className={`quest-status ${getStatusColor(quest.status)}`}>
+              {getStatusText(quest.status)}
+            </span>
+            <select
+              className="status-selector"
+              value={quest.status}
+              onChange={(e) => handleStatusChange(e.target.value as "NotStarted" | "InProgress" | "Completed" | "Failed")}
+              disabled={isUpdatingStatus}
+            >
+              <option value="NotStarted">Not Started</option>
+              <option value="InProgress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Failed">Failed</option>
+            </select>
+            {isUpdatingStatus && <span className="status-updating">Updating...</span>}
+          </div>
         </div>
         <button
           className="back-btn"
