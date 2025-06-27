@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { useNavigate } from "react-router-dom";
+import { useDarkMode } from "../contexts/DarkModeContext";
 import InteractionCreationForm from "./InteractionCreationForm";
 import EntitySelectionModal from "./modals/EntitySelectionModal";
 import LocationCreationModal from "./modals/LocationCreationModal";
@@ -28,11 +29,13 @@ type EntityType = "quests" | "questTasks" | "locations" | "npcs" | "monsters" | 
 
 const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) => {
   const navigate = useNavigate();
+  const { isDarkMode } = useDarkMode();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [entitySelectionType, setEntitySelectionType] = useState<EntityType>("quests");
   const [entitySelectionTitle, setEntitySelectionTitle] = useState("");
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   
   const interaction = useQuery(api.interactions.getInteractionById, { id: interactionId });
   const deleteInteraction = useMutation(api.interactions.deleteInteraction);
@@ -104,6 +107,18 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
     setActiveModal(null);
     setEntitySelectionType("quests");
     setEntitySelectionTitle("");
+  };
+
+  const toggleSection = (sectionName: string) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionName)) {
+        newSet.delete(sectionName);
+      } else {
+        newSet.add(sectionName);
+      }
+      return newSet;
+    });
   };
 
   const handleEntitySelect = async (entityId: Id<any>) => {
@@ -370,213 +385,285 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
       <div className="interaction-sections">
         {/* Quests Section */}
         <div className="section">
-          <div className="section-header">
+          <div 
+            className="section-header"
+            onClick={() => toggleSection("quests")}
+            style={{ cursor: "pointer" }}
+          >
             <h3 className="section-title">📜 Quests ({quest ? 1 : 0})</h3>
-            <button 
-              className="add-button"
-              onClick={() => openEntitySelection("quests", "Link Existing Quest")}
-            >
-              + Add Quest
-            </button>
+            <div className="header-actions">
+              <button 
+                className="add-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEntitySelection("quests", "Link Existing Quest");
+                }}
+              >
+                + Add Quest
+              </button>
+              <span className="collapse-indicator">
+                {collapsedSections.has("quests") ? "▼" : "▲"}
+              </span>
+            </div>
           </div>
-          <div className="section-content">
-            {quest ? (
-              <div className="entity-card">
-                <div className="entity-info">
-                  <h4 className="entity-name">{quest.name}</h4>
-                  <p className="entity-description">{quest.description || "No description"}</p>
-                  <span className="entity-status">{quest.status}</span>
+          {!collapsedSections.has("quests") && (
+            <div className="section-content">
+              {quest ? (
+                <div className="entity-card">
+                  <div className="entity-info">
+                    <h4 className="entity-name">{quest.name}</h4>
+                    <p className="entity-description">{quest.description || "No description"}</p>
+                    <span className="entity-status">{quest.status}</span>
+                  </div>
+                  <div className="entity-actions">
+                    <button 
+                      className="unlink-button"
+                      onClick={() => handleUnlinkEntity("quest", quest._id)}
+                    >
+                      Unlink
+                    </button>
+                  </div>
                 </div>
-                <div className="entity-actions">
-                  <button 
-                    className="unlink-button"
-                    onClick={() => handleUnlinkEntity("quest", quest._id)}
-                  >
-                    Unlink
-                  </button>
+              ) : (
+                <div className="empty-state">
+                  <p>No quests linked to this interaction.</p>
                 </div>
-              </div>
-            ) : (
-              <div className="empty-state">
-                <p>No quests linked to this interaction.</p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Quest Tasks Section */}
         <div className="section">
-          <div className="section-header">
+          <div 
+            className="section-header"
+            onClick={() => toggleSection("questTasks")}
+            style={{ cursor: "pointer" }}
+          >
             <h3 className="section-title">✅ Quest Tasks ({questTask ? 1 : 0})</h3>
-            <button 
-              className="add-button"
-              onClick={() => openEntitySelection("questTasks", "Link Existing Task")}
-            >
-              + Add Task
-            </button>
+            <div className="header-actions">
+              <button 
+                className="add-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEntitySelection("questTasks", "Link Existing Task");
+                }}
+              >
+                + Add Task
+              </button>
+              <span className="collapse-indicator">
+                {collapsedSections.has("questTasks") ? "▼" : "▲"}
+              </span>
+            </div>
           </div>
-          <div className="section-content">
-            {questTask ? (
-              <div className="entity-card">
-                <div className="entity-info">
-                  <h4 className="entity-name">{questTask.title}</h4>
-                  <p className="entity-description">{questTask.description || "No description"}</p>
-                  <span className="entity-status">{questTask.status}</span>
+          {!collapsedSections.has("questTasks") && (
+            <div className="section-content">
+              {questTask ? (
+                <div className="entity-card">
+                  <div className="entity-info">
+                    <h4 className="entity-name">{questTask.title}</h4>
+                    <p className="entity-description">{questTask.description || "No description"}</p>
+                    <span className="entity-status">{questTask.status}</span>
+                  </div>
+                  <div className="entity-actions">
+                    <button 
+                      className="unlink-button"
+                      onClick={() => handleUnlinkEntity("questTask", questTask._id)}
+                    >
+                      Unlink
+                    </button>
+                  </div>
                 </div>
-                <div className="entity-actions">
-                  <button 
-                    className="unlink-button"
-                    onClick={() => handleUnlinkEntity("questTask", questTask._id)}
-                  >
-                    Unlink
-                  </button>
+              ) : (
+                <div className="empty-state">
+                  <p>No quest tasks linked to this interaction.</p>
                 </div>
-              </div>
-            ) : (
-              <div className="empty-state">
-                <p>No quest tasks linked to this interaction.</p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Player Characters Section */}
         <div className="section">
-          <div className="section-header">
+          <div 
+            className="section-header"
+            onClick={() => toggleSection("playerCharacters")}
+            style={{ cursor: "pointer" }}
+          >
             <h3 className="section-title">👤 Player Characters ({participantCharacters.length})</h3>
-            <button 
-              className="add-button"
-              onClick={() => openEntitySelection("playerCharacters", "Link Player Character")}
-            >
-              + Add Character
-            </button>
+            <div className="header-actions">
+              <button 
+                className="add-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEntitySelection("playerCharacters", "Link Player Character");
+                }}
+              >
+                + Add Character
+              </button>
+              <span className="collapse-indicator">
+                {collapsedSections.has("playerCharacters") ? "▼" : "▲"}
+              </span>
+            </div>
           </div>
-          <div className="section-content">
-            {participantCharacters.length > 0 ? (
-              <div className="entities-grid">
-                {participantCharacters.map((character: any) => (
-                  <div key={character._id} className="entity-card">
-                    <div className="entity-info">
-                      <h4 className="entity-name">{character.name}</h4>
-                      <p className="entity-description">
-                        {character.race} {character.class} (Level {character.level})
-                      </p>
+          {!collapsedSections.has("playerCharacters") && (
+            <div className="section-content">
+              {participantCharacters.length > 0 ? (
+                <div className="entities-grid">
+                  {participantCharacters.map((character: any) => (
+                    <div key={character._id} className="entity-card">
+                      <div className="entity-info">
+                        <h4 className="entity-name">{character.name}</h4>
+                        <p className="entity-description">
+                          {character.race} {character.class} (Level {character.level})
+                        </p>
+                      </div>
+                      <div className="entity-actions">
+                        <button 
+                          className="unlink-button"
+                          onClick={() => handleUnlinkEntity("playerCharacter", character._id)}
+                        >
+                          Unlink
+                        </button>
+                      </div>
                     </div>
-                    <div className="entity-actions">
-                      <button 
-                        className="unlink-button"
-                        onClick={() => handleUnlinkEntity("playerCharacter", character._id)}
-                      >
-                        Unlink
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">
-                <p>No player characters involved in this interaction.</p>
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <p>No player characters involved in this interaction.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* NPCs Section */}
         <div className="section">
-          <div className="section-header">
+          <div 
+            className="section-header"
+            onClick={() => toggleSection("npcs")}
+            style={{ cursor: "pointer" }}
+          >
             <h3 className="section-title">🎭 NPCs ({participantNpcs.length})</h3>
             <div className="header-actions">
               <button 
                 className="add-button"
-                onClick={() => openEntitySelection("npcs", "Link Existing NPC")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEntitySelection("npcs", "Link Existing NPC");
+                }}
               >
                 + Link NPC
               </button>
               <button 
                 className="add-button"
-                onClick={openNPCCreation}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openNPCCreation();
+                }}
               >
                 + Create NPC
               </button>
+              <span className="collapse-indicator">
+                {collapsedSections.has("npcs") ? "▼" : "▲"}
+              </span>
             </div>
           </div>
-          <div className="section-content">
-            {participantNpcs.length > 0 ? (
-              <div className="entities-grid">
-                {participantNpcs.map((npc: any) => (
-                  <div key={npc._id} className="entity-card">
-                    <div className="entity-info">
-                      <h4 className="entity-name">{npc.name}</h4>
-                      <p className="entity-description">
-                        {npc.race} {npc.class} (Level {npc.level})
-                      </p>
+          {!collapsedSections.has("npcs") && (
+            <div className="section-content">
+              {participantNpcs.length > 0 ? (
+                <div className="entities-grid">
+                  {participantNpcs.map((npc: any) => (
+                    <div key={npc._id} className="entity-card">
+                      <div className="entity-info">
+                        <h4 className="entity-name">{npc.name}</h4>
+                        <p className="entity-description">
+                          {npc.race} {npc.class} (Level {npc.level})
+                        </p>
+                      </div>
+                      <div className="entity-actions">
+                        <button 
+                          className="unlink-button"
+                          onClick={() => handleUnlinkEntity("npc", npc._id)}
+                        >
+                          Unlink
+                        </button>
+                      </div>
                     </div>
-                    <div className="entity-actions">
-                      <button 
-                        className="unlink-button"
-                        onClick={() => handleUnlinkEntity("npc", npc._id)}
-                      >
-                        Unlink
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">
-                <p>No NPCs involved in this interaction.</p>
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <p>No NPCs involved in this interaction.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Monsters Section */}
         <div className="section">
-          <div className="section-header">
+          <div 
+            className="section-header"
+            onClick={() => toggleSection("monsters")}
+            style={{ cursor: "pointer" }}
+          >
             <h3 className="section-title">🐉 Monsters ({participantMonsters.length})</h3>
             <div className="header-actions">
               <button 
                 className="add-button"
-                onClick={() => openEntitySelection("monsters", "Link Existing Monster")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEntitySelection("monsters", "Link Existing Monster");
+                }}
               >
                 + Link Monster
               </button>
               <button 
                 className="add-button"
-                onClick={openMonsterCreation}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openMonsterCreation();
+                }}
               >
                 + Create Monster
               </button>
+              <span className="collapse-indicator">
+                {collapsedSections.has("monsters") ? "▼" : "▲"}
+              </span>
             </div>
           </div>
-          <div className="section-content">
-            {participantMonsters.length > 0 ? (
-              <div className="entities-grid">
-                {participantMonsters.map((monster: any) => (
-                  <div key={monster._id} className="entity-card">
-                    <div className="entity-info">
-                      <h4 className="entity-name">{monster.name}</h4>
-                      <p className="entity-description">
-                        {monster.size} {monster.type} (CR {monster.challengeRating})
-                      </p>
+          {!collapsedSections.has("monsters") && (
+            <div className="section-content">
+              {participantMonsters.length > 0 ? (
+                <div className="entities-grid">
+                  {participantMonsters.map((monster: any) => (
+                    <div key={monster._id} className="entity-card">
+                      <div className="entity-info">
+                        <h4 className="entity-name">{monster.name}</h4>
+                        <p className="entity-description">
+                          {monster.size} {monster.type} (CR {monster.challengeRating})
+                        </p>
+                      </div>
+                      <div className="entity-actions">
+                        <button 
+                          className="unlink-button"
+                          onClick={() => handleUnlinkEntity("monster", monster._id)}
+                        >
+                          Unlink
+                        </button>
+                      </div>
                     </div>
-                    <div className="entity-actions">
-                      <button 
-                        className="unlink-button"
-                        onClick={() => handleUnlinkEntity("monster", monster._id)}
-                      >
-                        Unlink
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">
-                <p>No monsters involved in this interaction.</p>
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <p>No monsters involved in this interaction.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
