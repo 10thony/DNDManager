@@ -356,6 +356,7 @@ export default defineSchema({
     questTaskId: v.optional(v.id("questTasks")),
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     npcIds: v.optional(v.array(v.id("npcs"))),
+    monsterIds: v.optional(v.array(v.id("monsters"))),
     createdAt: v.number(),
   }),
   sessions: defineTable({

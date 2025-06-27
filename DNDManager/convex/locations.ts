@@ -64,6 +64,34 @@ export const getNPCs = query({
   },
 });
 
+// Create a new location (for interaction detail)
+export const createLocation = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    type: v.string(),
+    creatorId: v.string(),
+    campaignId: v.optional(v.id("campaigns")),
+  },
+  handler: async (ctx, args) => {
+    const locationId = await ctx.db.insert("locations", {
+      name: args.name,
+      description: args.description,
+      type: args.type as LocationType,
+      campaignId: args.campaignId || null,
+      notableNpcIds: [],
+      linkedLocations: [],
+      interactionsAtLocation: [],
+      imageUrls: [],
+      secrets: "",
+      creatorId: args.creatorId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    return locationId;
+  },
+});
+
 export const create = mutation({
   args: {
     campaignId: v.id("campaigns"),

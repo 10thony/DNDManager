@@ -3,10 +3,7 @@ CampaignList component
 CampaignDetail component
 CampaignForm/CampaignCreationForm component
 
-interactions - ❌ Missing:
-InteractionList component
-InteractionDetail component
-InteractionForm/InteractionCreationForm component
+
 
 sessions - ❌ Missing:
 SessionList component
@@ -18,20 +15,6 @@ TimelineEventList component
 TimelineEventDetail component
 TimelineEventForm/TimelineEventCreationForm component
 
-factions - ❌ Missing:
-FactionList component
-FactionDetail component
-FactionForm/FactionCreationForm component
-
-monsters - ❌ Missing:
-MonsterList component
-MonsterDetail component
-MonsterForm/MonsterCreationForm component
-
-spells - ❌ Missing:
-SpellList component
-SpellDetail component
-SpellForm/SpellCreationForm component
 
 deities - ❌ Missing:
 DeityList component

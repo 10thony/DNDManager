@@ -27,6 +27,7 @@ const InteractionCreationForm: React.FC<InteractionCreationFormProps> = ({
   const questTasks = useQuery(api.questTasks.getAllQuestTasks);
   const playerCharacters = useQuery(api.characters.getAllCharacters);
   const npcs = useQuery(api.npcs.getAllNpcs);
+  const monsters = useQuery(api.monsters.getAllMonsters);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -35,6 +36,7 @@ const InteractionCreationForm: React.FC<InteractionCreationFormProps> = ({
     questTaskId: "",
     playerCharacterIds: [] as Id<"playerCharacters">[],
     npcIds: [] as Id<"npcs">[],
+    monsterIds: [] as Id<"monsters">[],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -49,6 +51,7 @@ const InteractionCreationForm: React.FC<InteractionCreationFormProps> = ({
         questTaskId: interaction.questTaskId || "",
         playerCharacterIds: interaction.playerCharacterIds || [],
         npcIds: interaction.npcIds || [],
+        monsterIds: interaction.monsterIds || [],
       });
     }
   }, [interaction]);
@@ -87,6 +90,7 @@ const InteractionCreationForm: React.FC<InteractionCreationFormProps> = ({
         questTaskId: formData.questTaskId ? (formData.questTaskId as Id<"questTasks">) : undefined,
         playerCharacterIds: formData.playerCharacterIds.length > 0 ? formData.playerCharacterIds : undefined,
         npcIds: formData.npcIds.length > 0 ? formData.npcIds : undefined,
+        monsterIds: formData.monsterIds.length > 0 ? formData.monsterIds : undefined,
       };
 
       if (editingInteractionId) {
@@ -126,6 +130,13 @@ const InteractionCreationForm: React.FC<InteractionCreationFormProps> = ({
       ? formData.npcIds.filter(id => id !== npcId)
       : [...formData.npcIds, npcId];
     handleInputChange("npcIds", newNpcIds);
+  };
+
+  const handleMonsterToggle = (monsterId: Id<"monsters">) => {
+    const newMonsterIds = formData.monsterIds.includes(monsterId)
+      ? formData.monsterIds.filter(id => id !== monsterId)
+      : [...formData.monsterIds, monsterId];
+    handleInputChange("monsterIds", newMonsterIds);
   };
 
   const filteredQuestTasks = questTasks?.filter(task => 
@@ -258,6 +269,27 @@ const InteractionCreationForm: React.FC<InteractionCreationFormProps> = ({
                       onChange={() => handleNpcToggle(npc._id)}
                     />
                     <span className="checkbox-text">{npc.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-col">
+              <label className="form-label">Monsters</label>
+              <div className="participants-grid">
+                {monsters?.map((monster) => (
+                  <label key={monster._id} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      className="checkbox-input"
+                      checked={formData.monsterIds.includes(monster._id)}
+                      onChange={() => handleMonsterToggle(monster._id)}
+                    />
+                    <span className="checkbox-text">
+                      {monster.name} ({monster.size} {monster.type}, CR {monster.challengeRating})
+                    </span>
                   </label>
                 ))}
               </div>

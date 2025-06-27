@@ -32,4 +32,27 @@ export const checkAndCreateDefaultCampaigns = mutation({
       console.log("Default campaigns created successfully!");
     }
   },
+});
+
+export const migrateInteractionsAddMonsterIds = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Get all existing interactions that don't have monsterIds field
+    const interactions = await ctx.db.query("interactions").collect();
+    
+    let migratedCount = 0;
+    
+    for (const interaction of interactions) {
+      // Check if monsterIds field doesn't exist or is undefined
+      if (!("monsterIds" in interaction) || interaction.monsterIds === undefined) {
+        await ctx.db.patch(interaction._id, {
+          monsterIds: [],
+        });
+        migratedCount++;
+      }
+    }
+    
+    console.log(`Migrated ${migratedCount} interactions to include monsterIds field`);
+    return { migratedCount };
+  },
 }); 

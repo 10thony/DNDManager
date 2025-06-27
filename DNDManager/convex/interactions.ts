@@ -10,6 +10,7 @@ export const createInteraction = mutation({
     questTaskId: v.optional(v.id("questTasks")),
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     npcIds: v.optional(v.array(v.id("npcs"))),
+    monsterIds: v.optional(v.array(v.id("monsters"))),
   },
   handler: async (ctx, args) => {
     const interactionId = await ctx.db.insert("interactions", {
@@ -64,6 +65,7 @@ export const updateInteraction = mutation({
     questTaskId: v.optional(v.id("questTasks")),
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     npcIds: v.optional(v.array(v.id("npcs"))),
+    monsterIds: v.optional(v.array(v.id("monsters"))),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -114,6 +116,26 @@ export const addNpcsToInteraction = mutation({
 
     await ctx.db.patch(args.id, {
       npcIds: updatedNpcs,
+    });
+  },
+});
+
+export const addMonstersToInteraction = mutation({
+  args: {
+    id: v.id("interactions"),
+    monsterIds: v.array(v.id("monsters")),
+  },
+  handler: async (ctx, args) => {
+    const interaction = await ctx.db.get(args.id);
+    if (!interaction) {
+      throw new Error("Interaction not found");
+    }
+
+    const currentMonsters = interaction.monsterIds || [];
+    const updatedMonsters = [...new Set([...currentMonsters, ...args.monsterIds])];
+
+    await ctx.db.patch(args.id, {
+      monsterIds: updatedMonsters,
     });
   },
 }); 
