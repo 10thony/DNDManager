@@ -120,4 +120,233 @@ export const updateQuestStatus = mutation({
       updatedAt: Date.now(),
     });
   },
+});
+
+export const generateSampleQuests = mutation({
+  args: {
+    creatorId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const sampleData = {
+      quests: [
+        {
+          id: "quest1",
+          name: "The Missing Scout",
+          description: "Find and report back on the whereabouts of a missing scout near the Whispering Woods.",
+          creatorId: args.creatorId,
+          status: "NotStarted" as const,
+          taskIds: ["task1", "task2", "task3"],
+          createdAt: 1719800000
+        },
+        {
+          id: "quest2",
+          name: "Trouble in the Woods",
+          description: "Investigate strange sightings and eliminate threats in the Whispering Woods.",
+          creatorId: args.creatorId,
+          status: "NotStarted" as const,
+          taskIds: ["task4", "task5", "task6"],
+          createdAt: 1719803600
+        },
+        {
+          id: "quest3",
+          name: "The Broken Seal",
+          description: "Explore the ruins and uncover the origin of the corruption.",
+          creatorId: args.creatorId,
+          status: "NotStarted" as const,
+          taskIds: ["task7", "task8", "task9"],
+          createdAt: 1719807200
+        },
+        {
+          id: "quest4",
+          name: "Secrets of the Deep Crypt",
+          description: "Delve into the underground crypt to stop the ancient force awakening.",
+          creatorId: args.creatorId,
+          status: "NotStarted" as const,
+          taskIds: ["task10", "task11", "task12"],
+          createdAt: 1719810800
+        },
+        {
+          id: "quest5",
+          name: "Final Stand at Black Hollow",
+          description: "Defend the town from the final wave of darkness.",
+          creatorId: args.creatorId,
+          status: "NotStarted" as const,
+          taskIds: ["task13", "task14", "task15"],
+          createdAt: 1719814400
+        }
+      ],
+      questTasks: [
+        {
+          id: "task1",
+          questId: "quest1",
+          title: "Speak with the Captain",
+          type: "Speak" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719800000
+        },
+        {
+          id: "task2",
+          questId: "quest1",
+          title: "Search the Southern Trail",
+          type: "Explore" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719800100
+        },
+        {
+          id: "task3",
+          questId: "quest1",
+          title: "Report Back",
+          type: "Deliver" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719800200
+        },
+        {
+          id: "task4",
+          questId: "quest2",
+          title: "Investigate Strange Markings",
+          type: "Explore" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719803600
+        },
+        {
+          id: "task5",
+          questId: "quest2",
+          title: "Defeat the Shadow Creatures",
+          type: "Kill" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719803700
+        },
+        {
+          id: "task6",
+          questId: "quest2",
+          title: "Collect Shadow Essence",
+          type: "Fetch" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719803800
+        },
+        {
+          id: "task7",
+          questId: "quest3",
+          title: "Enter the Forgotten Ruins",
+          type: "Explore" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719807200
+        },
+        {
+          id: "task8",
+          questId: "quest3",
+          title: "Solve the Sealing Puzzle",
+          type: "Puzzle" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719807300
+        },
+        {
+          id: "task9",
+          questId: "quest3",
+          title: "Speak to the Spirit Guardian",
+          type: "Speak" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719807400
+        },
+        {
+          id: "task10",
+          questId: "quest4",
+          title: "Find the Crypt Entrance",
+          type: "Explore" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719810800
+        },
+        {
+          id: "task11",
+          questId: "quest4",
+          title: "Escort the Ritualist",
+          type: "Escort" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719810900
+        },
+        {
+          id: "task12",
+          questId: "quest4",
+          title: "Defend the Ritual",
+          type: "Kill" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719811000
+        },
+        {
+          id: "task13",
+          questId: "quest5",
+          title: "Speak with Mayor Linette",
+          type: "Speak" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719814400
+        },
+        {
+          id: "task14",
+          questId: "quest5",
+          title: "Prepare the Defenses",
+          type: "Custom" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719814500
+        },
+        {
+          id: "task15",
+          questId: "quest5",
+          title: "Repel the Final Assault",
+          type: "Kill" as const,
+          status: "NotStarted" as const,
+          createdAt: 1719814600
+        }
+      ]
+    };
+
+    // Create a mapping to store quest IDs and their corresponding task IDs
+    const questTaskMapping: Record<string, string[]> = {};
+    const createdQuestIds: Record<string, any> = {};
+    const createdTaskIds: Record<string, any> = {};
+
+    // First, create all quests
+    for (const questData of sampleData.quests) {
+      const questId = await ctx.db.insert("quests", {
+        name: questData.name,
+        description: questData.description,
+        creatorId: questData.creatorId,
+        status: questData.status,
+        taskIds: [], // Will be updated after tasks are created
+        createdAt: questData.createdAt,
+        updatedAt: questData.createdAt,
+      });
+      createdQuestIds[questData.id] = questId;
+      questTaskMapping[questId] = questData.taskIds;
+    }
+
+    // Then, create all quest tasks
+    for (const taskData of sampleData.questTasks) {
+      const questId = createdQuestIds[taskData.questId];
+      if (questId) {
+        const taskId = await ctx.db.insert("questTasks", {
+          questId: questId,
+          title: taskData.title,
+          type: taskData.type,
+          status: taskData.status,
+          createdAt: taskData.createdAt,
+          updatedAt: taskData.createdAt,
+        });
+        createdTaskIds[taskData.id] = taskId;
+      }
+    }
+
+    // Finally, update quests with the correct task IDs
+    for (const [questId, taskIds] of Object.entries(questTaskMapping)) {
+      const actualTaskIds = taskIds.map(taskId => createdTaskIds[taskId]).filter(Boolean);
+      await ctx.db.patch(questId, {
+        taskIds: actualTaskIds,
+        updatedAt: Date.now(),
+      });
+    }
+
+    return {
+      questsCreated: Object.keys(createdQuestIds).length,
+      tasksCreated: Object.keys(createdTaskIds).length,
+    };
+  },
 }); 

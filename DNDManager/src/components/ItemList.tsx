@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import ItemCard from "./ItemCard";
 import ItemCreationForm from "./ItemCreationForm";
+import BulkItemGenerator from "./BulkItemGenerator";
 import "./ItemList.css";
 
 const ItemList: React.FC = () => {
@@ -15,6 +16,10 @@ const ItemList: React.FC = () => {
 
   const handleSubmitSuccess = (itemId: string) => {
     setIsCreating(false);
+  };
+
+  const handleGenerationComplete = () => {
+    // The items will automatically refresh due to Convex's reactive queries
   };
 
   if (isCreating) {
@@ -51,6 +56,11 @@ const ItemList: React.FC = () => {
           Create New Item
         </button>
       </div>
+      
+      {items.length === 0 && (
+        <BulkItemGenerator onGenerationComplete={handleGenerationComplete} />
+      )}
+      
       <div className="item-grid">
         {items.map((item) => (
           <ItemCard key={item._id} item={item} />

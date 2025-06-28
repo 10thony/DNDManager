@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
@@ -34,6 +34,8 @@ const QuestForm: React.FC<QuestFormProps> = ({
   editingQuestId,
 }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
   const { user } = useUser();
   const createQuest = useMutation(api.quests.createQuest);
   const updateQuest = useMutation(api.quests.updateQuest);
@@ -178,6 +180,14 @@ const QuestForm: React.FC<QuestFormProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    if (returnTo === 'campaign-form') {
+      navigate("/campaigns/new");
+    } else {
+      onCancel();
+    }
+  };
+
   if (!user) {
     return <div className="loading">Loading user...</div>;
   }
@@ -188,8 +198,8 @@ const QuestForm: React.FC<QuestFormProps> = ({
     <div className="quest-creation-form">
       <div className="form-header">
         <h1>{isEditing ? "Edit Quest" : "Create New Quest"}</h1>
-        <button className="cancel-btn" onClick={onCancel}>
-          Cancel
+        <button className="cancel-btn" onClick={handleCancel}>
+          {returnTo === 'campaign-form' ? "Back to Campaign Form" : "Cancel"}
         </button>
       </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { LocationType, locationTypes } from "../../convex/locations";
 import { Id } from "../../convex/_generated/dataModel";
@@ -15,6 +16,9 @@ interface LocationFormProps {
 
 export default function LocationForm({ onSubmitSuccess, onCancel }: LocationFormProps) {
   const { userId } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
   const createLocation = useMutation(api.locations.create);
   const campaigns = useQuery(api.locations.getCampaigns) || [];
   const npcs = useQuery(api.locations.getNPCs) || [];
@@ -62,6 +66,14 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
       onSubmitSuccess?.();
     } catch (error) {
       console.error("Error creating location:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    if (returnTo === 'campaign-form') {
+      navigate("/campaigns/new");
+    } else if (onCancel) {
+      onCancel();
     }
   };
 
@@ -217,10 +229,10 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
         {onCancel && (
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancel}
             className="btn-secondary"
           >
-            Cancel
+            {returnTo === 'campaign-form' ? "Back to Campaign Form" : "Cancel"}
           </button>
         )}
       </div>

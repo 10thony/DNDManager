@@ -1,16 +1,33 @@
 import React, { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
-import { CharacterFormData, PlayerCharacter, CLASSES, RACES } from "../types/character";
+import { CharacterFormData, AbilityScores, RACES, CLASSES, BACKGROUNDS, ALIGNMENTS } from "../types/character";
 import { Id } from "../../convex/_generated/dataModel";
-import { rollAbilityScore, getRacialBonuses, getAbilityModifier } from "../types/dndRules";
+import { 
+  rollAbilityScore, 
+  getRacialBonuses, 
+  getAbilityModifier,
+  getClassSavingThrows,
+  getClassSkills,
+  getBackgroundSkills,
+  calculateHitPoints,
+  calculateArmorClass,
+  getProficiencyBonus
+} from "../types/dndRules";
 import "./CharacterForm.css";
 
 interface CharacterFormProps {
   onSuccess?: () => void;
+  defaultCharacterType?: "PlayerCharacter" | "NonPlayerCharacter";
 }
 
-const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
+const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, defaultCharacterType = "PlayerCharacter" }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
+  const { user } = useUser();
   const createCharacter = useMutation(api.characters.createPlayerCharacter);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +41,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
     race: "",
     background: "",
     alignment: "",
-    characterType: "PlayerCharacter",
+    characterType: defaultCharacterType,
     abilityScores: {
       strength: 10,
       dexterity: 10,
@@ -33,6 +50,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
       wisdom: 10,
       charisma: 10,
     },
+    factionId: "",
   });
 
   // Get available actions based on class
@@ -61,12 +79,11 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
       ...prev,
       abilityScores: {
         ...prev.abilityScores,
-        [ability]: value,
+        [ability]: Math.max(1, Math.min(20, value)),
       },
     }));
 
     // Reset racial bonuses applied state when manually changing scores
-    // This prevents confusion about whether bonuses are still applied
     if (racialBonusesApplied) {
       setRacialBonusesApplied(false);
       setAppliedRace("");
@@ -166,6 +183,19 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
     });
   };
 
+  const calculateFinalAbilityScores = (): AbilityScores => {
+    const racialBonuses = getRacialBonuses(formData.race);
+    const finalScores: AbilityScores = { ...formData.abilityScores };
+
+    Object.entries(racialBonuses).forEach(([ability, bonus]) => {
+      if (bonus) {
+        finalScores[ability as keyof AbilityScores] += bonus;
+      }
+    });
+
+    return finalScores;
+  };
+
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
       setError("Character name is required");
@@ -201,12 +231,10 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
     setIsLoading(true);
 
     try {
-      // Ensure we have at least one action selected
-      if (selectedActions.length === 0) {
-        setError("At least one action must be selected");
-        setIsLoading(false);
-        return;
-      }
+      const finalAbilityScores = calculateFinalAbilityScores();
+      const classSkills = getClassSkills(formData.class);
+      const backgroundSkills = getBackgroundSkills(formData.background);
+      const allSkills = [...new Set([...classSkills, ...backgroundSkills])];
 
       const characterData = {
         name: formData.name.trim(),
@@ -214,31 +242,65 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
         class: formData.class,
         background: formData.background,
         alignment: formData.alignment || undefined,
+        abilityScores: {
+          strength: Number(finalAbilityScores.strength),
+          dexterity: Number(finalAbilityScores.dexterity),
+          constitution: Number(finalAbilityScores.constitution),
+          intelligence: Number(finalAbilityScores.intelligence),
+          wisdom: Number(finalAbilityScores.wisdom),
+          charisma: Number(finalAbilityScores.charisma),
+        },
+        skills: allSkills,
+        savingThrows: getClassSavingThrows(formData.class),
+        proficiencies: [], // Could be expanded based on race/class
+        level: Number(1),
+        experiencePoints: Number(0), // Starting XP for new characters
+        hitPoints: Number(calculateHitPoints(
+          formData.class,
+          finalAbilityScores.constitution
+        )),
+        armorClass: Number(calculateArmorClass(finalAbilityScores.dexterity)),
+        proficiencyBonus: Number(getProficiencyBonus(1)),
+        actions: selectedActions,
         characterType: formData.characterType,
-        abilityScores: formData.abilityScores,
-        skills: [], // Will be populated based on class and background
-        savingThrows: [], // Will be populated based on class
-        proficiencies: [], // Will be populated based on race/class
-        level: 1,
-        experiencePoints: 0, // Starting experience points for level 1
-        hitPoints: 8, // Base HP, will be calculated based on class and constitution
-        armorClass: 10, // Base AC, will be calculated based on dexterity
-        proficiencyBonus: 2, // Base proficiency bonus for level 1
-        actions: selectedActions, // This is now guaranteed to have at least one action
-        equipment: [], // Optional field
-        languages: [], // Optional field
-        traits: [], // Optional field
+        factionId: formData.factionId ? (formData.factionId as Id<"factions">) : undefined,
       };
 
-      console.log("Creating character with data:", characterData);
-      const result = await createCharacter(characterData);
-      console.log("Character created successfully:", result);
-      onSuccess?.();
-    } catch (err) {
-      console.error("Error creating character:", err);
-      setError(err instanceof Error ? err.message : "Failed to create character");
+      console.log("Character data being sent:", characterData);
+      await createCharacter(characterData);
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        // Default navigation behavior
+        if (returnTo === 'campaign-form') {
+          navigate("/campaigns/new");
+        } else {
+          if (formData.characterType === "NonPlayerCharacter") {
+            navigate("/npcs");
+          } else {
+            navigate("/characters");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error creating character:", error);
+      setError("Failed to create character. Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (returnTo === 'campaign-form') {
+      navigate("/campaigns/new");
+    } else {
+      if (formData.characterType === "NonPlayerCharacter") {
+        navigate("/npcs");
+      } else {
+        navigate("/characters");
+      }
     }
   };
 
@@ -304,9 +366,13 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
     );
   };
 
+  const finalAbilityScores = calculateFinalAbilityScores();
+
   return (
     <div className="character-form">
-      <h2 className="form-section-title">Create New Character</h2>
+      <h2 className="form-section-title">
+        Create New {defaultCharacterType === "NonPlayerCharacter" ? "NPC" : "Character"}
+      </h2>
 
       {error && <div className="form-error">{error}</div>}
 
@@ -363,26 +429,34 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
           <div className="form-row">
             <div className="form-col">
               <label htmlFor="background" className="form-label">Background *</label>
-              <input
-                type="text"
+              <select
                 id="background"
                 name="background"
-                className="form-input"
+                className="form-select"
                 value={formData.background}
                 onChange={handleInputChange}
                 required
-              />
+              >
+                <option value="">Select Background</option>
+                {BACKGROUNDS.map((background: string) => (
+                  <option key={background} value={background}>{background}</option>
+                ))}
+              </select>
             </div>
             <div className="form-col">
               <label htmlFor="alignment" className="form-label">Alignment</label>
-              <input
-                type="text"
+              <select
                 id="alignment"
                 name="alignment"
-                className="form-input"
+                className="form-select"
                 value={formData.alignment}
                 onChange={handleInputChange}
-              />
+              >
+                <option value="">Select Alignment (Optional)</option>
+                {ALIGNMENTS.map((alignment: string) => (
+                  <option key={alignment} value={alignment}>{alignment}</option>
+                ))}
+              </select>
             </div>
             <div className="form-col">
               <label htmlFor="characterType" className="form-label">Character Type *</label>
@@ -443,38 +517,94 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
             </small>
           </div>
           <div className="ability-scores-grid">
-            {Object.entries(formData.abilityScores).map(([ability, score]) => (
-              <div key={ability} className="ability-score">
-                <label htmlFor={ability} className="form-label">{ability}</label>
-                <div className="ability-score-input-group">
-                  <input
-                    type="number"
-                    id={ability}
-                    className="form-input"
-                    value={score}
-                    onChange={(e) =>
-                      handleAbilityScoreChange(ability, parseInt(e.target.value) || 10)
-                    }
-                    min="1"
-                    max="20"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRollAbilityScore(ability)}
-                    className="roll-button"
-                    title="Roll 4d6, drop lowest"
-                  >
-                    🎲
-                  </button>
+            {Object.entries(formData.abilityScores).map(([ability, score]) => {
+              const finalValue = finalAbilityScores[ability as keyof AbilityScores];
+              const modifier = getAbilityModifier(finalValue);
+              const racialBonus = finalValue - score;
+
+              return (
+                <div key={ability} className="ability-score">
+                  <label htmlFor={ability} className="form-label">{ability}</label>
+                  <div className="ability-score-input-group">
+                    <input
+                      type="number"
+                      id={ability}
+                      className="form-input"
+                      value={score}
+                      onChange={(e) =>
+                        handleAbilityScoreChange(ability, parseInt(e.target.value) || 10)
+                      }
+                      min="1"
+                      max="20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRollAbilityScore(ability)}
+                      className="roll-button"
+                      title="Roll 4d6, drop lowest"
+                    >
+                      🎲
+                    </button>
+                  </div>
+                  <div className="ability-score-display">
+                    <span className="final-score">
+                      {finalValue}
+                      {racialBonus > 0 && (
+                        <span className="racial-bonus"> (+{racialBonus})</span>
+                      )}
+                    </span>
+                    <span className="modifier">
+                      {modifier >= 0 ? "+" : ""}{modifier}
+                    </span>
+                  </div>
                 </div>
-                <div className="ability-modifier">
-                  {getAbilityModifier(score) >= 0 ? "+" : ""}{getAbilityModifier(score)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <AbilityScoresFeedback totalPoints={calculateTotalPoints()} method={getAbilityScoreMethod()} />
         </div>
+
+        {/* Character Preview */}
+        {formData.race && formData.class && formData.background && (
+          <div className="form-section">
+            <div className="form-section-title">Character Preview - {formData.characterType === "PlayerCharacter" ? "Player Character" : "NPC"}</div>
+            <div className="character-preview">
+              <div className="preview-stats">
+                <div className="stat">
+                  <strong>Hit Points:</strong>{" "}
+                  {calculateHitPoints(formData.class, finalAbilityScores.constitution)}
+                </div>
+                <div className="stat">
+                  <strong>Armor Class:</strong>{" "}
+                  {calculateArmorClass(finalAbilityScores.dexterity)}
+                </div>
+                <div className="stat">
+                  <strong>Proficiency Bonus:</strong> +{getProficiencyBonus(1)}
+                </div>
+                {formData.characterType === "PlayerCharacter" && (
+                  <div className="stat">
+                    <strong>Starting Experience Points:</strong> 0
+                  </div>
+                )}
+              </div>
+              <div className="preview-proficiencies">
+                <div>
+                  <strong>Saving Throws:</strong>{" "}
+                  {getClassSavingThrows(formData.class).join(", ")}
+                </div>
+                <div>
+                  <strong>Skills:</strong>{" "}
+                  {[
+                    ...new Set([
+                      ...getClassSkills(formData.class),
+                      ...getBackgroundSkills(formData.background),
+                    ]),
+                  ].join(", ")}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Actions Section */}
         {formData.class && (
@@ -505,8 +635,14 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess }) => {
         )}
 
         <div className="form-actions">
+          <button type="button" onClick={handleCancel} className="btn-secondary">
+            Cancel
+          </button>
           <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Character"}
+            {isLoading 
+              ? `Creating ${formData.characterType === "PlayerCharacter" ? "Character" : "NPC"}...` 
+              : `Create ${formData.characterType === "PlayerCharacter" ? "Character" : "NPC"}`
+            }
           </button>
         </div>
       </form>

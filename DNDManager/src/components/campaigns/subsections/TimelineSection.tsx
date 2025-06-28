@@ -16,6 +16,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({
   onUpdate,
 }) => {
   const [isCreating, setIsCreating] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -199,7 +200,16 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({
   return (
     <div className="timeline-section">
       <div className="section-header">
-        <h3 className="section-title">📅 Timeline Events ({campaignTimelineEvents.length}/3)</h3>
+        <div className="header-left">
+          <button 
+            className="collapse-button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            aria-label={isCollapsed ? "Expand timeline section" : "Collapse timeline section"}
+          >
+            {isCollapsed ? "▶️" : "▼"}
+          </button>
+          <h3 className="section-title">📅 Timeline Events ({campaignTimelineEvents.length}/3)</h3>
+        </div>
         <div className="header-actions">
           {campaignTimelineEvents.length < 3 && (
             <button className="add-button" onClick={() => setIsCreating(true)}>
@@ -209,56 +219,58 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({
         </div>
       </div>
 
-      <div className="timeline-content">
-        {campaignTimelineEvents.length === 0 ? (
-          <div className="empty-state">
-            <p>No timeline events yet. Add up to 3 key events for your campaign.</p>
-            <div className="event-suggestions">
-              <div className="suggestion-item">
-                <span className="suggestion-icon">⚔️</span>
-                <span className="suggestion-text">Start Event</span>
-              </div>
-              <div className="suggestion-item">
-                <span className="suggestion-icon">🔍</span>
-                <span className="suggestion-text">Midpoint Event</span>
-              </div>
-              <div className="suggestion-item">
-                <span className="suggestion-icon">🏆</span>
-                <span className="suggestion-text">End Event</span>
+      {!isCollapsed && (
+        <div className="timeline-content">
+          {campaignTimelineEvents.length === 0 ? (
+            <div className="empty-state">
+              <p>No timeline events yet. Add up to 3 key events for your campaign.</p>
+              <div className="event-suggestions">
+                <div className="suggestion-item">
+                  <span className="suggestion-icon">⚔️</span>
+                  <span className="suggestion-text">Start Event</span>
+                </div>
+                <div className="suggestion-item">
+                  <span className="suggestion-icon">🔍</span>
+                  <span className="suggestion-text">Midpoint Event</span>
+                </div>
+                <div className="suggestion-item">
+                  <span className="suggestion-icon">🏆</span>
+                  <span className="suggestion-text">End Event</span>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="timeline-events">
-            {campaignTimelineEvents.map((event, index) => (
-              <div key={event._id} className="timeline-event">
-                <div className="event-header">
-                  <div className="event-icon">
-                    {getEventTypeIcon(event.type || "Custom")}
-                  </div>
-                  <div className="event-info">
-                    <h4 className="event-title">{event.title}</h4>
-                    <div className="event-meta">
-                      <span className="event-type">{event.type || "Custom"}</span>
-                      <span className="event-date">{formatDate(event.date)}</span>
+          ) : (
+            <div className="timeline-events">
+              {campaignTimelineEvents.map((event, index) => (
+                <div key={event._id} className="timeline-event">
+                  <div className="event-header">
+                    <div className="event-icon">
+                      {getEventTypeIcon(event.type || "Custom")}
                     </div>
+                    <div className="event-info">
+                      <h4 className="event-title">{event.title}</h4>
+                      <div className="event-meta">
+                        <span className="event-type">{event.type || "Custom"}</span>
+                        <span className="event-date">{formatDate(event.date)}</span>
+                      </div>
+                    </div>
+                    <div className="event-number">{index + 1}</div>
                   </div>
-                  <div className="event-number">{index + 1}</div>
+                  <div className="event-description">
+                    {event.description}
+                  </div>
                 </div>
-                <div className="event-description">
-                  {event.description}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
-        {campaignTimelineEvents.length === 3 && (
-          <div className="completion-notice">
-            ✅ Timeline complete! You have all 3 required events.
-          </div>
-        )}
-      </div>
+          {campaignTimelineEvents.length === 3 && (
+            <div className="completion-notice">
+              ✅ Timeline complete! You have all 3 required events.
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

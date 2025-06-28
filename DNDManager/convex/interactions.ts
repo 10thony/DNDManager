@@ -6,6 +6,7 @@ export const createInteraction = mutation({
     name: v.string(),
     description: v.optional(v.string()),
     creatorId: v.string(),
+    campaignId: v.optional(v.id("campaigns")),
     questId: v.optional(v.id("quests")),
     questTaskId: v.optional(v.id("questTasks")),
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
@@ -62,6 +63,7 @@ export const updateInteraction = mutation({
     id: v.id("interactions"),
     name: v.optional(v.string()),
     description: v.optional(v.string()),
+    campaignId: v.optional(v.id("campaigns")),
     questId: v.optional(v.id("quests")),
     questTaskId: v.optional(v.id("questTasks")),
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
@@ -159,5 +161,16 @@ export const addTimelineEventsToInteraction = mutation({
     await ctx.db.patch(args.id, {
       timelineEventIds: updatedTimelineEvents,
     });
+  },
+});
+
+export const getInteractionsByCampaign = query({
+  args: { campaignId: v.id("campaigns") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("interactions")
+      .filter((q) => q.eq(q.field("campaignId"), args.campaignId))
+      .order("desc")
+      .collect();
   },
 }); 

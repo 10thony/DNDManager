@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDarkMode } from "../contexts/DarkModeContext";
 import InteractionCreationForm from "./InteractionCreationForm";
 import EntitySelectionModal from "./modals/EntitySelectionModal";
@@ -29,6 +29,7 @@ type EntityType = "quests" | "questTasks" | "locations" | "npcs" | "monsters" | 
 
 const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isDarkMode } = useDarkMode();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -40,6 +41,19 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
   const interaction = useQuery(api.interactions.getInteractionById, { id: interactionId });
   const deleteInteraction = useMutation(api.interactions.deleteInteraction);
   const updateInteraction = useMutation(api.interactions.updateInteraction);
+  
+  // Check if user came from a campaign
+  const fromCampaignId = searchParams.get('fromCampaign');
+
+  const handleBackNavigation = () => {
+    if (fromCampaignId) {
+      // Navigate back to the campaign details
+      navigate(`/campaigns/${fromCampaignId}`);
+    } else {
+      // Navigate back to interactions list (original behavior)
+      navigate("/interactions");
+    }
+  };
   
   const quest = useQuery(
     api.quests.getQuestById,
@@ -64,7 +78,7 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
       setIsDeleting(true);
       try {
         await deleteInteraction({ id: interactionId });
-        navigate("/interactions");
+        handleBackNavigation();
       } catch (error) {
         console.error("Error deleting interaction:", error);
         alert("Failed to delete interaction. Please try again.");
@@ -308,8 +322,8 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
           </div>
         </div>
         <div className="header-actions">
-          <button className="back-button" onClick={() => navigate("/interactions")}>
-            ← Back to Interactions
+          <button className="back-button" onClick={handleBackNavigation}>
+            ← {fromCampaignId ? "Back to Campaign" : "Back to Interactions"}
           </button>
         </div>
       </div>

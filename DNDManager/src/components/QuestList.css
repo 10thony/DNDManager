@@ -262,8 +262,37 @@
 }
 
 .empty-state p {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.1rem;
+  @apply text-gray-600 text-center mb-6 transition-colors duration-200;
+}
+
+.dark .empty-state p {
+  @apply text-gray-400;
+}
+
+.empty-state-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.generate-sample-btn {
+  @apply bg-green-600 hover:bg-green-700 text-white border-none px-6 py-3 rounded-lg text-base font-medium cursor-pointer transition-colors duration-200;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dark .generate-sample-btn {
+  @apply bg-green-500 hover:bg-green-600;
+}
+
+.generate-sample-btn:disabled {
+  @apply bg-gray-400 cursor-not-allowed;
+}
+
+.dark .generate-sample-btn:disabled {
+  @apply bg-gray-600;
 }
 
 .loading-state {

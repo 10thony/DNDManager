@@ -1,19 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import QuestForm from "./QuestForm";
 import "./QuestList.css";
 
 const QuestList: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [isCreating, setIsCreating] = useState(false);
   const [editingQuest, setEditingQuest] = useState<Id<"quests"> | null>(null);
   const [isDeleting, setIsDeleting] = useState<Id<"quests"> | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   
+  const { user } = useUser();
   const quests = useQuery(api.quests.getAllQuests);
   const deleteQuest = useMutation(api.quests.deleteQuest);
+  const generateSampleQuests = useMutation(api.quests.generateSampleQuests);
   const navigate = useNavigate();
+
+  // Check if we should show creation form based on query parameter
+  useEffect(() => {
+    const shouldCreate = searchParams.get('create') === 'true';
+    if (shouldCreate) {
+      setIsCreating(true);
+    }
+  }, [searchParams]);
 
   const handleDelete = async (id: Id<"quests">) => {
     if (window.confirm("Are you sure you want to delete this quest? This action cannot be undone.")) {
@@ -36,11 +49,43 @@ const QuestList: React.FC = () => {
   const handleCancel = () => {
     setIsCreating(false);
     setEditingQuest(null);
+    // Clear the create query parameter if it exists
+    if (searchParams.get('create') === 'true') {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('create');
+      window.history.replaceState(null, '', `?${newSearchParams.toString()}`);
+    }
   };
 
   const handleSubmitSuccess = () => {
     setIsCreating(false);
     setEditingQuest(null);
+    // Clear the create query parameter if it exists
+    if (searchParams.get('create') === 'true') {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('create');
+      window.history.replaceState(null, '', `?${newSearchParams.toString()}`);
+    }
+  };
+
+  const handleGenerateSampleQuests = async () => {
+    if (!user) {
+      alert("You must be logged in to generate sample quests.");
+      return;
+    }
+
+    if (window.confirm("This will create 5 sample quests with 15 total quest tasks. Continue?")) {
+      setIsGenerating(true);
+      try {
+        const result = await generateSampleQuests({ creatorId: user.id });
+        alert(`Successfully created ${result.questsCreated} quests with ${result.tasksCreated} tasks!`);
+      } catch (error) {
+        console.error("Error generating sample quests:", error);
+        alert("Failed to generate sample quests. Please try again.");
+      } finally {
+        setIsGenerating(false);
+      }
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -119,12 +164,21 @@ const QuestList: React.FC = () => {
           <div className="empty-icon">🗺️</div>
           <h3>No Quests Yet</h3>
           <p>Get started by creating your first quest for your adventures.</p>
-          <button
-            className="create-quest-btn"
-            onClick={() => setIsCreating(true)}
-          >
-            Create Your First Quest
-          </button>
+          <div className="empty-state-buttons">
+            <button
+              className="create-quest-btn"
+              onClick={() => setIsCreating(true)}
+            >
+              Create Your First Quest
+            </button>
+            <button
+              className="generate-sample-btn"
+              onClick={handleGenerateSampleQuests}
+              disabled={isGenerating}
+            >
+              {isGenerating ? "Generating..." : "Generate Sample Quests"}
+            </button>
+          </div>
         </div>
       ) : (
         <div className="quests-grid">

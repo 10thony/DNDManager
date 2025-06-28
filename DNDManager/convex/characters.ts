@@ -24,13 +24,13 @@ export const createPlayerCharacter = mutation({
     languages: v.optional(v.array(v.string())),
     equipment: v.optional(v.array(v.string())),
     level: v.float64(),
-    experiencePoints: v.number(),
+    experiencePoints: v.float64(),
     xpHistory: v.optional(
       v.array(
         v.object({
-          amount: v.number(),
+          amount: v.float64(),
           source: v.string(),
-          date: v.number(),
+          date: v.float64(),
         })
       )
     ),
@@ -109,13 +109,13 @@ export const updateCharacter = mutation({
     languages: v.optional(v.array(v.string())),
     equipment: v.optional(v.array(v.string())),
     level: v.optional(v.float64()),
-    experiencePoints: v.optional(v.number()),
+    experiencePoints: v.optional(v.float64()),
     xpHistory: v.optional(
       v.array(
         v.object({
-          amount: v.number(),
+          amount: v.float64(),
           source: v.string(),
-          date: v.number(),
+          date: v.float64(),
         })
       )
     ),
@@ -137,7 +137,7 @@ export const updateCharacter = mutation({
 export const addExperiencePoints = mutation({
   args: {
     id: v.id("playerCharacters"),
-    amount: v.number(),
+    amount: v.float64(),
     source: v.string(),
   },
   handler: async (ctx, args) => {
@@ -146,20 +146,20 @@ export const addExperiencePoints = mutation({
       throw new Error("Character not found");
     }
 
-    const currentXP = character.experiencePoints || 0;
-    const newXP = currentXP + args.amount;
+    const currentXP = Number(character.experiencePoints || 0);
+    const newXP = currentXP + Number(args.amount);
     
     const currentHistory = character.xpHistory || [];
     const newHistoryEntry = {
-      amount: args.amount,
+      amount: Number(args.amount),
       source: args.source,
-      date: Date.now(),
+      date: Number(Date.now()),
     };
 
     await ctx.db.patch(args.id, {
       experiencePoints: newXP,
       xpHistory: [...currentHistory, newHistoryEntry],
-      updatedAt: Date.now(),
+      updatedAt: Number(Date.now()),
     });
   },
 });

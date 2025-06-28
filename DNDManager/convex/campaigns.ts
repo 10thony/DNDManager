@@ -12,6 +12,10 @@ export const createCampaign = mutation({
     participantPlayerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     participantUserIds: v.optional(v.array(v.id("users"))),
     tags: v.optional(v.array(v.id("tags"))),
+    npcIds: v.optional(v.array(v.id("npcs"))),
+    questIds: v.optional(v.array(v.id("quests"))),
+    locationIds: v.optional(v.array(v.id("locations"))),
+    monsterIds: v.optional(v.array(v.id("monsters"))),
   },
   handler: async (ctx, args) => {
     const campaignId = await ctx.db.insert("campaigns", {
@@ -65,6 +69,11 @@ export const updateCampaign = mutation({
     participantPlayerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     participantUserIds: v.optional(v.array(v.id("users"))),
     tags: v.optional(v.array(v.id("tags"))),
+    npcIds: v.optional(v.array(v.id("npcs"))),
+    questIds: v.optional(v.array(v.id("quests"))),
+    locationIds: v.optional(v.array(v.id("locations"))),
+    monsterIds: v.optional(v.array(v.id("monsters"))),
+    timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;

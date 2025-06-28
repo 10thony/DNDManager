@@ -37,9 +37,9 @@ export interface CampaignValidationState {
   hasPlayerCharacters: boolean;
   hasNPCs: boolean;
   hasQuests: boolean;
-  hasInteractions: boolean;
   hasLocations: boolean;
   hasBossMonsters: boolean;
+  hasInteractions: boolean;
 }
 
 export interface CampaignCreationRequirements {
@@ -47,7 +47,7 @@ export interface CampaignCreationRequirements {
   playerCharactersRequired: 1;
   npcsRequired: 1;
   questsRequired: 1;
-  interactionsRequired: 1;
   locationsRequired: 1;
   bossMonstersRequired: 1;
+  interactionsRequired: 1;
 } 

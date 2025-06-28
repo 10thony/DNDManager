@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import "./MonsterCreationForm.css";
@@ -15,8 +16,12 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
   onCancel,
   editingMonsterId,
 }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
+
   const [formData, setFormData] = useState({
-    campaignId: "" as Id<"campaigns">,
+    campaignId: undefined as Id<"campaigns"> | undefined,
     name: "",
     source: "",
     page: "",
@@ -29,7 +34,13 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
     hitPoints: 10,
     hitDice: { count: 1, die: "d8" as "d4" | "d6" | "d8" | "d10" | "d12" },
     proficiencyBonus: 2,
-    speed: { walk: "30 ft.", swim: "", fly: "", burrow: "", climb: "" },
+    speed: { walk: "30 ft.", swim: "", fly: "", burrow: "", climb: "" } as {
+      walk?: string;
+      swim?: string;
+      fly?: string;
+      burrow?: string;
+      climb?: string;
+    },
     abilityScores: {
       strength: 10,
       dexterity: 10,
@@ -50,6 +61,12 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
       tremorsense: "",
       truesight: "",
       passivePerception: 10,
+    } as {
+      darkvision?: string;
+      blindsight?: string;
+      tremorsense?: string;
+      truesight?: string;
+      passivePerception: number;
     },
     languages: "",
     challengeRating: "1/4",
@@ -77,7 +94,7 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
   useEffect(() => {
     if (editingMonster && editingMonsterId) {
       setFormData({
-        campaignId: editingMonster.campaignId,
+        campaignId: editingMonster.campaignId || undefined,
         name: editingMonster.name,
         source: editingMonster.source || "",
         page: editingMonster.page || "",
@@ -90,7 +107,7 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
         hitPoints: editingMonster.hitPoints,
         hitDice: editingMonster.hitDice,
         proficiencyBonus: editingMonster.proficiencyBonus,
-        speed: editingMonster.speed,
+        speed: editingMonster.speed || { walk: "30 ft.", swim: "", fly: "", burrow: "", climb: "" },
         abilityScores: editingMonster.abilityScores,
         savingThrows: editingMonster.savingThrows || [],
         skills: editingMonster.skills || [],
@@ -98,7 +115,7 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
         damageResistances: editingMonster.damageResistances || [],
         damageImmunities: editingMonster.damageImmunities || [],
         conditionImmunities: editingMonster.conditionImmunities || [],
-        senses: editingMonster.senses,
+        senses: editingMonster.senses || { darkvision: "", blindsight: "", tremorsense: "", truesight: "", passivePerception: 10 },
         languages: editingMonster.languages || "",
         challengeRating: editingMonster.challengeRating,
         experiencePoints: editingMonster.experiencePoints || 0,
@@ -120,7 +137,7 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
   const handleNestedChange = (parentField: string, childField: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [parentField]: { ...prev[parentField as keyof typeof prev], [childField]: value }
+      [parentField]: { ...(prev[parentField as keyof typeof prev] as Record<string, any>), [childField]: value }
     }));
   };
 
@@ -130,7 +147,6 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
     if (!formData.name.trim()) newErrors.push("Name is required");
     if (!formData.type.trim()) newErrors.push("Type is required");
     if (!formData.alignment.trim()) newErrors.push("Alignment is required");
-    if (!formData.campaignId) newErrors.push("Campaign is required");
     if (formData.armorClass < 0) newErrors.push("Armor Class must be positive");
     if (formData.hitPoints <= 0) newErrors.push("Hit Points must be positive");
     if (formData.hitDice.count <= 0) newErrors.push("Hit Dice count must be positive");
@@ -165,6 +181,14 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    if (returnTo === 'campaign-form') {
+      navigate("/campaigns/new");
+    } else {
+      onCancel();
+    }
+  };
+
   if (!campaigns) {
     return (
       <div className="monster-form">
@@ -180,8 +204,8 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
     <div className="monster-form">
       <div className="form-header">
         <h2>{editingMonsterId ? "Edit Monster" : "Create New Monster"}</h2>
-        <button className="back-button" onClick={onCancel}>
-          ← Back to Monsters
+        <button className="back-button" onClick={handleCancel}>
+          {returnTo === 'campaign-form' ? "← Back to Campaign Form" : "← Back to Monsters"}
         </button>
       </div>
 
@@ -209,7 +233,7 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
               />
             </div>
             <div className="form-col">
-              <label className="form-label">Campaign *</label>
+              <label className="form-label">Campaign</label>
               <select
                 className="form-select"
                 value={formData.campaignId}
@@ -497,7 +521,7 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
           <button
             type="button"
             className="btn-secondary"
-            onClick={onCancel}
+            onClick={handleCancel}
             disabled={isSubmitting}
           >
             Cancel

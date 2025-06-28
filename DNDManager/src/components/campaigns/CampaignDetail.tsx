@@ -6,6 +6,12 @@ import { useDarkMode } from "../../contexts/DarkModeContext";
 import { CampaignValidationState, CampaignCreationRequirements } from "../../schemas/campaign";
 import InfoSection from "./subsections/InfoSection";
 import TimelineSection from "./subsections/TimelineSection";
+import PlayerCharactersSection from "./subsections/PlayerCharactersSection";
+import NPCsSection from "./subsections/NPCsSection";
+import QuestsSection from "./subsections/QuestsSection";
+import LocationsSection from "./subsections/LocationsSection";
+import BossMonstersSection from "./subsections/BossMonstersSection";
+import InteractionsSection from "./subsections/InteractionsSection";
 import "./CampaignDetail.css";
 
 const CampaignDetail: React.FC = () => {
@@ -18,9 +24,9 @@ const CampaignDetail: React.FC = () => {
     hasPlayerCharacters: false,
     hasNPCs: false,
     hasQuests: false,
-    hasInteractions: false,
     hasLocations: false,
     hasBossMonsters: false,
+    hasInteractions: false,
   });
 
   const requirements: CampaignCreationRequirements = {
@@ -28,9 +34,9 @@ const CampaignDetail: React.FC = () => {
     playerCharactersRequired: 1,
     npcsRequired: 1,
     questsRequired: 1,
-    interactionsRequired: 1,
     locationsRequired: 1,
     bossMonstersRequired: 1,
+    interactionsRequired: 1,
   };
 
   const campaign = useQuery(
@@ -43,6 +49,10 @@ const CampaignDetail: React.FC = () => {
   const quests = useQuery(api.quests.getAllQuests);
   const locations = useQuery(api.locations.list);
   const monsters = useQuery(api.monsters.getAllMonsters);
+  const interactions = useQuery(
+    api.interactions.getInteractionsByCampaign,
+    id ? { campaignId: id as any } : "skip"
+  );
 
   const updateCampaign = useMutation(api.campaigns.updateCampaign);
 
@@ -70,11 +80,11 @@ const CampaignDetail: React.FC = () => {
       hasPlayerCharacters: (campaign.participantPlayerCharacterIds?.length || 0) >= requirements.playerCharactersRequired,
       hasNPCs: (campaign.npcIds?.length || 0) >= requirements.npcsRequired,
       hasQuests: (campaign.questIds?.length || 0) >= requirements.questsRequired,
-      hasInteractions: false, // TODO: Implement interactions count
       hasLocations: (campaign.locationIds?.length || 0) >= requirements.locationsRequired,
       hasBossMonsters: bossMonsterCount >= requirements.bossMonstersRequired,
+      hasInteractions: (interactions?.length || 0) >= requirements.interactionsRequired,
     });
-  }, [campaign, monsters, requirements]);
+  }, [campaign, monsters, interactions, requirements]);
 
   const isCampaignComplete = Object.values(validationState).every(Boolean);
 
@@ -179,6 +189,10 @@ const CampaignDetail: React.FC = () => {
             <span className="validation-icon">{validationState.hasBossMonsters ? '✅' : '❌'}</span>
             <span className="validation-text">Boss monsters ({getBossMonsterCount()}/{requirements.bossMonstersRequired})</span>
           </div>
+          <div className={`validation-item ${validationState.hasInteractions ? 'complete' : 'incomplete'}`}>
+            <span className="validation-icon">{validationState.hasInteractions ? '✅' : '❌'}</span>
+            <span className="validation-text">Interactions ({interactions?.length || 0}/{requirements.interactionsRequired})</span>
+          </div>
         </div>
       </div>
 
@@ -199,51 +213,40 @@ const CampaignDetail: React.FC = () => {
           onUpdate={handleUpdate}
         />
 
-        {/* TODO: Add other subsection components */}
-        <div className="placeholder-section">
-          <div className="section-header">
-            <h3 className="section-title">👤 Player Characters (Coming Soon)</h3>
-          </div>
-          <div className="placeholder-content">
-            <p>Player character management will be implemented here.</p>
-          </div>
-        </div>
+        <PlayerCharactersSection
+          campaignId={campaign._id}
+          playerCharacterIds={campaign.participantPlayerCharacterIds}
+          onUpdate={handleUpdate}
+        />
 
-        <div className="placeholder-section">
-          <div className="section-header">
-            <h3 className="section-title">🎭 NPCs (Coming Soon)</h3>
-          </div>
-          <div className="placeholder-content">
-            <p>NPC management will be implemented here.</p>
-          </div>
-        </div>
+        <NPCsSection
+          campaignId={campaign._id}
+          npcIds={campaign.npcIds}
+          onUpdate={handleUpdate}
+        />
 
-        <div className="placeholder-section">
-          <div className="section-header">
-            <h3 className="section-title">📜 Quests (Coming Soon)</h3>
-          </div>
-          <div className="placeholder-content">
-            <p>Quest management will be implemented here.</p>
-          </div>
-        </div>
+        <QuestsSection
+          campaignId={campaign._id}
+          questIds={campaign.questIds}
+          onUpdate={handleUpdate}
+        />
 
-        <div className="placeholder-section">
-          <div className="section-header">
-            <h3 className="section-title">🗺️ Locations (Coming Soon)</h3>
-          </div>
-          <div className="placeholder-content">
-            <p>Location management will be implemented here.</p>
-          </div>
-        </div>
+        <LocationsSection
+          campaignId={campaign._id}
+          locationIds={campaign.locationIds}
+          onUpdate={handleUpdate}
+        />
 
-        <div className="placeholder-section">
-          <div className="section-header">
-            <h3 className="section-title">🐉 Boss Monsters (Coming Soon)</h3>
-          </div>
-          <div className="placeholder-content">
-            <p>Boss monster management will be implemented here.</p>
-          </div>
-        </div>
+        <BossMonstersSection
+          campaignId={campaign._id}
+          monsterIds={campaign.monsterIds}
+          onUpdate={handleUpdate}
+        />
+
+        <InteractionsSection
+          campaignId={campaign._id}
+          onUpdate={handleUpdate}
+        />
       </div>
 
       {/* Save Button */}

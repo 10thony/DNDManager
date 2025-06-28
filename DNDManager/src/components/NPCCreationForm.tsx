@@ -1,12 +1,18 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import CharacterCreationForm from "./CharacterCreationForm";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import CharacterForm from "./CharacterForm";
 
 const NPCCreationForm: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
 
   const handleCancel = () => {
-    navigate("/npcs");
+    if (returnTo === 'campaign-form') {
+      navigate("/campaigns/new");
+    } else {
+      navigate("/npcs");
+    }
   };
 
   return (
@@ -14,10 +20,10 @@ const NPCCreationForm: React.FC = () => {
       <div className="form-header">
         <h1>Create New NPC</h1>
         <button onClick={handleCancel} className="btn btn-secondary">
-          Cancel
+          {returnTo === 'campaign-form' ? "Back to Campaign Form" : "Cancel"}
         </button>
       </div>
-      <CharacterCreationForm defaultCharacterType="NonPlayerCharacter" />
+      <CharacterForm defaultCharacterType="NonPlayerCharacter" />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import "./MonsterCreationForm.css";
@@ -11,7 +12,7 @@ interface MonsterCreationFormProps {
 }
 
 interface MonsterFormData {
-  campaignId: Id<"campaigns">;
+  campaignId?: Id<"campaigns">;
   name: string;
   source: string;
   page: string;
@@ -28,11 +29,11 @@ interface MonsterFormData {
   };
   proficiencyBonus: number;
   speed: {
-    walk: string;
-    swim: string;
-    fly: string;
-    burrow: string;
-    climb: string;
+    walk?: string;
+    swim?: string;
+    fly?: string;
+    burrow?: string;
+    climb?: string;
   };
   abilityScores: {
     strength: number;
@@ -49,10 +50,10 @@ interface MonsterFormData {
   damageImmunities: string[];
   conditionImmunities: string[];
   senses: {
-    darkvision: string;
-    blindsight: string;
-    tremorsense: string;
-    truesight: string;
+    darkvision?: string;
+    blindsight?: string;
+    tremorsense?: string;
+    truesight?: string;
     passivePerception: number;
   };
   languages: string;
@@ -72,8 +73,12 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
   onCancel,
   editingMonsterId,
 }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
+
   const [formData, setFormData] = useState<MonsterFormData>({
-    campaignId: "" as Id<"campaigns">,
+    campaignId: undefined,
     name: "",
     source: "",
     page: "",
@@ -134,7 +139,7 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
   useEffect(() => {
     if (editingMonster && editingMonsterId) {
       setFormData({
-        campaignId: editingMonster.campaignId,
+        campaignId: editingMonster.campaignId || undefined,
         name: editingMonster.name,
         source: editingMonster.source || "",
         page: editingMonster.page || "",
@@ -147,7 +152,7 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
         hitPoints: editingMonster.hitPoints,
         hitDice: editingMonster.hitDice,
         proficiencyBonus: editingMonster.proficiencyBonus,
-        speed: editingMonster.speed,
+        speed: editingMonster.speed || { walk: "30 ft.", swim: "", fly: "", burrow: "", climb: "" },
         abilityScores: editingMonster.abilityScores,
         savingThrows: editingMonster.savingThrows || [],
         skills: editingMonster.skills || [],
@@ -155,7 +160,7 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
         damageResistances: editingMonster.damageResistances || [],
         damageImmunities: editingMonster.damageImmunities || [],
         conditionImmunities: editingMonster.conditionImmunities || [],
-        senses: editingMonster.senses,
+        senses: editingMonster.senses || { darkvision: "", blindsight: "", tremorsense: "", truesight: "", passivePerception: 10 },
         languages: editingMonster.languages || "",
         challengeRating: editingMonster.challengeRating,
         experiencePoints: editingMonster.experiencePoints || 0,
@@ -191,7 +196,6 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
     if (!formData.name.trim()) newErrors.push("Name is required");
     if (!formData.type.trim()) newErrors.push("Type is required");
     if (!formData.alignment.trim()) newErrors.push("Alignment is required");
-    if (!formData.campaignId) newErrors.push("Campaign is required");
     if (formData.armorClass < 0) newErrors.push("Armor Class must be positive");
     if (formData.hitPoints <= 0) newErrors.push("Hit Points must be positive");
     if (formData.hitDice.count <= 0) newErrors.push("Hit Dice count must be positive");
@@ -226,6 +230,14 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    if (returnTo === 'campaign-form') {
+      navigate("/campaigns/new");
+    } else {
+      onCancel();
+    }
+  };
+
   if (!campaigns) {
     return (
       <div className="monster-form">
@@ -241,8 +253,8 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
     <div className="monster-form">
       <div className="form-header">
         <h2>{editingMonsterId ? "Edit Monster" : "Create New Monster"}</h2>
-        <button className="back-button" onClick={onCancel}>
-          ← Back to Monsters
+        <button className="back-button" onClick={handleCancel}>
+          {returnTo === 'campaign-form' ? "← Back to Campaign Form" : "← Back to Monsters"}
         </button>
       </div>
 
@@ -270,7 +282,7 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
               />
             </div>
             <div className="form-col">
-              <label className="form-label">Campaign *</label>
+              <label className="form-label">Campaign</label>
               <select
                 className="form-select"
                 value={formData.campaignId}
@@ -558,7 +570,7 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
           <button
             type="button"
             className="btn-secondary"
-            onClick={onCancel}
+            onClick={handleCancel}
             disabled={isSubmitting}
           >
             Cancel

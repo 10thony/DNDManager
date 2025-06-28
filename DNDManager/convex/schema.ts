@@ -35,13 +35,13 @@ export default defineSchema({
     languages: v.optional(v.array(v.string())),
     equipment: v.optional(v.array(v.string())),
     level: v.float64(),
-    experiencePoints: v.number(),
+    experiencePoints: v.float64(),
     xpHistory: v.optional(
       v.array(
         v.object({
-          amount: v.number(),
+          amount: v.float64(),
           source: v.string(),
-          date: v.number(),
+          date: v.float64(),
         })
       )
     ),
@@ -78,13 +78,13 @@ export default defineSchema({
     languages: v.optional(v.array(v.string())),
     equipment: v.optional(v.array(v.string())),
     level: v.float64(),
-    experiencePoints: v.number(),
+    experiencePoints: v.float64(),
     xpHistory: v.optional(
       v.array(
         v.object({
-          amount: v.number(),
+          amount: v.float64(),
           source: v.string(),
-          date: v.number(),
+          date: v.float64(),
         })
       )
     ),
@@ -353,6 +353,7 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
     creatorId: v.string(),
+    campaignId: v.optional(v.id("campaigns")),
     questId: v.optional(v.id("quests")),
     questTaskId: v.optional(v.id("questTasks")),
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
@@ -432,7 +433,7 @@ export default defineSchema({
   }),
   monsters: defineTable({
     // link to campaign
-    campaignId: v.id("campaigns"),
+    campaignId: v.optional(v.id("campaigns")),
 
     // basic identification
     name: v.string(),

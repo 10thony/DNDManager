@@ -1,0 +1,663 @@
+[
+    {
+      "campaignId": null,
+      "name": "Cave Mite",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Tiny",
+      "type": "Beast",
+      "tags": ["insect"],
+      "alignment": "Unaligned",
+      "armorClass": 12,
+      "armorType": "natural armor",
+      "hitPoints": 4,
+      "hitDice": { "count": 1, "die": "d6" },
+      "proficiencyBonus": 2,
+      "speed": { "walk": "20 ft.", "climb": "20 ft." },
+      "abilityScores": {
+        "strength": 2,
+        "dexterity": 14,
+        "constitution": 10,
+        "intelligence": 1,
+        "wisdom": 8,
+        "charisma": 2
+      },
+      "savingThrows": null,
+      "skills": ["Stealth +4"],
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": null,
+      "conditionImmunities": null,
+      "senses": { "darkvision": "30 ft.", "passivePerception": 9 },
+      "languages": null,
+      "challengeRating": "1/8",
+      "experiencePoints": 25,
+      "traits": [
+        {
+          "name": "Spider Climb",
+          "description": "The cave mite can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Bite",
+          "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 3 (1d4+1) piercing damage."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["underground", "cave"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Goblin Scout",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Small",
+      "type": "Humanoid",
+      "tags": ["goblinoid"],
+      "alignment": "Neutral Evil",
+      "armorClass": 15,
+      "armorType": "leather armor, shield",
+      "hitPoints": 7,
+      "hitDice": { "count": 2, "die": "d6" },
+      "proficiencyBonus": 2,
+      "speed": { "walk": "30 ft." },
+      "abilityScores": {
+        "strength": 8,
+        "dexterity": 14,
+        "constitution": 10,
+        "intelligence": 10,
+        "wisdom": 8,
+        "charisma": 8
+      },
+      "savingThrows": null,
+      "skills": ["Stealth +6", "Perception +2"],
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": null,
+      "conditionImmunities": null,
+      "senses": { "darkvision": "60 ft.", "passivePerception": 12 },
+      "languages": "Common, Goblin",
+      "challengeRating": "1/4",
+      "experiencePoints": 50,
+      "traits": [
+        {
+          "name": "Nimble Escape",
+          "description": "The goblin can take the Disengage or Hide action as a bonus action on each of its turns."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Scimitar",
+          "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6+2) slashing damage."
+        },
+        {
+          "name": "Shortbow",
+          "description": "Ranged Weapon Attack: +4 to hit, range 80/320 ft., one target. Hit: 5 (1d6+2) piercing damage."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["forest", "hills"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Gnoll Brute",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Medium",
+      "type": "Humanoid",
+      "tags": ["gnoll"],
+      "alignment": "Chaotic Evil",
+      "armorClass": 13,
+      "armorType": "hide armor",
+      "hitPoints": 22,
+      "hitDice": { "count": 4, "die": "d8" },
+      "proficiencyBonus": 2,
+      "speed": { "walk": "30 ft." },
+      "abilityScores": {
+        "strength": 16,
+        "dexterity": 12,
+        "constitution": 14,
+        "intelligence": 6,
+        "wisdom": 10,
+        "charisma": 7
+      },
+      "savingThrows": null,
+      "skills": ["Perception +2"],
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": null,
+      "conditionImmunities": null,
+      "senses": { "darkvision": "60 ft.", "passivePerception": 12 },
+      "languages": "Gnoll",
+      "challengeRating": "1/2",
+      "experiencePoints": 100,
+      "traits": [
+        {
+          "name": "Rampage",
+          "description": "When the gnoll reduces a creature to 0 hit points with a melee attack on its turn, the gnoll can take a bonus action to move up to half its speed and make a bite attack."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Heavy Club",
+          "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 7 (1d8+3) bludgeoning damage."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["grassland", "wasteland"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Orc Raider",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Medium",
+      "type": "Humanoid",
+      "tags": ["orc"],
+      "alignment": "Chaotic Evil",
+      "armorClass": 13,
+      "armorType": "hide armor",
+      "hitPoints": 30,
+      "hitDice": { "count": 4, "die": "d8" },
+      "proficiencyBonus": 2,
+      "speed": { "walk": "30 ft." },
+      "abilityScores": {
+        "strength": 16,
+        "dexterity": 12,
+        "constitution": 16,
+        "intelligence": 7,
+        "wisdom": 11,
+        "charisma": 10
+      },
+      "savingThrows": ["Con +5"],
+      "skills": ["Intimidation +2"],
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": null,
+      "conditionImmunities": null,
+      "senses": { "darkvision": "60 ft.", "passivePerception": 10 },
+      "languages": "Common, Orc",
+      "challengeRating": "1",
+      "experiencePoints": 200,
+      "traits": [
+        {
+          "name": "Aggressive",
+          "description": "As a bonus action, the orc can move up to its speed toward a hostile creature that it can see."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Greataxe",
+          "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 9 (1d12+3) slashing damage."
+        },
+        {
+          "name": "Javelin",
+          "description": "Melee or Ranged Weapon Attack: +5 to hit, reach 5 ft. or range 30/120 ft., one target. Hit: 6 (1d6+3) piercing damage."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["mountain", "plains"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Ogre Brute",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Large",
+      "type": "Giant",
+      "tags": null,
+      "alignment": "Chaotic Evil",
+      "armorClass": 11,
+      "armorType": "hide armor",
+      "hitPoints": 59,
+      "hitDice": { "count": 7, "die": "d10" },
+      "proficiencyBonus": 2,
+      "speed": { "walk": "40 ft." },
+      "abilityScores": {
+        "strength": 19,
+        "dexterity": 8,
+        "constitution": 16,
+        "intelligence": 5,
+        "wisdom": 7,
+        "charisma": 7
+      },
+      "savingThrows": null,
+      "skills": null,
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": null,
+      "conditionImmunities": null,
+      "senses": { "darkvision": "60 ft.", "passivePerception": 8 },
+      "languages": "Common, Giant",
+      "challengeRating": "2",
+      "experiencePoints": 450,
+      "traits": [
+        {
+          "name": "Brute",
+          "description": "A melee weapon deals one extra die of its damage when the ogre hits with it (included in the attack)."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Greatclub",
+          "description": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 13 (2d8+4) bludgeoning damage."
+        },
+        {
+          "name": "Javelin",
+          "description": "Melee or Ranged Weapon Attack: +6 to hit, reach 5 ft. or range 30/120 ft., one target. Hit: 11 (2d6+4) piercing damage."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["hills", "mountain"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Wight Captain",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Medium",
+      "type": "Undead",
+      "tags": null,
+      "alignment": "Lawful Evil",
+      "armorClass": 14,
+      "armorType": "studded leather",
+      "hitPoints": 45,
+      "hitDice": { "count": 6, "die": "d8" },
+      "proficiencyBonus": 2,
+      "speed": { "walk": "30 ft." },
+      "abilityScores": {
+        "strength": 15,
+        "dexterity": 14,
+        "constitution": 16,
+        "intelligence": 10,
+        "wisdom": 13,
+        "charisma": 15
+      },
+      "savingThrows": ["Wis +4"],
+      "skills": ["Perception +4", "Intimidation +4"],
+      "damageVulnerabilities": null,
+      "damageResistances": ["necrotic", "bludgeoning", "piercing", "slashing from nonmagical attacks"],
+      "damageImmunities": null,
+      "conditionImmunities": ["poisoned"],
+      "senses": { "darkvision": "60 ft.", "passivePerception": 14 },
+      "languages": "Common, one other",
+      "challengeRating": "3",
+      "experiencePoints": 700,
+      "traits": [
+        {
+          "name": "Sunlight Sensitivity",
+          "description": "While in sunlight, the wight has disadvantage on attack rolls, as well as on Wisdom (Perception) checks that rely on sight."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Longsword",
+          "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 7 (1d8+3) slashing damage, or 8 (1d10+3) slashing damage if used with two hands."
+        },
+        {
+          "name": "Life Drain",
+          "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one creature. Hit: 9 (2d6+2) necrotic damage. The target must succeed on a DC 13 Constitution saving throw or its hit point maximum is reduced by an amount equal to the damage taken."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["underground", "ruins"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Basilisk",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Medium",
+      "type": "Monstrosity",
+      "tags": null,
+      "alignment": "Unaligned",
+      "armorClass": 15,
+      "armorType": "natural armor",
+      "hitPoints": 52,
+      "hitDice": { "count": 7, "die": "d8" },
+      "proficiencyBonus": 2,
+      "speed": { "walk": "20 ft." },
+      "abilityScores": {
+        "strength": 16,
+        "dexterity": 8,
+        "constitution": 15,
+        "intelligence": 2,
+        "wisdom": 8,
+        "charisma": 7
+      },
+      "savingThrows": ["Con +5"],
+      "skills": null,
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": null,
+      "conditionImmunities": null,
+      "senses": { "darkvision": "60 ft.", "passivePerception": 9 },
+      "languages": null,
+      "challengeRating": "3",
+      "experiencePoints": 700,
+      "traits": [
+        {
+          "name": "Petrifying Gaze",
+          "description": "If a creature starts its turn within 30 feet of the basilisk and the two of them can see each other, the basilisk can force the creature to make a DC 12 Constitution saving throw if the basilisk isn't incapacitated. On a failed save, the creature magically begins to turn to stone and is restrained. The restrained creature must repeat the saving throw at the end of its next turn, becoming petrified on a failure or ending the effect on a success."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Bite",
+          "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 10 (2d6+3) piercing damage plus 7 (2d6) poison damage."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["cave", "desert"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Otyugh",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Large",
+      "type": "Aberration",
+      "tags": null,
+      "alignment": "Neutral",
+      "armorClass": 14,
+      "armorType": "natural armor",
+      "hitPoints": 114,
+      "hitDice": { "count": 12, "die": "d10" },
+      "proficiencyBonus": 3,
+      "speed": { "walk": "30 ft." },
+      "abilityScores": {
+        "strength": 16,
+        "dexterity": 11,
+        "constitution": 19,
+        "intelligence": 6,
+        "wisdom": 13,
+        "charisma": 6
+      },
+      "savingThrows": ["Con +6", "Wis +4"],
+      "skills": null,
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": ["poison"],
+      "conditionImmunities": ["poisoned"],
+      "senses": { "darkvision": "120 ft.", "passivePerception": 11 },
+      "languages": "Otyugh",
+      "challengeRating": "5",
+      "experiencePoints": 1800,
+      "traits": [
+        {
+          "name": "Limited Telepathy",
+          "description": "The otyugh can magically transmit simple messages and images to any creature within 120 feet of it that can understand a language."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Multiattack",
+          "description": "The otyugh makes three attacks: one with its bite and two with its tentacles."
+        },
+        {
+          "name": "Bite",
+          "description": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 12 (2d8+3) piercing damage."
+        },
+        {
+          "name": "Tentacle",
+          "description": "Melee Weapon Attack: +6 to hit, reach 10 ft., one target. Hit: 7 (1d8+3) bludgeoning damage plus 4 (1d8) poison damage."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["underground", "sewer"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Wyvern",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Large",
+      "type": "Dragon",
+      "tags": null,
+      "alignment": "Unaligned",
+      "armorClass": 13,
+      "armorType": "natural armor",
+      "hitPoints": 110,
+      "hitDice": { "count": 13, "die": "d10" },
+      "proficiencyBonus": 3,
+      "speed": { "walk": "20 ft.", "fly": "80 ft." },
+      "abilityScores": {
+        "strength": 19,
+        "dexterity": 10,
+        "constitution": 17,
+        "intelligence": 5,
+        "wisdom": 12,
+        "charisma": 6
+      },
+      "savingThrows": ["Con +6", "Wis +4"],
+      "skills": null,
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": null,
+      "conditionImmunities": null,
+      "senses": { "darkvision": "60 ft.", "passivePerception": 11 },
+      "languages": null,
+      "challengeRating": "6",
+      "experiencePoints": 2300,
+      "traits": [
+        {
+          "name": "Flyby",
+          "description": "The wyvern doesn't provoke opportunity attacks when it flies out of an enemy's reach."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Multiattack",
+          "description": "The wyvern makes two attacks: one with its bite and one with its stinger."
+        },
+        {
+          "name": "Bite",
+          "description": "Melee Weapon Attack: +7 to hit, reach 10 ft., one creature. Hit: 11 (2d6+4) piercing damage."
+        },
+        {
+          "name": "Stinger",
+          "description": "Melee Weapon Attack: +7 to hit, reach 10 ft., one creature. Hit: 13 (2d8+4) piercing damage. The target must make a DC 15 Constitution saving throw, taking 24 (7d6) poison damage on a failed save, or half as much on a successful one."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["mountain", "wasteland"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Stone Giant",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Huge",
+      "type": "Giant",
+      "tags": null,
+      "alignment": "Neutral",
+      "armorClass": 17,
+      "armorType": "natural armor",
+      "hitPoints": 126,
+      "hitDice": { "count": 11, "die": "d12" },
+      "proficiencyBonus": 4,
+      "speed": { "walk": "40 ft." },
+      "abilityScores": {
+        "strength": 23,
+        "dexterity": 15,
+        "constitution": 20,
+        "intelligence": 10,
+        "wisdom": 12,
+        "charisma": 9
+      },
+      "savingThrows": ["Dex +6", "Con +8", "Wis +4"],
+      "skills": ["Athletics +10", "Perception +4"],
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": null,
+      "conditionImmunities": null,
+      "senses": { "darkvision": "60 ft.", "passivePerception": 14 },
+      "languages": "Giant",
+      "challengeRating": "7",
+      "experiencePoints": 2900,
+      "traits": [
+        {
+          "name": "Rock Catching",
+          "description": "If a rock or similar object is hurled at the giant, the giant can, with a successful DC 10 Dexterity saving throw, catch the missile and take no bludgeoning damage from it."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Multiattack",
+          "description": "The giant makes two greatclub attacks."
+        },
+        {
+          "name": "Greatclub",
+          "description": "Melee Weapon Attack: +9 to hit, reach 15 ft., one target. Hit: 19 (3d8+6) bludgeoning damage."
+        },
+        {
+          "name": "Rock",
+          "description": "Ranged Weapon Attack: +9 to hit, range 60/240 ft., one target. Hit: 28 (4d10+6) bludgeoning damage."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": null,
+      "lairActions": null,
+      "regionalEffects": null,
+      "environment": ["mountain", "cave"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    },
+    {
+      "campaignId": null,
+      "name": "Adult White Dragon",
+      "source": "Homebrew",
+      "page": null,
+      "size": "Huge",
+      "type": "Dragon",
+      "tags": null,
+      "alignment": "Chaotic Evil",
+      "armorClass": 18,
+      "armorType": "natural armor",
+      "hitPoints": 200,
+      "hitDice": { "count": 16, "die": "d12" },
+      "proficiencyBonus": 4,
+      "speed": { "walk": "40 ft.", "burrow": "30 ft.", "fly": "80 ft.", "swim": "40 ft." },
+      "abilityScores": {
+        "strength": 22,
+        "dexterity": 10,
+        "constitution": 22,
+        "intelligence": 8,
+        "wisdom": 12,
+        "charisma": 12
+      },
+      "savingThrows": ["Dex +5", "Con +11", "Wis +6", "Cha +6"],
+      "skills": ["Perception +11", "Stealth +5"],
+      "damageVulnerabilities": null,
+      "damageResistances": null,
+      "damageImmunities": ["cold"],
+      "conditionImmunities": null,
+      "senses": { "blindsight": "60 ft.", "darkvision": "120 ft.", "passivePerception": 21 },
+      "languages": "Common, Draconic",
+      "challengeRating": "10",
+      "experiencePoints": 5900,
+      "traits": [
+        {
+          "name": "Ice Walk",
+          "description": "The dragon can move across and climb icy surfaces without needing to make an ability check. Additionally, difficult terrain composed of ice or snow doesn't cost it extra moment."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Multiattack",
+          "description": "The dragon can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws."
+        },
+        {
+          "name": "Bite",
+          "description": "Melee Weapon Attack: +11 to hit, reach 10 ft., one target. Hit: 17 (2d10+6) piercing damage plus 4 (1d8) cold damage."
+        },
+        {
+          "name": "Claw",
+          "description": "Melee Weapon Attack: +11 to hit, reach 5 ft., one target. Hit: 13 (2d6+6) slashing damage."
+        },
+        {
+          "name": "Tail",
+          "description": "Melee Weapon Attack: +11 to hit, reach 15 ft., one target. Hit: 15 (2d8+6) bludgeoning damage."
+        },
+        {
+          "name": "Frightful Presence",
+          "description": "Each creature of the dragon's choice that is within 120 feet of the dragon and aware of it must succeed on a DC 16 Wisdom saving throw or become frightened for 1 minute."
+        },
+        {
+          "name": "Cold Breath (Recharge 5–6)",
+          "description": "The dragon exhales an icy blast in a 60-foot cone. Each creature in that area must make a DC 19 Constitution saving throw, taking 54 (12d8) cold damage on a failed save, or half as much on a successful one."
+        }
+      ],
+      "reactions": null,
+      "legendaryActions": [
+        {
+          "name": "Detect",
+          "description": "The dragon makes a Wisdom (Perception) check."
+        },
+        {
+          "name": "Tail Attack",
+          "description": "The dragon makes a tail attack."
+        },
+        {
+          "name": "Wing Attack (Costs 2 Actions)",
+          "description": "The dragon beats its wings. Each creature within 10 feet of the dragon must succeed on a DC 19 Dexterity saving throw or take 13 (2d6+6) bludgeoning damage and be knocked prone. The dragon can then fly up to half its flying speed."
+        }
+      ],
+      "lairActions": null,
+      "regionalEffects": [
+        {
+          "name": "Freezing Fog",
+          "description": "Chilly fog lightly obscures the land within 6 miles of the dragon's lair."
+        }
+      ],
+      "environment": ["arctic", "mountain"],
+      "createdAt": 1724865957,
+      "updatedAt": null
+    }
+  ]

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { PlayerCharacter } from "../types/character";
 import { getAbilityModifier } from "../types/dndRules";
@@ -8,9 +8,18 @@ import CharacterForm from "./CharacterForm";
 import "./CharacterList.css";
 
 const CharacterList: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [isCreating, setIsCreating] = useState(false);
   const characters = useQuery(api.characters.getAllCharacters);
   const deleteCharacter = useMutation(api.characters.deleteCharacter);
+
+  // Check if we should show creation form based on query parameter
+  useEffect(() => {
+    const shouldCreate = searchParams.get('create') === 'true';
+    if (shouldCreate) {
+      setIsCreating(true);
+    }
+  }, [searchParams]);
 
   console.log("Characters data:", characters); // Debug log
 
@@ -25,14 +34,37 @@ const CharacterList: React.FC = () => {
   };
 
   const handleCancel = () => {
-    setIsCreating(false);
+    const returnTo = searchParams.get('returnTo');
+    if (returnTo === 'campaign-form') {
+      window.location.href = "/campaigns/new";
+    } else {
+      setIsCreating(false);
+      // Clear the create query parameter if it exists
+      if (searchParams.get('create') === 'true') {
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.delete('create');
+        window.history.replaceState(null, '', `?${newSearchParams.toString()}`);
+      }
+    }
   };
 
   const handleSubmitSuccess = () => {
-    setIsCreating(false);
+    const returnTo = searchParams.get('returnTo');
+    if (returnTo === 'campaign-form') {
+      window.location.href = "/campaigns/new";
+    } else {
+      setIsCreating(false);
+      // Clear the create query parameter if it exists
+      if (searchParams.get('create') === 'true') {
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.delete('create');
+        window.history.replaceState(null, '', `?${newSearchParams.toString()}`);
+      }
+    }
   };
 
   if (isCreating) {
+    const returnTo = searchParams.get('returnTo');
     return (
       <div className="character-list">
         <div className="character-list-header">
@@ -40,7 +72,7 @@ const CharacterList: React.FC = () => {
             onClick={handleCancel}
             className="back-button"
           >
-            ← Back to Characters
+            {returnTo === 'campaign-form' ? "← Back to Campaign Form" : "← Back to Characters"}
           </button>
         </div>
         <CharacterForm onSuccess={handleSubmitSuccess} />

@@ -4,7 +4,6 @@ import { ConvexProvider, ConvexReactClient, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import CharacterList from "./components/CharacterList";
 import CharacterDetail from "./components/CharacterDetail";
-import CharacterCreationForm from "./components/CharacterCreationForm";
 import Navigation from "./components/Navigation";
 import ItemDetails from "./components/ItemDetails";
 import ItemList from "./components/ItemList";
@@ -12,21 +11,17 @@ import { Id } from "../convex/_generated/dataModel";
 import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { Maps } from "./pages/Maps";
 import LocationList from "./components/LocationList";
-import LocationForm from "./components/LocationForm";
 import LocationDetails from "./components/LocationDetails";
 import ActionCreationForm from "./components/ActionCreationForm";
 import ActionsList from "./components/ActionsList";
 import QuestList from "./components/QuestList";
 import QuestDetail from "./components/QuestDetail";
-import QuestCreationForm from "./components/QuestCreationForm";
 import QuestTaskCreationForm from "./components/QuestTaskCreationForm";
 import MonsterList from "./components/MonsterList";
 import MonsterDetail from "./components/MonsterDetail";
-import MonsterCreationForm from "./components/MonsterCreationForm";
 import InteractionList from "./components/InteractionList";
 import InteractionDetail from "./components/InteractionDetail";
 import NPCsList from "./components/NPCsList";
-import NPCCreationForm from "./components/NPCCreationForm";
 import FactionList from "./components/FactionList";
 import FactionDetail from "./components/FactionDetail";
 import FactionCreationForm from "./components/FactionCreationForm";
@@ -89,11 +84,6 @@ const App: React.FC = () => {
                       <CharacterList />
                     </ProtectedRoute>
                   } />
-                  <Route path="/characters/create" element={
-                    <ProtectedRoute>
-                      <CharacterCreationForm />
-                    </ProtectedRoute>
-                  } />
                   <Route path="/characters/:id" element={
                     <ProtectedRoute>
                       <CharacterDetail />
@@ -102,11 +92,6 @@ const App: React.FC = () => {
                   <Route path="/locations" element={
                     <ProtectedRoute>
                       <LocationList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/locations/new" element={
-                    <ProtectedRoute>
-                      <LocationForm />
                     </ProtectedRoute>
                   } />
                   <Route path="/locations/:locationId" element={
@@ -134,11 +119,6 @@ const App: React.FC = () => {
                       <QuestList />
                     </ProtectedRoute>
                   } />
-                  <Route path="/quests/create" element={
-                    <ProtectedRoute>
-                      <QuestCreationForm />
-                    </ProtectedRoute>
-                  } />
                   <Route path="/quests/:questId" element={
                     <ProtectedRoute>
                       <QuestDetail />
@@ -154,11 +134,6 @@ const App: React.FC = () => {
                       <MonsterList />
                     </ProtectedRoute>
                   } />
-                  <Route path="/monsters/create" element={
-                    <ProtectedRoute>
-                      <MonsterCreationForm />
-                    </ProtectedRoute>
-                  } />
                   <Route path="/monsters/:id" element={
                     <ProtectedRoute>
                       <MonsterDetail />
@@ -167,11 +142,6 @@ const App: React.FC = () => {
                   <Route path="/npcs" element={
                     <ProtectedRoute>
                       <NPCsList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/npcs/create" element={
-                    <ProtectedRoute>
-                      <NPCCreationForm />
                     </ProtectedRoute>
                   } />
                   <Route path="/factions" element={
