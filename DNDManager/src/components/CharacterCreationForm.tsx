@@ -25,7 +25,13 @@ import {
 } from "../types/dndRules";
 import "./CharacterCreationForm.css";
 
-const CharacterCreationForm: React.FC = () => {
+interface CharacterCreationFormProps {
+  defaultCharacterType?: "PlayerCharacter" | "NonPlayerCharacter";
+}
+
+const CharacterCreationForm: React.FC<CharacterCreationFormProps> = ({ 
+  defaultCharacterType = "PlayerCharacter" 
+}) => {
   const navigate = useNavigate();
   const { user } = useUser();
   const createCharacter = useMutation(api.characters.createPlayerCharacter);
@@ -37,7 +43,7 @@ const CharacterCreationForm: React.FC = () => {
     class: "",
     background: "",
     alignment: "",
-    characterType: "PlayerCharacter",
+    characterType: defaultCharacterType,
     abilityScores: {
       strength: 10,
       dexterity: 10,
@@ -176,7 +182,12 @@ const CharacterCreationForm: React.FC = () => {
       };
 
       await createCharacter(characterData);
-      navigate("/characters");
+      // Navigate to the appropriate page based on character type
+      if (formData.characterType === "NonPlayerCharacter") {
+        navigate("/npcs");
+      } else {
+        navigate("/characters");
+      }
     } catch (error) {
       console.error("Error creating character:", error);
       setErrors({ submit: "Failed to create character. Please try again." });
@@ -442,7 +453,13 @@ const CharacterCreationForm: React.FC = () => {
           )}
           <button
             type="button"
-            onClick={() => navigate("/characters")}
+            onClick={() => {
+              if (formData.characterType === "NonPlayerCharacter") {
+                navigate("/npcs");
+              } else {
+                navigate("/characters");
+              }
+            }}
             className="btn btn-secondary"
           >
             Cancel

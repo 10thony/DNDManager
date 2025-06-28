@@ -268,6 +268,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     worldSetting: v.optional(v.string()),
     startDate: v.optional(v.number()),
+    isPublic: v.boolean(),
   
     participantPlayerCharacterIds: v.optional(
       v.array(v.id("playerCharacters"))
@@ -357,6 +358,7 @@ export default defineSchema({
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     npcIds: v.optional(v.array(v.id("npcs"))),
     monsterIds: v.optional(v.array(v.id("monsters"))),
+    timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
     createdAt: v.number(),
   }),
   sessions: defineTable({

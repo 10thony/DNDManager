@@ -8,7 +8,7 @@ interface EntitySelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (entityId: Id<any>) => void;
-  entityType: "quests" | "questTasks" | "locations" | "npcs" | "monsters" | "playerCharacters";
+  entityType: "quests" | "questTasks" | "locations" | "npcs" | "monsters" | "playerCharacters" | "timelineEvents";
   title: string;
   currentLinkedIds?: Id<any>[];
 }
@@ -31,6 +31,7 @@ const EntitySelectionModal: React.FC<EntitySelectionModalProps> = ({
   const npcs = useQuery(api.npcs.getAllNpcs);
   const monsters = useQuery(api.monsters.getAllMonsters);
   const playerCharacters = useQuery(api.characters.getAllCharacters);
+  const timelineEvents = useQuery(api.timelineEvents.getAllTimelineEvents);
 
   const getEntities = () => {
     switch (entityType) {
@@ -46,6 +47,8 @@ const EntitySelectionModal: React.FC<EntitySelectionModalProps> = ({
         return monsters || [];
       case "playerCharacters":
         return playerCharacters || [];
+      case "timelineEvents":
+        return timelineEvents || [];
       default:
         return [];
     }
@@ -94,6 +97,8 @@ const EntitySelectionModal: React.FC<EntitySelectionModalProps> = ({
         return entity.name;
       case "playerCharacters":
         return entity.name;
+      case "timelineEvents":
+        return entity.title;
       default:
         return "Unknown";
     }
@@ -113,6 +118,8 @@ const EntitySelectionModal: React.FC<EntitySelectionModalProps> = ({
         return `${entity.size} ${entity.type} (CR ${entity.challengeRating})`;
       case "playerCharacters":
         return `${entity.race} ${entity.class} (Level ${entity.level})`;
+      case "timelineEvents":
+        return `${entity.type || "Custom"} - ${new Date(entity.date).toLocaleDateString()}`;
       default:
         return "";
     }

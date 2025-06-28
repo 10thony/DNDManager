@@ -5,6 +5,7 @@ import { LocationType, locationTypes } from "../../convex/locations";
 import { Id } from "../../convex/_generated/dataModel";
 import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import { MapPreview } from "./maps/MapPreview";
 import "./LocationForm.css";
 
 interface LocationFormProps {
@@ -31,6 +32,8 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
     secrets: "",
     mapId: undefined as Id<"maps"> | undefined,
   });
+
+  const selectedMap = formData.mapId ? maps.find(m => m._id === formData.mapId) : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +189,22 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
             </Link>
           </div>
         </div>
+
+        {selectedMap && (
+          <div className="map-preview-section">
+            <h4 className="form-subsection-title">Selected Map Preview</h4>
+            <div className="map-preview-container">
+              <div className="flex justify-center items-center p-4">
+                <MapPreview map={selectedMap} cellSize={15} />
+              </div>
+              <div className="map-info">
+                <p><strong>{selectedMap.name}</strong></p>
+                <p>Dimensions: {selectedMap.width} × {selectedMap.height}</p>
+                <p>Last Updated: {new Date(selectedMap.updatedAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="form-actions">

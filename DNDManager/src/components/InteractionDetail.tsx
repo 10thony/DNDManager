@@ -25,7 +25,7 @@ type ModalType =
   | "characterCreation"
   | null;
 
-type EntityType = "quests" | "questTasks" | "locations" | "npcs" | "monsters" | "playerCharacters";
+type EntityType = "quests" | "questTasks" | "locations" | "npcs" | "monsters" | "playerCharacters" | "timelineEvents";
 
 const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) => {
   const navigate = useNavigate();
@@ -57,6 +57,7 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
   const locations = useQuery(api.locations.list);
   const quests = useQuery(api.quests.getAllQuests);
   const questTasks = useQuery(api.questTasks.getAllQuestTasks);
+  const timelineEvents = useQuery(api.timelineEvents.getAllTimelineEvents);
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this interaction? This action cannot be undone.")) {
@@ -150,6 +151,10 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
           const currentChars = interaction.playerCharacterIds || [];
           updates.playerCharacterIds = [...currentChars, entityId];
           break;
+        case "timelineEvents":
+          const currentTimelineEvents = interaction.timelineEventIds || [];
+          updates.timelineEventIds = [...currentTimelineEvents, entityId];
+          break;
       }
 
       if (Object.keys(updates).length > 0) {
@@ -228,6 +233,10 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
         case "playerCharacter":
           const currentChars = interaction.playerCharacterIds || [];
           updates.playerCharacterIds = currentChars.filter(id => id !== entityId);
+          break;
+        case "timelineEvent":
+          const currentTimelineEvents = interaction.timelineEventIds || [];
+          updates.timelineEventIds = currentTimelineEvents.filter(id => id !== entityId);
           break;
       }
 
@@ -369,6 +378,14 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
             onClick={() => openEntitySelection("playerCharacters", "Link Player Character")}
           >
             👤 Link Character
+          </button>
+        </div>
+        <div className="action-group">
+          <button 
+            className="action-button secondary"
+            onClick={() => openEntitySelection("timelineEvents", "Link Timeline Event")}
+          >
+            📅 Link Timeline Event
           </button>
         </div>
       </div>
@@ -665,6 +682,63 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
             </div>
           )}
         </div>
+
+        {/* Timeline Events Section */}
+        <div className="section">
+          <div 
+            className="section-header"
+            onClick={() => toggleSection("timelineEvents")}
+            style={{ cursor: "pointer" }}
+          >
+            <h3 className="section-title">📅 Timeline Events ({interaction.timelineEventIds?.length || 0})</h3>
+            <div className="header-actions">
+              <button 
+                className="add-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEntitySelection("timelineEvents", "Link Existing Timeline Event");
+                }}
+              >
+                + Link Timeline Event
+              </button>
+              <span className="collapse-indicator">
+                {collapsedSections.has("timelineEvents") ? "▼" : "▲"}
+              </span>
+            </div>
+          </div>
+          {!collapsedSections.has("timelineEvents") && (
+            <div className="section-content">
+              {interaction.timelineEventIds && interaction.timelineEventIds.length > 0 ? (
+                <div className="entities-grid">
+                  {timelineEvents?.filter((event: any) => 
+                    interaction.timelineEventIds?.includes(event._id)
+                  ).map((event: any) => (
+                    <div key={event._id} className="entity-card">
+                      <div className="entity-info">
+                        <h4 className="entity-name">{event.title}</h4>
+                        <p className="entity-description">
+                          {event.type || "Custom"} - {new Date(event.date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="entity-actions">
+                        <button 
+                          className="unlink-button"
+                          onClick={() => handleUnlinkEntity("timelineEvent", event._id)}
+                        >
+                          Unlink
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <p>No timeline events linked to this interaction.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Action Buttons */}
@@ -699,6 +773,7 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
             entitySelectionType === "npcs" ? interaction.npcIds || [] :
             entitySelectionType === "monsters" ? interaction.monsterIds || [] :
             entitySelectionType === "playerCharacters" ? interaction.playerCharacterIds || [] :
+            entitySelectionType === "timelineEvents" ? interaction.timelineEventIds || [] :
             []
           }
         />

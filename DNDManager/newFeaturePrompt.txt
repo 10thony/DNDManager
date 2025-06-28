@@ -1,0 +1,94 @@
+Task
+Using our existing schema declarations, build two new React/TypeScript components under
+src/components/campaigns/:
+• CampaignList.tsx
+• CampaignDetail.tsx
+Schema & Types
+• Import all types from src/schemas/campaign.ts.
+• Stub out any GraphQL queries/mutations you’ll need (mark them // TODO: implement).
+Functional Requirements
+
+1. 
+CampaignList
+– Displays a paginated list of campaigns (name + visibility badge).
+– Each row links to its CampaignDetail view.
+
+
+2. 
+CampaignDetail
+– No separate “Create Campaign” form—campaigns are created and updated incrementally here.
+– Mirror the pattern of the existing InteractionsDetail view:
+• Break into collapsible subsections.
+• Each subsection supports inline create/edit/delete.
+– Required subsections & rules:
+• Info: campaign name (required), public/private toggle
+• Timeline Events: exactly three events (start, midpoint, end)
+• Player Characters: ≥ 1
+• Non-Player Characters: ≥ 1
+• Quests: ≥ 1
+• Interactions: ≥ 1
+• Locations: ≥ 1
+• Boss Monsters: ≥ 1
+– Form-level validation: cannot mark “complete” or navigate away until all required fields/counts are satisfied.
+
+
+Styling & Theming
+• Follow the styling guidelines in src/styles/* and existing components.
+• Use the global dark-mode toggle (context or hook).
+• Adhere to our design tokens, CSS variables or styled-components conventions.
+Code Conventions
+• React functional components + hooks (no classes).
+• TypeScript with strict typing.
+• Prettier-compatible (80-column print width).
+• Split out any reusable subsection UIs under src/components/campaigns/subsections/.
+Deliverables
+
+1. CampaignList.tsx
+2. CampaignDetail.tsx
+3. Subsection components (e.g. TimelineSection.tsx, PlayersSection.tsx, etc.)
+4. Stubbed GraphQL operations and typed hooks
+––––––––––––––––––––––––––––––––––––––––––
+Clarifications Needed
+We need more detail to align on data sources, UX patterns and styling. Please clarify:
+
+1. 
+Schema / Database Source of Truth
+• Our campaigns table has optional arrays for timelineEvents, playerCharacters, npcs, quests, locations and monsters.
+• Should we treat these arrays as the canonical state for count validation?
+• If an array is null or undefined, do we auto-initialize it to an empty list?
+• When the user adds a new timeline event or character, should we mutate that array directly or is there a separate join table/API?
+
+
+2. 
+Boss Monsters Filtering Logic
+• In src/schemas/monster.ts there’s an isBoss flag—should the “Boss Monsters” subsection only include monsters where isBoss === true?
+• Or do you want to surface all linked monsters and let the user tag which ones are bosses?
+
+
+3. 
+Navigation Structure
+• Should “Campaigns” live at a new top-level route /campaigns with its own sidebar nav link?
+• Or should it be nested under an existing section (e.g. /tools/campaigns)?
+• Any breadcrumbs or parent nav items we should hook into?
+
+
+4. 
+Validation & Completion UX
+• When you say “cannot mark complete or navigate away,” do you want:
+– an explicit “Mark as Complete” button that only enables when all rules pass?
+– route-guard logic that blocks navigation and shows a modal warning on unsaved/incomplete data?
+• If you prefer a modal, should it match our existing “unsaved changes” pattern?
+
+
+5. 
+Styling Approach for New Components
+• Our repo currently uses [styled-components / CSS Modules / global CSS]. Which system should we use for new styles?
+• Any specific design tokens, CSS variables or breakpoints you want us to reference?
+
+
+6. 
+Pagination Strategy for CampaignList
+• Is simple “Prev / Next” pagination sufficient, or would you prefer:
+– numbered page controls (1, 2, 3 …)
+– infinite scroll with a “Load More” button?
+• What default page size (e.g. 10, 20, 50) and sorting order should we apply?

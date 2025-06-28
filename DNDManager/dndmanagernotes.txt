@@ -10,11 +10,6 @@ SessionList component
 SessionDetail component
 SessionForm/SessionCreationForm component
 
-timelineEvents - ❌ Missing:
-TimelineEventList component
-TimelineEventDetail component
-TimelineEventForm/TimelineEventCreationForm component
-
 
 deities - ❌ Missing:
 DeityList component

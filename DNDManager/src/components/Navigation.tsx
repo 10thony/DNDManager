@@ -30,6 +30,15 @@ const Navigation: React.FC<NavigationProps> = ({ isCollapsed, setIsCollapsed }) 
           <span className="nav-brand" />
           <div className="nav-links">
             <Link
+              to="/campaigns"
+              className={`nav-link ${
+                location.pathname.startsWith("/campaigns") ? "active" : ""
+              }`}
+              title="Campaigns"
+            >
+              {isCollapsed ? "📚" : "Campaigns"}
+            </Link>
+            <Link
               to="/characters"
               className={`nav-link ${
                 location.pathname === "/characters" ? "active" : ""
@@ -118,6 +127,15 @@ const Navigation: React.FC<NavigationProps> = ({ isCollapsed, setIsCollapsed }) 
               title="Factions"
             >
               {isCollapsed ? "🏛️" : "Factions"}
+            </Link>
+            <Link
+              to="/timeline-events"
+              className={`nav-link ${
+                location.pathname.startsWith("/timeline-events") ? "active" : ""
+              }`}
+              title="Timeline Events"
+            >
+              {isCollapsed ? "📅" : "Timeline Events"}
             </Link>
             <DarkModeToggle isCollapsed={isCollapsed} />
             <SignOutButton>

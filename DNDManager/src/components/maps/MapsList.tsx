@@ -1,6 +1,7 @@
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Link, useNavigate } from 'react-router-dom';
+import { MapPreview } from './MapPreview';
 
 interface MapsListProps {
   userId: string;
@@ -33,10 +34,17 @@ export const MapsList = ({ userId }: MapsListProps) => {
           <div
             key={map._id}
             onClick={() => handleMapClick(map._id)}
-            className="block p-4 border rounded hover:shadow-lg transition-shadow cursor-pointer"
+            className="block p-4 border rounded hover:shadow-lg transition-shadow cursor-pointer bg-white dark:bg-gray-800"
           >
             <h3 className="text-xl font-semibold mb-2">{map.name}</h3>
-            <div className="text-sm text-gray-600">
+            
+            <div className="mb-3 flex justify-center">
+              <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded">
+                <MapPreview map={map} cellSize={12} />
+              </div>
+            </div>
+            
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               <p>Dimensions: {map.width} × {map.height}</p>
               <p>Created: {new Date(map.createdAt).toLocaleDateString()}</p>
               <p>Last Updated: {new Date(map.updatedAt).toLocaleDateString()}</p>

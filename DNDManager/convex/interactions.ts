@@ -11,6 +11,7 @@ export const createInteraction = mutation({
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     npcIds: v.optional(v.array(v.id("npcs"))),
     monsterIds: v.optional(v.array(v.id("monsters"))),
+    timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
   },
   handler: async (ctx, args) => {
     const interactionId = await ctx.db.insert("interactions", {
@@ -66,6 +67,7 @@ export const updateInteraction = mutation({
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     npcIds: v.optional(v.array(v.id("npcs"))),
     monsterIds: v.optional(v.array(v.id("monsters"))),
+    timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -136,6 +138,26 @@ export const addMonstersToInteraction = mutation({
 
     await ctx.db.patch(args.id, {
       monsterIds: updatedMonsters,
+    });
+  },
+});
+
+export const addTimelineEventsToInteraction = mutation({
+  args: {
+    id: v.id("interactions"),
+    timelineEventIds: v.array(v.id("timelineEvents")),
+  },
+  handler: async (ctx, args) => {
+    const interaction = await ctx.db.get(args.id);
+    if (!interaction) {
+      throw new Error("Interaction not found");
+    }
+
+    const currentTimelineEvents = interaction.timelineEventIds || [];
+    const updatedTimelineEvents = [...new Set([...currentTimelineEvents, ...args.timelineEventIds])];
+
+    await ctx.db.patch(args.id, {
+      timelineEventIds: updatedTimelineEvents,
     });
   },
 }); 

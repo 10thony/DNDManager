@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { useParams, Link } from "react-router-dom";
 import { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@clerk/clerk-react";
+import { MapPreview } from "./maps/MapPreview";
 import "./LocationForm.css";
 
 type CellState = 'inbounds' | 'outbounds' | 'occupied';
@@ -57,8 +58,29 @@ export default function LocationDetails() {
   const location = useQuery(api.locations.get, { id: locationId as Id<"locations"> });
   const maps = useQuery(api.maps.getUserMaps, { userId: userId || "" }) || [];
 
-  if (!location) {
-    return <div>Loading...</div>;
+  if (location === undefined) {
+    return (
+      <div className="location-details-container">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading location details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (location === null) {
+    return (
+      <div className="location-details-container">
+        <div className="error-state">
+          <h2>Location Not Found</h2>
+          <p>The location you're looking for doesn't exist.</p>
+          <Link to="/locations" className="btn-primary">
+            Back to Locations
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const associatedMap = location.mapId ? maps.find(m => m._id === location.mapId) : null;
@@ -105,7 +127,7 @@ export default function LocationDetails() {
               <h4 className="location-info-label">{associatedMap.name}</h4>
               <div className="map-preview-container">
                 <div className="flex justify-center items-center p-4">
-                  <MapPreview map={associatedMap} />
+                  <MapPreview map={associatedMap} cellSize={20} />
                 </div>
               </div>
               <div className="map-info">
