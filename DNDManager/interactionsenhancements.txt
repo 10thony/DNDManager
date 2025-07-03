@@ -1,0 +1,159 @@
+You are designing a live interaction system for a DND campaign manager. The application stack is Vite, React, TypeScript, React Router, Convex, and ClerkAuth.
+
+**Core Functionality:**
+
+1.  **Turn-Based Interactions:** Interactions progress in a strict turn order.
+2.  **DM Control:** Dungeon Masters have complete control over the interaction's lifecycle, including initiating, managing turns, and resolving actions.
+3.  **Initiative System:**
+    *   DMs can declare initiative for all participants (players, NPCs, monsters).
+    *   The system should support rolling initiative (e.g., 1d20 + modifier) or manual assignment.
+    *   The `interactions` table needs to store the initiative order, including participant IDs and their initiative rolls.
+    *   The `interactions` table must track the current active participant.
+4.  **Player Action Submission:**
+    *   Players receive in-app alerts when it's their character's turn.
+    *   Players submit their actions via a clear interface (e.g., text input for dialogue, specific action selection for combat).
+    *   Data submission must be validated to ensure players only act on their turn.
+5.  **Visibility & Feedback:**
+    *   All participants should see the current turn order and who is active.
+    *   Player actions should be visible to others, likely after submission and before DM resolution (e.g., "Player X is preparing to do Y").
+    *   The DM should see all submitted actions in a queue for review.
+6.  **Interaction Types:** Support for dialogue choices and complex combat rounds initially, with a foundation for puzzles later.
+7.  **Contextual Linking:**
+    *   Interactions must be linked to a `location`.
+    *   Locations must be linked to a `map`.
+8.  **Schema Requirements:**
+    *   **`interactions` table:**
+        *   Must store DM user ID (`dmUserId`).
+        *   Must store `campaignId`, `relatedQuestId`, `relatedLocationId`.
+        *   Needs a `status` field to manage the interaction lifecycle (e.g., `PENDING_INITIATIVE`, `INITIATIVE_ROLLED`, `WAITING_FOR_PLAYER_TURN`, `DM_REVIEW`, `COMPLETED`).
+        *   Needs `initiativeOrder` (list of participants with rolls).
+        *   Needs `currentInitiativeIndex` to track whose turn it is.
+        *   Must accommodate `monsters`, `npcs`, and `playerCharacters` as participants.
+        *   Should include fields for `rewardItemIds` (for distribution) and `xpAwards`.
+        *   A flexible `interactionState` field is recommended for complex logic (puzzles, combat states).
+        *   An `interactionLog` field to record actions and outcomes.
+    *   **`playerActions` table (New):** To store individual player submissions (description, type, status, DM notes, linked items/XP).
+    *   **`campaigns` table:** Needs an `activeInteractionId` to easily link a campaign to its current live interaction.
+
+**User Interface Considerations:**
+
+*   DM dashboard to manage interactions.
+*   Player view for their character's turn and action queue.
+*   In-app alerts for player notifications.
+
+
+Updated Schema Considerations:
+
+Based on your input, here are some proposed additions/modifications to your existing schema, primarily focusing on the interactions and related tables:
+
+1. 
+interactions Table:
+
+	- campaignId: v.id("campaigns") (Already there)
+	- relatedQuestId: v.optional(v.id("quests")) (Already there)
+	- relatedLocationId: v.optional(v.id("locations")) (Already there)
+	- dmUserId: v.id("users") (To explicitly know who initiated/controls it)
+	- name: v.string() (A descriptive name for the interaction, e.g., "Goblin Ambush at Crossroads")
+	- description: v.optional(v.string()) (Narrative description for the players)
+	- status: v.union(v.literal("PENDING_INITIATIVE"), v.literal("INITIATIVE_ROLLED"), v.literal("WAITING_FOR_PLAYER_TURN"), v.literal("PROCESSING_PLAYER_ACTION"), v.literal("DM_REVIEW"), v.literal("COMPLETED"), v.literal("CANCELLED"))
+	- initiativeOrder: v.optional(v.array(v.object({ entityId: v.string(), entityType: v.union(v.literal("playerCharacter"), v.literal("npc"), v.literal("monster")), initiativeRoll: v.number() }))) (Stores the order of participants, including their initiative roll)
+	- currentInitiativeIndex: v.optional(v.number()) (Index into initiativeOrder for the current active participant)
+	- participantMonsterIds: v.optional(v.array(v.id("monsters")))
+	- participantNpcIds: v.optional(v.array(v.id("npcs")))
+	- participantPlayerCharacterIds: v.optional(v.array(v.id("playerCharacters")))
+	- interactionLog: v.optional(v.array(v.any())) (To store a history of actions and outcomes during the interaction)
+	- interactionState: v.optional(v.any()) (A flexible JSON blob to store dynamic state for puzzles, combat conditions, etc.)
+	- rewardItemIds: v.optional(v.array(v.id("items"))) (Items the DM can distribute at the end)
+	- xpAwards: v.optional(v.array(v.object({ playerCharacterId: v.id("playerCharacters"), xp: v.number() }))) (XP to be awarded)
+	- createdAt: v.number() (Already there)
+	- updatedAt: v.optional(v.number()) (Already there)
+2. 
+playerActions Table (New Table):
+
+	- interactionId: v.id("interactions")
+	- playerCharacterId: v.id("playerCharacters")
+	- actionDescription: v.string() (The player's typed action)
+	- actionType: v.union(v.literal("Dialogue"), v.literal("CombatAction"), v.literal("PuzzleInput"), v.literal("Custom"))
+	- submittedAt: v.number()
+	- status: v.union(v.literal("PENDING"), v.literal("DM_REVIEW"), v.literal("RESOLVED"), v.literal("SKIPPED"))
+	- dmNotes: v.optional(v.string()) (DM's feedback or resolution details)
+	- associatedItemId: v.optional(v.id("items")) (If an item was used/acquired in this action)
+	- createdAt: v.number()
+3. 
+campaigns Table:
+
+	- Add activeInteractionId: v.optional(v.id("interactions")) to easily track the current active interaction for a campaign.
+
+---
+
+Architectural Flow (Turn-Based Interactions):
+
+1. 
+
+DM Initiates Interaction:
+
+	- DM selects a context (e.g., a location or quest).
+	- DM chooses to start a "live interaction" (e.g., "Goblin Ambush").
+	- Mutation: startInteraction(campaignId, contextId, contextType, interactionName, description, participantMonsterIds, participantNpcIds)
+		- Creates an interactions record.
+		- Sets status: "PENDING_INITIATIVE".
+		- Populates dmUserId, participantPlayerCharacterIds (from campaign members), participantMonsterIds, participantNpcIds.
+		- Updates campaigns.activeInteractionId.
+	- Convex Subscription: Players of that campaign subscribe to campaigns.activeInteractionId.
+2. 
+DM Rolls Initiative:
+
+	- DM has a UI to trigger initiative rolls for all participants (players, NPCs, monsters).
+	- Mutation: rollInitiative(interactionId)
+		- Fetches all participants' relevant stats (e.g., Dexterity modifier from playerCharacters, monsters, npcs).
+		- Generates random dice rolls (e.g., 1d20 + modifier).
+		- Stores the results in interactions.initiativeOrder.
+		- Sorts initiativeOrder.
+		- Sets interactions.currentInitiativeIndex = 0.
+		- Sets interactions.status = "INITIATIVE_ROLLED".
+	- Convex Subscription: All players see the initiative order updated.
+3. 
+Player Turn:
+
+	- The UI highlights the current participant (initiativeOrder[currentInitiativeIndex]).
+	- Validation: Before a player can submit an action, a Convex query/mutation guard checks:
+		- Is the user authenticated?
+		- Is the interactionId active?
+		- Is the currentInitiativeIndex pointing to this player's playerCharacterId?
+		- Is the status appropriate for submitting an action (e.g., INITIATIVE_ROLLED or DM_REVIEW)?
+	- Player Action Submission:
+		- Player sees their character's turn.
+		- Player inputs action description (e.g., "Lyra uses her shortbow to attack the goblin leader.").
+		- Mutation: submitPlayerAction(interactionId, actionDescription, actionType, associatedItemId)
+			- Performs validation (as above).
+			- Creates a playerActions record linked to the interaction, player character, description, and status: "PENDING".
+			- Adds the action to a temporary queue for the DM to review.
+			- Updates interactions.status = "DM_REVIEW".
+	- Convex Subscription: The DM's dashboard updates with the new action in the "awaiting review" queue. Other players see a notification like "Lyra has taken her action."
+4. 
+DM Reviews and Resolves Actions:
+
+	- The DM sees a list of submitted player actions (and can also submit actions for NPCs/monsters).
+	- DM has UI to:
+		- Approve/Deny: Change playerActions.status to DM_REVIEW or RESOLVED.
+		- Add Notes: Fill playerActions.dmNotes.
+		- Distribute Rewards: Select items from interactions.rewardItemIds to award to specific playerCharacters via playerActions.associatedItemId or directly updating campaign inventory (if you have one).
+		- Award XP: Update campaigns.xpAwards or sessions.xpAwards if linked.
+		- Roll Dice: Integrate dice rolling and update relevant stats.
+	- Mutation: resolveInteractionAction(interactionId, playerActionId, resolutionDetails, awardedItemId, awardedXp)
+		- Updates the playerActions record.
+		- Logs the outcome in interactions.interactionLog.
+		- When all actions for the current turn are resolved:
+			- Increment interactions.currentInitiativeIndex.
+			- If it's the end of the round, reset currentInitiativeIndex to 0 (or the next valid participant).
+			- Set interactions.status = "INITIATIVE_ROLLED" (if another turn) or COMPLETED (if finished).
+5. 
+Interaction Completion:
+
+	- Once all participants have acted or the DM declares the interaction over:
+	- DM Action: DM clicks "End Interaction".
+	- Mutation: completeInteraction(interactionId)
+		- Marks the interaction as COMPLETED.
+		- Processes any final rewards (items, XP).
+		- Clears campaigns.activeInteractionId.
+	- Convex Subscription: Players are notified the interaction is over.
