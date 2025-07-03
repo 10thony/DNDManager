@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useDarkMode } from "../contexts/DarkModeContext";
+// import { useDarkMode } from "../contexts/DarkModeContext";
 import InteractionCreationForm from "./InteractionCreationForm";
 import EntitySelectionModal from "./modals/EntitySelectionModal";
 import LocationCreationModal from "./modals/LocationCreationModal";
@@ -30,7 +30,6 @@ type EntityType = "quests" | "questTasks" | "locations" | "npcs" | "monsters" | 
 const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isDarkMode } = useDarkMode();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -68,9 +67,9 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
   const playerCharacters = useQuery(api.characters.getAllCharacters);
   const npcs = useQuery(api.npcs.getAllNpcs);
   const monsters = useQuery(api.monsters.getAllMonsters);
-  const locations = useQuery(api.locations.list);
-  const quests = useQuery(api.quests.getAllQuests);
-  const questTasks = useQuery(api.questTasks.getAllQuestTasks);
+  // const locations = useQuery(api.locations.list);
+  // const quests = useQuery(api.quests.getAllQuests);
+  // const questTasks = useQuery(api.questTasks.getAllQuestTasks);
   const timelineEvents = useQuery(api.timelineEvents.getAllTimelineEvents);
 
   const handleDelete = async () => {
@@ -182,7 +181,7 @@ const InteractionDetail: React.FC<InteractionDetailProps> = ({ interactionId }) 
     closeModal();
   };
 
-  const handleLocationCreated = async (locationId: Id<"locations">) => {
+  const handleLocationCreated = async () => {
     alert("Location created successfully! You can now link it to this interaction.");
     closeModal();
   };

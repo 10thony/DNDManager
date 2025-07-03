@@ -1,6 +1,5 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import type { Item } from "../src/types/item";
 
 export const createItem = mutation({
   args: {
@@ -37,9 +36,24 @@ export const createItem = mutation({
     weight: v.optional(v.number()),
     cost: v.optional(v.number()),
     attunement: v.optional(v.boolean()),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
-    const itemId = await ctx.db.insert("items", args);
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { clerkId, ...itemData } = args;
+    const itemId = await ctx.db.insert("items", {
+      ...itemData,
+      userId: user._id,
+    });
     return itemId;
   },
 });
@@ -145,11 +159,25 @@ export const createBulkItems = mutation({
       cost: v.optional(v.number()),
       attunement: v.optional(v.boolean()),
     })),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const itemIds = [];
     for (const item of args.items) {
-      const itemId = await ctx.db.insert("items", item);
+      const itemId = await ctx.db.insert("items", {
+        ...item,
+        userId: user._id,
+      });
       itemIds.push(itemId);
     }
     return itemIds;

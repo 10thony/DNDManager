@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
 import { useUser } from "@clerk/clerk-react";
 import { CampaignValidationState, CampaignCreationRequirements } from "../../schemas/campaign";
 import "./CampaignCreationForm.css";
@@ -189,7 +190,7 @@ const CampaignCreationForm: React.FC = () => {
     setIsSubmitting(true);
     try {
       // Ensure user exists in Convex
-      let convexUserId: string;
+      let convexUserId: Id<"users">;
       if (convexUser) {
         convexUserId = convexUser._id;
       } else {
@@ -201,41 +202,45 @@ const CampaignCreationForm: React.FC = () => {
           lastName: user.lastName || undefined,
           imageUrl: user.imageUrl || undefined,
         });
-        
         if (!newUserId) {
-          throw new Error("Failed to create user in database");
+          throw new Error("Failed to create user in Convex");
         }
-        
         convexUserId = newUserId;
       }
 
-      // Create the campaign with the Convex user ID
+      // Create the campaign first
       const campaignId = await createCampaign({
         name: formData.name,
-        creatorId: convexUserId as any,
+        creatorId: convexUserId as Id<"users">, // Type assertion needed due to string/Id mismatch
         description: formData.description || undefined,
         worldSetting: formData.worldSetting || undefined,
         isPublic: formData.isPublic,
-        participantPlayerCharacterIds: selectedPlayerCharacters.length > 0 ? selectedPlayerCharacters as any : undefined,
-        npcIds: selectedNPCs.length > 0 ? selectedNPCs as any : undefined,
-        questIds: selectedQuests.length > 0 ? selectedQuests as any : undefined,
-        locationIds: selectedLocations.length > 0 ? selectedLocations as any : undefined,
-        monsterIds: selectedBossMonsters.length > 0 ? selectedBossMonsters as any : undefined,
+        dmId: user.id, // Set the current user as DM
+        players: [], // Start with empty players array
+        participantPlayerCharacterIds: selectedPlayerCharacters.length > 0 ? selectedPlayerCharacters as Id<"playerCharacters">[] : undefined,
+        participantUserIds: undefined,
+        tags: undefined,
+        npcIds: selectedNPCs.length > 0 ? selectedNPCs as Id<"npcs">[] : undefined,
+        questIds: selectedQuests.length > 0 ? selectedQuests as Id<"quests">[] : undefined,
+        locationIds: selectedLocations.length > 0 ? selectedLocations as Id<"locations">[] : undefined,
+        monsterIds: selectedBossMonsters.length > 0 ? selectedBossMonsters as Id<"monsters">[] : undefined,
       });
 
-      // Create timeline events and add them to the campaign
+      // Create timeline events after campaign is created
       for (const event of timelineEvents) {
-        const eventId = await createTimelineEvent({
+        const timelineEventId = await createTimelineEvent({
           campaignId,
           title: event.title,
           description: event.description,
           date: event.date,
           type: event.type as any,
+          clerkId: user!.id,
         });
-
+        
+        // Add timeline event to campaign
         await addTimelineEventToCampaign({
           campaignId,
-          timelineEventId: eventId,
+          timelineEventId: timelineEventId as Id<"timelineEvents">, // Type assertion needed
         });
       }
 
@@ -257,23 +262,23 @@ const CampaignCreationForm: React.FC = () => {
 
   // Navigation functions for creating new entities
   const navigateToCreateCharacter = () => {
-    navigate("/characters?create=true&returnTo=campaign-form");
+    navigate("/characters/new?returnTo=campaign-form");
   };
 
   const navigateToCreateNPC = () => {
-    navigate("/npcs?create=true&returnTo=campaign-form");
+    navigate("/npcs/new?returnTo=campaign-form");
   };
 
   const navigateToCreateQuest = () => {
-    navigate("/quests?create=true&returnTo=campaign-form");
+    navigate("/quests/new?returnTo=campaign-form");
   };
 
   const navigateToCreateLocation = () => {
-    navigate("/locations?create=true&returnTo=campaign-form");
+    navigate("/locations/new?returnTo=campaign-form");
   };
 
   const navigateToCreateMonster = () => {
-    navigate("/monsters?create=true&returnTo=campaign-form");
+    navigate("/monsters/new?returnTo=campaign-form");
   };
 
   // Navigation functions for editing entities

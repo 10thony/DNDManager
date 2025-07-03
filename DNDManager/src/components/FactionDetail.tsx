@@ -64,7 +64,7 @@ const FactionDetail: React.FC = () => {
           <h1 className="faction-title">{faction.name}</h1>
           <div className="faction-meta">
             <span className="created-date">
-              Created: {new Date(faction.createdAt).toLocaleDateString()}
+              Created: {faction.createdAt ? new Date(faction.createdAt).toLocaleDateString() : 'Unknown'}
             </span>
             {faction.updatedAt && (
               <span className="updated-date">
@@ -79,12 +79,12 @@ const FactionDetail: React.FC = () => {
           <div className="detail-section">
             <h2 className="section-title">Description</h2>
             <div className="section-content">
-              <p className="faction-description">{faction.description}</p>
+              <p className="faction-description">{faction.description || 'No description provided.'}</p>
             </div>
           </div>
 
           {/* Goals Section */}
-          {faction.goals && faction.goals.length > 0 && (
+          {Array.isArray(faction.goals) && faction.goals.length > 0 && (
             <div className="detail-section">
               <h2 className="section-title">Goals</h2>
               <div className="section-content">
@@ -100,12 +100,12 @@ const FactionDetail: React.FC = () => {
           )}
 
           {/* Leaders Section */}
-          {faction.leaders && faction.leaders.length > 0 && (
+          {Array.isArray(faction.leaders) && faction.leaders.length > 0 && (
             <div className="detail-section">
               <h2 className="section-title">Leaders</h2>
               <div className="section-content">
                 <div className="leaders-grid">
-                  {faction.leaders.map((leader) => (
+                  {faction.leaders.filter((leader) => leader !== null).map((leader) => (
                     <div key={leader._id} className="leader-card">
                       <h4 className="leader-name">{leader.name}</h4>
                       <p className="leader-details">
@@ -119,18 +119,18 @@ const FactionDetail: React.FC = () => {
           )}
 
           {/* Allied Factions Section */}
-          {faction.allies && faction.allies.length > 0 && (
+          {Array.isArray(faction.allies) && faction.allies.length > 0 && (
             <div className="detail-section">
               <h2 className="section-title">Allied Factions</h2>
               <div className="section-content">
                 <div className="factions-grid">
-                  {faction.allies.map((ally) => (
+                  {faction.allies.filter((ally) => ally !== null).map((ally) => (
                     <div key={ally._id} className="faction-card">
                       <h4 className="faction-name">{ally.name}</h4>
                       <p className="faction-description">
-                        {ally.description.length > 100
+                        {ally.description && ally.description.length > 100
                           ? `${ally.description.substring(0, 100)}...`
-                          : ally.description}
+                          : ally.description || 'No description.'}
                       </p>
                     </div>
                   ))}
@@ -140,18 +140,18 @@ const FactionDetail: React.FC = () => {
           )}
 
           {/* Enemy Factions Section */}
-          {faction.enemies && faction.enemies.length > 0 && (
+          {Array.isArray(faction.enemies) && faction.enemies.length > 0 && (
             <div className="detail-section">
               <h2 className="section-title">Enemy Factions</h2>
               <div className="section-content">
                 <div className="factions-grid">
-                  {faction.enemies.map((enemy) => (
+                  {faction.enemies.filter((enemy) => enemy !== null).map((enemy) => (
                     <div key={enemy._id} className="faction-card enemy">
                       <h4 className="faction-name">{enemy.name}</h4>
                       <p className="faction-description">
-                        {enemy.description.length > 100
+                        {enemy.description && enemy.description.length > 100
                           ? `${enemy.description.substring(0, 100)}...`
-                          : enemy.description}
+                          : enemy.description || 'No description.'}
                       </p>
                     </div>
                   ))}
@@ -161,7 +161,7 @@ const FactionDetail: React.FC = () => {
           )}
 
           {/* Reputation Section */}
-          {faction.reputation && faction.reputation.length > 0 && (
+          {Array.isArray(faction.reputation) && faction.reputation.length > 0 && (
             <div className="detail-section">
               <h2 className="section-title">Reputation</h2>
               <div className="section-content">

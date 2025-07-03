@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import "./ActionCreationForm.css";
@@ -15,6 +16,7 @@ const ActionCreationForm: React.FC<ActionCreationFormProps> = ({
   onCancel,
   editingActionId,
 }) => {
+  const { user } = useUser();
   const createAction = useMutation(api.actions.createAction);
   const updateAction = useMutation(api.actions.updateAction);
   const action = useQuery(api.actions.getActionsByIds, {
@@ -96,7 +98,10 @@ const ActionCreationForm: React.FC<ActionCreationFormProps> = ({
           ...formData,
         });
       } else {
-        await createAction(formData);
+        await createAction({
+          ...formData,
+          clerkId: user!.id,
+        });
       }
       onSubmitSuccess();
     } catch (error) {

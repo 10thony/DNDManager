@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ConvexProvider, ConvexReactClient, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import CharacterList from "./components/CharacterList";
@@ -8,11 +8,10 @@ import Navigation from "./components/Navigation";
 import ItemDetails from "./components/ItemDetails";
 import ItemList from "./components/ItemList";
 import { Id } from "../convex/_generated/dataModel";
-import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn, useUser } from '@clerk/clerk-react';
 import { Maps } from "./pages/Maps";
 import LocationList from "./components/LocationList";
 import LocationDetails from "./components/LocationDetails";
-import ActionCreationForm from "./components/ActionCreationForm";
 import ActionsList from "./components/ActionsList";
 import QuestList from "./components/QuestList";
 import QuestDetail from "./components/QuestDetail";
@@ -30,7 +29,21 @@ import TimelineEventDetail from "./components/TimelineEventDetail";
 import CampaignList from "./components/campaigns/CampaignList";
 import CampaignDetail from "./components/campaigns/CampaignDetail";
 import CampaignCreationForm from "./components/campaigns/CampaignCreationForm";
+import AdminUsers from "./pages/AdminUsers";
+import { UserSync } from "./components/UserSync";
+import { UserDebug } from "./components/UserDebug";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import { AdminOnly } from "./components/AdminOnly";
+import CharacterForm from "./components/CharacterForm";
+import NPCCreationForm from "./components/NPCCreationForm";
+import QuestCreationForm from "./components/QuestCreationForm";
+import LocationForm from "./components/LocationForm";
+import MonsterForm from "./components/MonsterForm";
+import { MapCreator } from "./components/maps/MapCreator";
+import { SessionManager } from "./components/SessionManager";
+import { SessionTest } from "./components/SessionTest";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -53,122 +66,56 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   );
 };
 
+// Admin-only route wrapper component
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <ProtectedRoute>
+      <AdminOnly>
+        {children}
+      </AdminOnly>
+    </ProtectedRoute>
+  );
+};
+
+// Role-based redirect component
+const RoleBasedRedirect: React.FC = () => {
+  const { user } = useUser();
+  const userRole = useQuery(api.users.getUserRole, 
+    user?.id ? { clerkId: user.id } : "skip"
+  );
+
+  if (!user || !userRole) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  // Non-admin users are redirected to campaigns
+  if (userRole !== "admin") {
+    return <Navigate to="/campaigns" replace />;
+  }
+
+  // Admin users are redirected to characters (original behavior)
+  return <Navigate to="/characters" replace />;
+};
+
 const App: React.FC = () => {
   const [navCollapsed, setNavCollapsed] = useState(false);
+
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <ConvexProvider client={convex}>
         <DarkModeProvider>
-          <Router>
-            <div className="app">
-              <Navigation isCollapsed={navCollapsed} setIsCollapsed={setNavCollapsed} />
-              <main className={`main-content${navCollapsed ? " collapsed" : ""}`}>
+          <SessionManager>
+            <UserSync />
+            <UserDebug />
+            <Router>
+              <div className="app">
+                <Navigation isCollapsed={navCollapsed} setIsCollapsed={setNavCollapsed} />
+                <main className={`main-content${navCollapsed ? " collapsed" : ""}`}>
                 <Routes>
-                  <Route path="/maps/*" element={
-                    <ProtectedRoute>
-                      <Maps />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/items" element={
-                    <ProtectedRoute>
-                      <ItemList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/items/:id" element={
-                    <ProtectedRoute>
-                      <ItemDetailsWrapper />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/characters" element={
-                    <ProtectedRoute>
-                      <CharacterList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/characters/:id" element={
-                    <ProtectedRoute>
-                      <CharacterDetail />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/locations" element={
-                    <ProtectedRoute>
-                      <LocationList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/locations/:locationId" element={
-                    <ProtectedRoute>
-                      <LocationDetails />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/actions" element={
-                    <ProtectedRoute>
-                      <ActionsList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/interactions" element={
-                    <ProtectedRoute>
-                      <InteractionList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/interactions/:id" element={
-                    <ProtectedRoute>
-                      <InteractionDetailWrapper />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/quests" element={
-                    <ProtectedRoute>
-                      <QuestList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/quests/:questId" element={
-                    <ProtectedRoute>
-                      <QuestDetail />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/quests/:questId/tasks/new" element={
-                    <ProtectedRoute>
-                      <QuestTaskCreationForm />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/monsters" element={
-                    <ProtectedRoute>
-                      <MonsterList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/monsters/:id" element={
-                    <ProtectedRoute>
-                      <MonsterDetail />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/npcs" element={
-                    <ProtectedRoute>
-                      <NPCsList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/factions" element={
-                    <ProtectedRoute>
-                      <FactionList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/factions/new" element={
-                    <ProtectedRoute>
-                      <FactionCreationForm />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/factions/:factionId" element={
-                    <ProtectedRoute>
-                      <FactionDetail />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/timeline-events" element={
-                    <ProtectedRoute>
-                      <TimelineEventList />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/timeline-events/:id" element={
-                    <ProtectedRoute>
-                      <TimelineEventDetailWrapper />
-                    </ProtectedRoute>
-                  } />
+                  <Route path="/sign-in" element={<SignIn />} />
+                  <Route path="/sign-up" element={<SignUp />} />
+                  
+                  {/* Campaign routes - accessible to all authenticated users */}
                   <Route path="/campaigns" element={
                     <ProtectedRoute>
                       <CampaignList />
@@ -189,11 +136,171 @@ const App: React.FC = () => {
                       <CampaignCreationForm />
                     </ProtectedRoute>
                   } />
-                  <Route path="/" element={<Navigate to="/characters" replace />} />
+                  
+                  {/* Creation forms - accessible to all authenticated users */}
+                  <Route path="/characters/new" element={
+                    <ProtectedRoute>
+                      <CharacterCreationWrapper />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/npcs/new" element={
+                    <ProtectedRoute>
+                      <NPCCreationWrapper />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/quests/new" element={
+                    <ProtectedRoute>
+                      <QuestCreationWrapper />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/locations/new" element={
+                    <ProtectedRoute>
+                      <LocationCreationWrapper />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/monsters/new" element={
+                    <ProtectedRoute>
+                      <MonsterCreationWrapper />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/maps/new" element={
+                    <ProtectedRoute>
+                      <MapCreationWrapper />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Character routes - accessible to all authenticated users */}
+                  <Route path="/characters" element={
+                    <ProtectedRoute>
+                      <CharacterList />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/characters/:id" element={
+                    <ProtectedRoute>
+                      <CharacterDetail />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Admin-only routes */}
+                  <Route path="/maps/*" element={
+                    <AdminRoute>
+                      <Maps />
+                    </AdminRoute>
+                  } />
+                  <Route path="/items" element={
+                    <AdminRoute>
+                      <ItemList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/items/:id" element={
+                    <AdminRoute>
+                      <ItemDetailsWrapper />
+                    </AdminRoute>
+                  } />
+                  <Route path="/locations" element={
+                    <AdminRoute>
+                      <LocationList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/locations/:locationId" element={
+                    <AdminRoute>
+                      <LocationDetails />
+                    </AdminRoute>
+                  } />
+                  <Route path="/actions" element={
+                    <AdminRoute>
+                      <ActionsList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/interactions" element={
+                    <AdminRoute>
+                      <InteractionList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/interactions/:id" element={
+                    <AdminRoute>
+                      <InteractionDetailWrapper />
+                    </AdminRoute>
+                  } />
+                  <Route path="/quests" element={
+                    <AdminRoute>
+                      <QuestList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/quests/:questId" element={
+                    <AdminRoute>
+                      <QuestDetail />
+                    </AdminRoute>
+                  } />
+                  <Route path="/quests/:questId/tasks/new" element={
+                    <AdminRoute>
+                      <QuestTaskCreationForm />
+                    </AdminRoute>
+                  } />
+                  <Route path="/monsters" element={
+                    <AdminRoute>
+                      <MonsterList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/monsters/:id" element={
+                    <AdminRoute>
+                      <MonsterDetail />
+                    </AdminRoute>
+                  } />
+                  <Route path="/npcs" element={
+                    <AdminRoute>
+                      <NPCsList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/factions" element={
+                    <AdminRoute>
+                      <FactionList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/factions/new" element={
+                    <AdminRoute>
+                      <FactionCreationForm />
+                    </AdminRoute>
+                  } />
+                  <Route path="/factions/:factionId" element={
+                    <AdminRoute>
+                      <FactionDetail />
+                    </AdminRoute>
+                  } />
+                  <Route path="/timeline-events" element={
+                    <AdminRoute>
+                      <TimelineEventList />
+                    </AdminRoute>
+                  } />
+                  <Route path="/timeline-events/:id" element={
+                    <AdminRoute>
+                      <TimelineEventDetailWrapper />
+                    </AdminRoute>
+                  } />
+                  <Route path="/admin/users" element={
+                    <AdminRoute>
+                      <AdminUsers />
+                    </AdminRoute>
+                  } />
+                  
+                  {/* Session test route - accessible to all authenticated users */}
+                  <Route path="/session-test" element={
+                    <ProtectedRoute>
+                      <SessionTest />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Root route with role-based redirect */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <RoleBasedRedirect />
+                    </ProtectedRoute>
+                  } />
                 </Routes>
               </main>
             </div>
           </Router>
+          </SessionManager>
         </DarkModeProvider>
       </ConvexProvider>
     </ClerkProvider>
@@ -224,25 +331,76 @@ const TimelineEventDetailWrapper: React.FC = () => {
   return <TimelineEventDetail timelineEventId={id as Id<"timelineEvents">} />;
 };
 
-// Wrapper component to handle action creation
-const ActionCreationWrapper: React.FC = () => {
+// Wrapper component for character creation
+const CharacterCreationWrapper: React.FC = () => {
+  return <CharacterForm defaultCharacterType="PlayerCharacter" />;
+};
+
+// Wrapper component for NPC creation
+const NPCCreationWrapper: React.FC = () => {
+  return <NPCCreationForm />;
+};
+
+// Wrapper component for quest creation
+const QuestCreationWrapper: React.FC = () => {
+  return <QuestCreationForm />;
+};
+
+// Wrapper component for location creation
+const LocationCreationWrapper: React.FC = () => {
+  return <LocationForm />;
+};
+
+// Wrapper component for monster creation
+const MonsterCreationWrapper: React.FC = () => {
+  return <MonsterForm onSubmitSuccess={() => {}} onCancel={() => {}} />;
+};
+
+// Wrapper component for map creation
+const MapCreationWrapper: React.FC = () => {
+  const { user } = useUser();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
 
-  const handleSubmitSuccess = () => {
-    // Navigate to the actions list (you'll need to create this)
-    navigate("/actions");
+  const handleMapCreated = () => {
+    if (returnTo === 'location-form') {
+      navigate("/locations/new?returnTo=campaign-form");
+    } else {
+      navigate("/maps");
+    }
   };
 
-  const handleCancel = () => {
-    // Navigate back to the actions list
-    navigate("/actions");
-  };
+  if (!user?.id) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <ActionCreationForm 
-      onSubmitSuccess={handleSubmitSuccess}
-      onCancel={handleCancel}
-    />
+    <div>
+      <div className="map-creation-header" style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '1rem', 
+        borderBottom: '1px solid #e5e7eb',
+        marginBottom: '1rem'
+      }}>
+        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Create New Map</h2>
+        <button 
+          onClick={() => {
+            if (returnTo === 'location-form') {
+              navigate("/locations/new?returnTo=campaign-form");
+            } else {
+              navigate("/maps");
+            }
+          }}
+          className="btn-secondary"
+        >
+          {returnTo === 'location-form' ? "Back to Location Form" : "Cancel"}
+        </button>
+      </div>
+      <MapCreator userId={user.id} onMapCreated={handleMapCreated} />
+    </div>
   );
 };
 

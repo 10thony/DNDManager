@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import InteractionCreationForm from "./InteractionCreationForm";
+import { useUser } from "@clerk/clerk-react";
 import "./InteractionList.css";
 
 const InteractionList: React.FC = () => {
@@ -11,8 +12,11 @@ const InteractionList: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [editingInteraction, setEditingInteraction] = useState<Id<"interactions"> | null>(null);
   const [isDeleting, setIsDeleting] = useState<Id<"interactions"> | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { user } = useUser();
   const interactions = useQuery(api.interactions.getAllInteractions);
   const deleteInteraction = useMutation(api.interactions.deleteInteraction);
+  const generateSampleInteractions = useMutation(api.interactions.generateSampleInteractions);
 
   const handleDelete = async (id: Id<"interactions">, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
@@ -46,6 +50,22 @@ const InteractionList: React.FC = () => {
   const handleSubmitSuccess = () => {
     setIsCreating(false);
     setEditingInteraction(null);
+  };
+
+  const handleGenerateSampleData = async () => {
+    if (!user?.id) return;
+    
+    setIsGenerating(true);
+    try {
+      const result = await generateSampleInteractions({ clerkId: user.id });
+      console.log("Sample interactions generated:", result);
+      alert(`Successfully generated ${result.count} sample interactions!`);
+    } catch (error) {
+      console.error("Error generating sample interactions:", error);
+      alert("Error generating sample interactions. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   if (!interactions) {
@@ -94,12 +114,25 @@ const InteractionList: React.FC = () => {
           <div className="empty-icon">💬</div>
           <h3>No Interactions Yet</h3>
           <p>Get started by creating your first interaction for your campaign.</p>
-          <button
-            className="create-button"
-            onClick={() => setIsCreating(true)}
-          >
-            Create Your First Interaction
-          </button>
+          <div className="empty-state-actions">
+            <button
+              className="create-button"
+              onClick={() => setIsCreating(true)}
+            >
+              Create Your First Interaction
+            </button>
+            <button
+              onClick={handleGenerateSampleData}
+              disabled={isGenerating}
+              className="btn btn-secondary"
+              style={{ marginLeft: '10px' }}
+            >
+              {isGenerating ? "Generating..." : "Generate Sample Data"}
+            </button>
+          </div>
+          <div className="admin-note">
+            <p><em>You can generate sample interactions to get started quickly.</em></p>
+          </div>
         </div>
       ) : (
         <div className="interactions-grid">

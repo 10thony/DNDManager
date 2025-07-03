@@ -85,7 +85,7 @@ const InteractionCreationForm: React.FC<InteractionCreationFormProps> = ({
       const interactionData = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
-        creatorId: user.id,
+        clerkId: user.id,
         questId: formData.questId ? (formData.questId as Id<"quests">) : undefined,
         questTaskId: formData.questTaskId ? (formData.questTaskId as Id<"questTasks">) : undefined,
         playerCharacterIds: formData.playerCharacterIds.length > 0 ? formData.playerCharacterIds : undefined,

@@ -1,0 +1,306 @@
+{
+    "playerCharacters": [
+      {
+        "name": "Elira Moonshadow",
+        "race": "Half-Elf",
+        "class": "Bard",
+        "background": "Entertainer",
+        "alignment": "Chaotic Good",
+        "characterType": "PlayerCharacter",
+        "abilityScores": {
+          "strength": 10,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 13,
+          "wisdom": 10,
+          "charisma": 17
+        },
+        "skills": ["Performance", "Persuasion", "Deception", "Insight", "Acrobatics"],
+        "savingThrows": ["Dexterity", "Charisma"],
+        "proficiencies": ["Lute", "Dagger", "Light Armor", "Simple Weapons"],
+        "traits": ["Darkvision", "Fey Ancestry", "Jack of All Trades"],
+        "languages": ["Common", "Elvish", "Sylvan"],
+        "equipment": ["Rapier", "Lute", "Leather Armor", "Entertainer's Pack"],
+        "level": 3,
+        "experiencePoints": 900,
+        "xpHistory": [
+          { "amount": 300, "source": "Session 1", "date": 1719800000 },
+          { "amount": 600, "source": "Session 2", "date": 1720400000 }
+        ],
+        "hitPoints": 21,
+        "armorClass": 14,
+        "proficiencyBonus": 2,
+        "actions": ["action1", "action2"],
+        "factionId": "faction1",
+        "createdAt": 1722200000,
+        "updatedAt": 1722200000
+      },
+      {
+        "name": "Thorin Ironfist",
+        "race": "Dwarf",
+        "class": "Fighter",
+        "background": "Soldier",
+        "alignment": "Lawful Neutral",
+        "characterType": "PlayerCharacter",
+        "abilityScores": {
+          "strength": 16,
+          "dexterity": 12,
+          "constitution": 16,
+          "intelligence": 10,
+          "wisdom": 12,
+          "charisma": 8
+        },
+        "skills": ["Athletics", "Intimidation", "Survival", "Perception"],
+        "savingThrows": ["Strength", "Constitution"],
+        "proficiencies": [
+          "Battleaxe",
+          "Warhammer",
+          "All Armor",
+          "Shields",
+          "Smith's Tools"
+        ],
+        "traits": ["Darkvision", "Dwarven Resilience", "Stonecunning"],
+        "languages": ["Common", "Dwarvish"],
+        "equipment": [
+          "Chain Mail",
+          "Shield",
+          "Battleaxe",
+          "Handaxe",
+          "Explorer's Pack"
+        ],
+        "level": 3,
+        "experiencePoints": 900,
+        "xpHistory": [
+          { "amount": 300, "source": "Session 1", "date": 1719800000 },
+          { "amount": 600, "source": "Session 2", "date": 1720400000 }
+        ],
+        "hitPoints": 32,
+        "armorClass": 18,
+        "proficiencyBonus": 2,
+        "actions": ["action3", "action4"],
+        "factionId": "faction2",
+        "createdAt": 1722200000,
+        "updatedAt": 1722200000
+      },
+      {
+        "name": "Seraphina Willow",
+        "race": "Human",
+        "class": "Cleric",
+        "background": "Acolyte",
+        "alignment": "Neutral Good",
+        "characterType": "PlayerCharacter",
+        "abilityScores": {
+          "strength": 12,
+          "dexterity": 10,
+          "constitution": 14,
+          "intelligence": 12,
+          "wisdom": 16,
+          "charisma": 13
+        },
+        "skills": ["Medicine", "Insight", "Religion", "History"],
+        "savingThrows": ["Wisdom", "Charisma"],
+        "proficiencies": [
+          "Mace",
+          "Light Armor",
+          "Medium Armor",
+          "Shields",
+          "Herbalism Kit"
+        ],
+        "traits": ["Channel Divinity", "Divine Domain: Life"],
+        "languages": ["Common", "Celestial"],
+        "equipment": [
+          "Mace",
+          "Shield",
+          "Chain Shirt",
+          "Holy Symbol",
+          "Priest's Pack"
+        ],
+        "level": 3,
+        "experiencePoints": 900,
+        "xpHistory": [
+          { "amount": 300, "source": "Session 1", "date": 1719800000 },
+          { "amount": 600, "source": "Session 2", "date": 1720400000 }
+        ],
+        "hitPoints": 24,
+        "armorClass": 17,
+        "proficiencyBonus": 2,
+        "actions": ["action5", "action6"],
+        "factionId": "faction3",
+        "createdAt": 1722200000,
+        "updatedAt": 1722200000
+      }
+    ],
+    "npcs": [
+      {
+        "name": "Old Man Harbin",
+        "race": "Human",
+        "class": "Commoner",
+        "background": "Villager",
+        "alignment": "Neutral",
+        "characterType": "NonPlayerCharacter",
+        "abilityScores": {
+          "strength": 10,
+          "dexterity": 9,
+          "constitution": 10,
+          "intelligence": 11,
+          "wisdom": 12,
+          "charisma": 8
+        },
+        "skills": ["Insight", "History"],
+        "savingThrows": [],
+        "proficiencies": [],
+        "traits": ["Local Knowledge"],
+        "languages": ["Common"],
+        "equipment": ["Walking Stick"],
+        "level": 1,
+        "experiencePoints": 0,
+        "xpHistory": [],
+        "hitPoints": 6,
+        "armorClass": 10,
+        "proficiencyBonus": 2,
+        "actions": ["action7"],
+        "factionId": null,
+        "createdAt": 1722200000,
+        "updatedAt": 1722200000
+      },
+      {
+        "name": "Sister Garaele",
+        "race": "Elf",
+        "class": "Cleric",
+        "background": "Acolyte",
+        "alignment": "Lawful Good",
+        "characterType": "NonPlayerCharacter",
+        "abilityScores": {
+          "strength": 9,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 13,
+          "wisdom": 15,
+          "charisma": 12
+        },
+        "skills": ["Religion", "Insight", "Medicine"],
+        "savingThrows": ["Wisdom", "Charisma"],
+        "proficiencies": ["Mace", "Light Armor", "Herbalism Kit"],
+        "traits": ["Channel Divinity", "Elven Accuracy"],
+        "languages": ["Common", "Elvish"],
+        "equipment": ["Mace", "Holy Symbol"],
+        "level": 2,
+        "experiencePoints": 300,
+        "xpHistory": [
+          { "amount": 300, "source": "Temple Service", "date": 1721000000 }
+        ],
+        "hitPoints": 15,
+        "armorClass": 13,
+        "proficiencyBonus": 2,
+        "actions": ["action8"],
+        "factionId": "faction3",
+        "createdAt": 1722200000,
+        "updatedAt": 1722200000
+      },
+      {
+        "name": "Droop",
+        "race": "Goblin",
+        "class": "Commoner",
+        "background": "Servant",
+        "alignment": "Neutral",
+        "characterType": "NonPlayerCharacter",
+        "abilityScores": {
+          "strength": 8,
+          "dexterity": 14,
+          "constitution": 10,
+          "intelligence": 8,
+          "wisdom": 8,
+          "charisma": 6
+        },
+        "skills": ["Stealth"],
+        "savingThrows": [],
+        "proficiencies": ["Shortbow"],
+        "traits": ["Nimble Escape"],
+        "languages": ["Goblin", "Common"],
+        "equipment": ["Shortbow"],
+        "level": 1,
+        "experiencePoints": 0,
+        "xpHistory": [],
+        "hitPoints": 7,
+        "armorClass": 13,
+        "proficiencyBonus": 2,
+        "actions": ["action9"],
+        "factionId": null,
+        "createdAt": 1722200000,
+        "updatedAt": 1722200000
+      },
+      {
+        "name": "Sildar Hallwinter",
+        "race": "Human",
+        "class": "Fighter",
+        "background": "Knight",
+        "alignment": "Lawful Good",
+        "characterType": "NonPlayerCharacter",
+        "abilityScores": {
+          "strength": 15,
+          "dexterity": 12,
+          "constitution": 14,
+          "intelligence": 11,
+          "wisdom": 10,
+          "charisma": 13
+        },
+        "skills": ["Athletics", "Persuasion"],
+        "savingThrows": ["Strength", "Constitution"],
+        "proficiencies": ["Longsword", "Chain Mail", "Shield"],
+        "traits": ["Second Wind"],
+        "languages": ["Common"],
+        "equipment": ["Longsword", "Chain Mail", "Shield"],
+        "level": 3,
+        "experiencePoints": 900,
+        "xpHistory": [
+          { "amount": 900, "source": "Guard Duty", "date": 1721100000 }
+        ],
+        "hitPoints": 27,
+        "armorClass": 18,
+        "proficiencyBonus": 2,
+        "actions": ["action10"],
+        "factionId": "faction2",
+        "createdAt": 1722200000,
+        "updatedAt": 1722200000
+      },
+      {
+        "name": "Halia Thornton",
+        "race": "Human",
+        "class": "Rogue",
+        "background": "Guildmaster",
+        "alignment": "Neutral Evil",
+        "characterType": "NonPlayerCharacter",
+        "abilityScores": {
+          "strength": 10,
+          "dexterity": 15,
+          "constitution": 12,
+          "intelligence": 14,
+          "wisdom": 11,
+          "charisma": 16
+        },
+        "skills": ["Deception", "Persuasion", "Stealth", "Investigation"],
+        "savingThrows": ["Dexterity", "Intelligence"],
+        "proficiencies": [
+          "Dagger",
+          "Thieves' Tools",
+          "Light Armor",
+          "Forgery Kit"
+        ],
+        "traits": ["Cunning Action", "Sneak Attack"],
+        "languages": ["Common", "Thieves' Cant"],
+        "equipment": ["Dagger", "Leather Armor"],
+        "level": 3,
+        "experiencePoints": 900,
+        "xpHistory": [
+          { "amount": 900, "source": "Guild Operations", "date": 1721200000 }
+        ],
+        "hitPoints": 18,
+        "armorClass": 14,
+        "proficiencyBonus": 2,
+        "actions": ["action11"],
+        "factionId": "faction4",
+        "createdAt": 1722200000,
+        "updatedAt": 1722200000
+      }
+    ]
+  }

@@ -7,6 +7,27 @@
   @apply bg-gray-900 text-gray-100;
 }
 
+/* Access Denied State */
+.access-denied {
+  @apply flex flex-col items-center justify-center min-h-96 text-center p-8;
+}
+
+.access-denied h2 {
+  @apply text-3xl font-bold text-red-600 mb-4 transition-colors duration-200;
+}
+
+.dark .access-denied h2 {
+  @apply text-red-400;
+}
+
+.access-denied p {
+  @apply text-lg text-gray-600 mb-8 max-w-md transition-colors duration-200;
+}
+
+.dark .access-denied p {
+  @apply text-gray-400;
+}
+
 /* Header Section */
 .detail-header {
   @apply flex justify-between items-start mb-8 pb-6 border-b-2 border-gray-200;

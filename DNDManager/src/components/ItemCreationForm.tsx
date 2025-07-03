@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { Item, ItemType, ItemRarity } from "../types/item";
 import { useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import "./ItemCreationForm.css";
 
@@ -42,6 +43,7 @@ const ItemCreationForm: React.FC<ItemCreationFormProps> = ({
   onSubmitSuccess,
   onCancel,
 }) => {
+  const { user } = useUser();
   const createItem = useMutation(api.items.createItem);
 
   const [formData, setFormData] = useState<Partial<Item>>({
@@ -115,7 +117,10 @@ const ItemCreationForm: React.FC<ItemCreationFormProps> = ({
         attunement: formData.attunement
       };
 
-      const newItemId = await createItem(itemData);
+      const newItemId = await createItem({
+        ...itemData,
+        clerkId: user!.id,
+      });
       onSubmitSuccess(newItemId);
     } catch (err) {
       console.error("Error creating item:", err);

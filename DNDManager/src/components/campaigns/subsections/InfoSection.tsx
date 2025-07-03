@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import "./InfoSection.css";
@@ -21,6 +22,7 @@ const InfoSection: React.FC<InfoSectionProps> = ({
   isPublic,
   onUpdate,
 }) => {
+  const { user } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: name || "",
@@ -48,11 +50,12 @@ const InfoSection: React.FC<InfoSectionProps> = ({
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (!validateForm() || !user?.id) return;
 
     try {
       await updateCampaign({
         id: campaignId,
+        clerkId: user.id,
         name: formData.name,
         description: formData.description || undefined,
         worldSetting: formData.worldSetting || undefined,

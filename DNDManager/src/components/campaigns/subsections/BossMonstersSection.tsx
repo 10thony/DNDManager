@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import EntitySelectionModal from "../../modals/EntitySelectionModal";
@@ -19,6 +20,7 @@ const BossMonstersSection: React.FC<BossMonstersSectionProps> = ({
   monsterIds = [],
   onUpdate,
 }) => {
+  const { user } = useUser();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -44,10 +46,16 @@ const BossMonstersSection: React.FC<BossMonstersSectionProps> = ({
   };
 
   const handleEntitySelect = async (entityId: Id<any>) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentMonsters = monsterIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         monsterIds: [...currentMonsters, entityId] 
       });
       onUpdate();
@@ -60,10 +68,16 @@ const BossMonstersSection: React.FC<BossMonstersSectionProps> = ({
   };
 
   const handleMonsterCreated = async (monsterId: Id<"monsters">) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentMonsters = monsterIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         monsterIds: [...currentMonsters, monsterId] 
       });
       onUpdate();
@@ -77,10 +91,16 @@ const BossMonstersSection: React.FC<BossMonstersSectionProps> = ({
   };
 
   const handleUnlinkEntity = async (entityId: Id<any>) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentMonsters = monsterIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         monsterIds: currentMonsters.filter(id => id !== entityId) 
       });
       onUpdate();

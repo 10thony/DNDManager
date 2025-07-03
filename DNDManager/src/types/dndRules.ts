@@ -90,7 +90,7 @@ export const getBackgroundSkills = (background: string): string[] => {
 export const calculateHitPoints = (
   characterClass: string,
   constitution: number,
-  level: number = 1
+  // level: number = 1
 ): number => {
   const hitDie: Record<string, number> = {
     Barbarian: 12,

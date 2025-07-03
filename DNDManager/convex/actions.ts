@@ -275,21 +275,35 @@ const classActions: Record<string, Action[]> = {
 
 // Mutation to populate the database with actions
 export const populateActions = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    clerkId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     // Insert common actions
     for (const action of commonActions) {
       await ctx.db.insert("actions", {
         ...action,
+        userId: user._id,
         createdAt: Date.now(),
       });
     }
 
     // Insert class-specific actions
-    for (const [className, actions] of Object.entries(classActions)) {
+    for (const [, actions] of Object.entries(classActions)) {
       for (const action of actions) {
         await ctx.db.insert("actions", {
           ...action,
+          userId: user._id,
           createdAt: Date.now(),
         });
       }
@@ -350,7 +364,13 @@ export const updateAction = mutation({
     id: v.id("actions"),
     name: v.string(),
     description: v.string(),
-    actionCost: v.string(),
+    actionCost: v.union(
+      v.literal("Action"),
+      v.literal("Bonus Action"),
+      v.literal("Reaction"),
+      v.literal("No Action"),
+      v.literal("Special")
+    ),
     type: v.union(
       v.literal("MELEE_ATTACK"),
       v.literal("RANGED_ATTACK"),
@@ -401,7 +421,13 @@ export const createAction = mutation({
   args: {
     name: v.string(),
     description: v.string(),
-    actionCost: v.string(),
+    actionCost: v.union(
+      v.literal("Action"),
+      v.literal("Bonus Action"),
+      v.literal("Reaction"),
+      v.literal("No Action"),
+      v.literal("Special")
+    ),
     type: v.union(
       v.literal("MELEE_ATTACK"),
       v.literal("RANGED_ATTACK"),
@@ -430,12 +456,404 @@ export const createAction = mutation({
       ability: v.string(),
       onSave: v.string(),
     })),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { clerkId, ...actionData } = args;
     const action = {
-      ...args,
+      ...actionData,
+      userId: user._id,
       createdAt: Date.now(),
     };
     return await ctx.db.insert("actions", action);
+  },
+});
+
+// Mutation to load sample actions from JSON file
+export const loadSampleActionsFromJson = mutation({
+  args: {
+    clerkId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if user is admin
+    if (user.role !== "admin") {
+      throw new Error("Only admins can load sample data");
+    }
+
+    // Sample actions data from actions.json with proper typing
+    const sampleActions: Array<{
+      name: string;
+      description: string;
+      actionCost: "Action" | "Bonus Action" | "Reaction" | "No Action" | "Special";
+      type: "MELEE_ATTACK" | "RANGED_ATTACK" | "SPELL" | "COMMONLY_AVAILABLE_UTILITY" | "CLASS_FEATURE" | "BONUS_ACTION" | "REACTION" | "OTHER";
+      requiresConcentration: boolean;
+      sourceBook: string;
+      attackBonusAbilityScore?: string;
+      isProficient?: boolean;
+      damageRolls?: Array<{
+        dice: {
+          count: number;
+          type: "D4" | "D6" | "D8" | "D10" | "D12" | "D20";
+        };
+        modifier: number;
+        damageType: "BLUDGEONING" | "PIERCING" | "SLASHING" | "ACID" | "COLD" | "FIRE" | "FORCE" | "LIGHTNING" | "NECROTIC" | "POISON" | "PSYCHIC" | "RADIANT" | "THUNDER";
+      }>;
+      spellLevel?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+      castingTime?: string;
+      range?: string;
+      components?: {
+        verbal: boolean;
+        somatic: boolean;
+        material?: string;
+      };
+      duration?: string;
+      savingThrow?: {
+        ability: string;
+        onSave: string;
+      };
+      spellEffectDescription?: string;
+      className?: string;
+      usesPer?: "Short Rest" | "Long Rest" | "Day" | "Special";
+      maxUses?: string | number;
+    }> = [
+      {
+        name: "Melee Attack",
+        description: "Make a single melee weapon attack.",
+        actionCost: "Action" as const,
+        type: "MELEE_ATTACK" as const,
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        attackBonusAbilityScore: "Strength",
+        isProficient: true,
+        damageRolls: [
+          {
+            dice: {
+              count: 1,
+              type: "D8" as const
+            },
+            modifier: 0,
+            damageType: "SLASHING" as const
+          }
+        ]
+      },
+      {
+        name: "Ranged Attack",
+        description: "Make a single ranged weapon attack.",
+        actionCost: "Action" as const,
+        type: "RANGED_ATTACK" as const,
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        attackBonusAbilityScore: "Dexterity",
+        isProficient: true,
+        damageRolls: [
+          {
+            dice: {
+              count: 1,
+              type: "D8" as const
+            },
+            modifier: 0,
+            damageType: "PIERCING" as const
+          }
+        ]
+      },
+      {
+        name: "Cast a Spell",
+        description: "Cast a spell you know or have prepared.",
+        actionCost: "Action",
+        type: "SPELL",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Dash",
+        description: "Gain extra movement equal to your speed for the current turn.",
+        actionCost: "Action",
+        type: "COMMONLY_AVAILABLE_UTILITY",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Disengage",
+        description: "Your movement doesn't provoke opportunity attacks for the rest of the turn.",
+        actionCost: "Action",
+        type: "COMMONLY_AVAILABLE_UTILITY",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Dodge",
+        description: "Until the start of your next turn, any attack roll made against you has disadvantage if you can see the attacker, and you make Dexterity saving throws with advantage.",
+        actionCost: "Action",
+        type: "COMMONLY_AVAILABLE_UTILITY",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Help",
+        description: "You can aid another creature in performing a task or attacking a foe.",
+        actionCost: "Action",
+        type: "COMMONLY_AVAILABLE_UTILITY",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Hide",
+        description: "Attempt to hide from creatures that can see you.",
+        actionCost: "Action",
+        type: "COMMONLY_AVAILABLE_UTILITY",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Search",
+        description: "Devote your attention to finding something.",
+        actionCost: "Action",
+        type: "COMMONLY_AVAILABLE_UTILITY",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Ready",
+        description: "Choose an action and a trigger. You can use your reaction to perform the action when the trigger occurs.",
+        actionCost: "Action",
+        type: "COMMONLY_AVAILABLE_UTILITY",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Use an Object",
+        description: "Interact with an object, such as opening a door or pulling a lever.",
+        actionCost: "Action",
+        type: "COMMONLY_AVAILABLE_UTILITY",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Attack of Opportunity",
+        description: "When a hostile creature that you can see moves out of your reach, you can use your reaction to make one melee attack against that creature.",
+        actionCost: "Reaction",
+        type: "REACTION",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook"
+      },
+      {
+        name: "Second Wind",
+        description: "On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level.",
+        actionCost: "Bonus Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Fighter",
+        usesPer: "Short Rest",
+        maxUses: 1
+      },
+      {
+        name: "Action Surge",
+        description: "On your turn, you can take one additional action on top of your regular action and a possible bonus action.",
+        actionCost: "Special",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Fighter",
+        usesPer: "Short Rest",
+        maxUses: 1
+      },
+      {
+        name: "Rage",
+        description: "On your turn, you can enter a rage as a bonus action.",
+        actionCost: "Bonus Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Barbarian",
+        usesPer: "Long Rest",
+        maxUses: "Varies by level"
+      },
+      {
+        name: "Unarmored Defense (Barbarian)",
+        description: "While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit.",
+        actionCost: "No Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Barbarian"
+      },
+      {
+        name: "Wild Shape",
+        description: "As an action, you can magically assume the shape of a beast that you have seen before.",
+        actionCost: "Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Druid",
+        usesPer: "Short Rest",
+        maxUses: 2
+      },
+      {
+        name: "Bardic Inspiration",
+        description: "As a bonus action, you can expend one use of your Bardic Inspiration to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6.",
+        actionCost: "Bonus Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Bard",
+        usesPer: "Short Rest",
+        maxUses: "Charisma modifier"
+      },
+      {
+        name: "Channel Divinity: Turn Undead",
+        description: "As an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage.",
+        actionCost: "Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Cleric",
+        usesPer: "Short Rest",
+        maxUses: 1,
+        savingThrow: {
+          ability: "Wisdom",
+          onSave: "Creature is not turned"
+        }
+      },
+      {
+        name: "Sneak Attack",
+        description: "If you are hidden from a creature and hit it with an attack with a finesse or ranged weapon, you can deal extra damage to the target.",
+        actionCost: "No Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Rogue",
+        damageRolls: [
+          {
+            dice: {
+              count: 1,
+              type: "D6"
+            },
+            modifier: 0,
+            damageType: "PIERCING"
+          }
+        ]
+      },
+      {
+        name: "Cunning Action",
+        description: "As a bonus action, you can take the Dash, Disengage, or Hide action.",
+        actionCost: "Bonus Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Rogue"
+      },
+      {
+        name: "Ki: Flurry of Blows",
+        description: "Immediately after you take the Attack action on your turn, you can spend 1 ki point to make two unarmed strikes as a bonus action.",
+        actionCost: "Bonus Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Monk"
+      },
+      {
+        name: "Lay on Hands",
+        description: "As an action, you can touch a creature and draw power from your pool to restore a number of hit points to that creature, up to the maximum amount remaining in your pool.",
+        actionCost: "Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Paladin",
+        usesPer: "Long Rest",
+        maxUses: "Paladin level x 5"
+      },
+      {
+        name: "Hunter's Mark",
+        description: "You choose one creature you can see within 90 feet of you and mystically mark it as your quarry. Until the spell ends, you deal an extra 1d6 damage to the target whenever you hit it with a weapon attack, and you have advantage on any Wisdom (Perception) or Wisdom (Survival) check you make to find it. If the target drops to 0 hit points before this spell ends, you can use a bonus action on a subsequent turn of yours to mark a new creature.",
+        actionCost: "Bonus Action",
+        type: "SPELL",
+        requiresConcentration: true,
+        sourceBook: "Player's Handbook",
+        className: "Ranger",
+        spellLevel: 1,
+        castingTime: "1 Bonus Action",
+        range: "90 feet",
+        components: {
+          verbal: true,
+          somatic: true,
+          material: undefined
+        },
+        duration: "Up to 1 hour",
+        damageRolls: [
+          {
+            dice: {
+              count: 1,
+              type: "D6"
+            },
+            modifier: 0,
+            damageType: "PIERCING"
+          }
+        ],
+        spellEffectDescription: "Extra 1d6 damage on weapon attacks, advantage on Perception/Survival to track."
+      },
+      {
+        name: "Sorcery Points: Flexible Casting",
+        description: "As a bonus action on your turn, you can expend one or more sorcery points to gain a spell slot, or sacrifice a spell slot to gain sorcery points.",
+        actionCost: "Bonus Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Sorcerer"
+      },
+      {
+        name: "Dark One's Blessing",
+        description: "When you reduce a hostile creature to 0 hit points, you gain temporary hit points equal to your Charisma modifier + your warlock level.",
+        actionCost: "No Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Warlock"
+      },
+      {
+        name: "Arcane Recovery",
+        description: "Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up), and none of the slots can be 6th level or higher.",
+        actionCost: "No Action",
+        type: "CLASS_FEATURE",
+        requiresConcentration: false,
+        sourceBook: "Player's Handbook",
+        className: "Wizard",
+        usesPer: "Day",
+        maxUses: 1
+      }
+    ];
+
+    // Insert all sample actions
+    const createdIds = [];
+    for (const action of sampleActions) {
+      const id = await ctx.db.insert("actions", {
+        ...action,
+        userId: user._id,
+        createdAt: Date.now(),
+      });
+      createdIds.push(id);
+    }
+
+    return { count: createdIds.length, actionIds: createdIds };
   },
 }); 

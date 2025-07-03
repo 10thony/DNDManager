@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "convex/react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import { useUser } from "@clerk/clerk-react";
 import MonsterForm from "./MonsterForm";
 import "./MonsterList.css";
 
@@ -11,6 +12,7 @@ import monstersData from "../data/monsters";
 import { MonsterData } from "../types/monsters";
 
 const MonsterList: React.FC = () => {
+  const { user } = useUser();
   const [searchParams] = useSearchParams();
   const [isCreating, setIsCreating] = useState(false);
   const [editingMonster, setEditingMonster] = useState<Id<"monsters"> | null>(null);
@@ -18,7 +20,6 @@ const MonsterList: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false);
   const navigate = useNavigate();
   const monsters = useQuery(api.monsters.getAllMonsters);
-  const campaigns = useQuery(api.campaigns.getAllCampaigns);
   const deleteMonster = useMutation(api.monsters.deleteMonster);
   const bulkCreateMonsters = useMutation(api.monsters.bulkCreateMonsters);
 
@@ -75,58 +76,40 @@ const MonsterList: React.FC = () => {
   };
 
   const handleImportMonsters = async () => {
-    if (window.confirm("This will import all monsters from the monsters.json file. Are you sure you want to continue?")) {
+    if (!user) {
+      alert("You must be logged in to import monsters.");
+      return;
+    }
+
+    if (window.confirm("This will import sample monsters. Continue?")) {
       setIsImporting(true);
       try {
-        console.log("Starting monster import...");
-        console.log("Total monsters to import:", monstersData.length);
-        console.log("First monster sample:", monstersData[0]);
-        
-        // Transform the monsters data to match the expected format
-        const transformedMonsters = monstersData.map((monster: MonsterData, index: number) => {
-          console.log(`Processing monster ${index + 1}: ${monster.name}`);
-          
-          // Destructure to exclude timestamp fields that Convex handles automatically
-          const { createdAt, updatedAt, ...monsterWithoutTimestamps } = monster;
-          
+        const transformedMonsters = monstersData.map((monster: MonsterData) => {
           return {
-            ...monsterWithoutTimestamps,
-            // Don't assign a campaignId - let monsters be unassigned initially
             campaignId: undefined,
-            // Ensure all required fields are properly formatted
-            hitDice: {
-              count: Number(monster.hitDice.count),
-              die: monster.hitDice.die as "d4" | "d6" | "d8" | "d10" | "d12"
-            },
-            size: monster.size as "Tiny" | "Small" | "Medium" | "Large" | "Huge" | "Gargantuan",
-            // Ensure numeric fields are properly typed
-            armorClass: Number(monster.armorClass),
-            hitPoints: Number(monster.hitPoints),
-            proficiencyBonus: Number(monster.proficiencyBonus),
-            abilityScores: {
-              strength: Number(monster.abilityScores.strength),
-              dexterity: Number(monster.abilityScores.dexterity),
-              constitution: Number(monster.abilityScores.constitution),
-              intelligence: Number(monster.abilityScores.intelligence),
-              wisdom: Number(monster.abilityScores.wisdom),
-              charisma: Number(monster.abilityScores.charisma),
-            },
-            senses: {
-              ...monster.senses,
-              passivePerception: Number(monster.senses.passivePerception),
-            },
-            // Convert null values to undefined for optional fields
+            name: monster.name,
             source: monster.source || undefined,
             page: monster.page || undefined,
+            size: monster.size,
+            type: monster.type,
             tags: monster.tags || undefined,
+            alignment: monster.alignment,
+            armorClass: monster.armorClass,
             armorType: monster.armorType || undefined,
+            hitPoints: monster.hitPoints,
+            hitDice: monster.hitDice,
+            proficiencyBonus: monster.proficiencyBonus,
+            speed: monster.speed,
+            abilityScores: monster.abilityScores,
             savingThrows: monster.savingThrows || undefined,
             skills: monster.skills || undefined,
             damageVulnerabilities: monster.damageVulnerabilities || undefined,
             damageResistances: monster.damageResistances || undefined,
             damageImmunities: monster.damageImmunities || undefined,
             conditionImmunities: monster.conditionImmunities || undefined,
+            senses: monster.senses,
             languages: monster.languages || undefined,
+            challengeRating: monster.challengeRating,
             experiencePoints: monster.experiencePoints ? Number(monster.experiencePoints) : undefined,
             traits: monster.traits || undefined,
             actions: monster.actions || undefined,
@@ -141,7 +124,10 @@ const MonsterList: React.FC = () => {
         console.log("Transformed monsters count:", transformedMonsters.length);
         console.log("Sample transformed monster:", transformedMonsters[0]);
 
-        await bulkCreateMonsters({ monsters: transformedMonsters });
+        await bulkCreateMonsters({ 
+          monsters: transformedMonsters,
+          clerkId: user.id,
+        });
         console.log("Bulk create completed successfully");
         alert(`Successfully imported ${monstersData.length} monsters!`);
       } catch (error) {

@@ -29,7 +29,7 @@ const QuestTaskCreationForm: React.FC = () => {
   const quest = useQuery(api.quests.getQuestById, { id: questId as Id<"quests"> });
   const locations = useQuery(api.locations.list);
   const items = useQuery(api.items.getItems);
-  const npcs = useQuery(api.locations.getNPCs);
+  const npcs = useQuery(api.npcs.getAllNpcs);
   const characters = useQuery(api.characters.getAllCharacters);
   const interactions = useQuery(api.interactions.getAllInteractions);
   const existingTasks = useQuery(api.questTasks.getQuestTasksByQuest, { questId: questId as Id<"quests"> });
@@ -114,9 +114,12 @@ const QuestTaskCreationForm: React.FC = () => {
         targetNpcId: formData.targetNpcId,
         requiredItemIds: formData.requiredItemIds.length > 0 ? formData.requiredItemIds : undefined,
         interactions: formData.interactions.length > 0 ? formData.interactions : undefined,
+        clerkId: user.id,
       };
 
-      await createQuestTask(taskData);
+      await createQuestTask({
+        ...taskData,
+      });
       navigate(`/quests/${questId}`);
     } catch (error) {
       console.error("Error creating quest task:", error);

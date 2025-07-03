@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import EntitySelectionModal from "../../modals/EntitySelectionModal";
@@ -19,6 +20,7 @@ const NPCsSection: React.FC<NPCsSectionProps> = ({
   npcIds = [],
   onUpdate,
 }) => {
+  const { user } = useUser();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -42,10 +44,16 @@ const NPCsSection: React.FC<NPCsSectionProps> = ({
   };
 
   const handleEntitySelect = async (entityId: Id<any>) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentNpcs = npcIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         npcIds: [...currentNpcs, entityId] 
       });
       onUpdate();
@@ -58,10 +66,16 @@ const NPCsSection: React.FC<NPCsSectionProps> = ({
   };
 
   const handleNPCCreated = async (npcId: Id<"npcs">) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentNpcs = npcIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         npcIds: [...currentNpcs, npcId] 
       });
       onUpdate();
@@ -75,10 +89,16 @@ const NPCsSection: React.FC<NPCsSectionProps> = ({
   };
 
   const handleUnlinkEntity = async (entityId: Id<any>) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentNpcs = npcIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         npcIds: currentNpcs.filter(id => id !== entityId) 
       });
       onUpdate();

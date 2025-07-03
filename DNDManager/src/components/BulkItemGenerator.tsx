@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import "./BulkItemGenerator.css";
 
@@ -59,18 +60,27 @@ const predefinedItems = [
 ];
 
 const BulkItemGenerator: React.FC<BulkItemGeneratorProps> = ({ onGenerationComplete }) => {
+  const { user } = useUser();
   const createBulkItems = useMutation(api.items.createBulkItems);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const handleGenerateItems = async () => {
+    if (!user) {
+      setError("You must be signed in to generate items.");
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     setSuccess(false);
 
     try {
-      await createBulkItems({ items: predefinedItems });
+      await createBulkItems({ 
+        items: predefinedItems,
+        clerkId: user.id
+      });
       setSuccess(true);
       onGenerationComplete?.();
     } catch (err) {

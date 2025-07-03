@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import Modal from "../Modal";
@@ -12,15 +13,70 @@ interface MonsterCreationModalProps {
   campaignId?: Id<"campaigns">;
 }
 
+interface MonsterFormData {
+  [key: string]: any;
+  name: string;
+  source: string;
+  page: string;
+  size: string;
+  type: string;
+  tags: string[];
+  alignment: string;
+  armorClass: number;
+  armorType: string;
+  hitPoints: number;
+  hitDice: { count: number; die: string };
+  proficiencyBonus: number;
+  abilityScores: {
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+  };
+  speed: {
+    walk: string;
+    swim: string;
+    fly: string;
+    burrow: string;
+    climb: string;
+  };
+  savingThrows: string[];
+  skills: string[];
+  damageVulnerabilities: string[];
+  damageResistances: string[];
+  damageImmunities: string[];
+  conditionImmunities: string[];
+  senses: {
+    darkvision: string;
+    blindsight: string;
+    tremorsense: string;
+    truesight: string;
+    passivePerception: number;
+  };
+  languages: string;
+  challengeRating: string;
+  experiencePoints: number;
+  traits: Array<{ name: string; description: string }>;
+  actions: Array<{ name: string; description: string }>;
+  reactions: Array<{ name: string; description: string }>;
+  legendaryActions: Array<{ name: string; description: string }>;
+  lairActions: Array<{ name: string; description: string }>;
+  regionalEffects: Array<{ name: string; description: string }>;
+  environment: string[];
+}
+
 const MonsterCreationModal: React.FC<MonsterCreationModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
   campaignId,
 }) => {
+  const { user } = useUser();
   const createMonster = useMutation(api.monsters.createMonster);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MonsterFormData>({
     name: "",
     source: "",
     page: "",
@@ -84,13 +140,17 @@ const MonsterCreationModal: React.FC<MonsterCreationModalProps> = ({
   };
 
   const handleNestedInputChange = (parentField: string, childField: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [parentField]: {
-        ...prev[parentField as keyof typeof prev],
-        [childField]: value,
-      },
-    }));
+    setFormData(prev => {
+      const parentValue = prev[parentField];
+      const parentObj = (typeof parentValue === 'object' && parentValue !== null) ? parentValue : {};
+      return {
+        ...prev,
+        [parentField]: {
+          ...parentObj,
+          [childField]: value,
+        },
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,6 +165,14 @@ const MonsterCreationModal: React.FC<MonsterCreationModalProps> = ({
       const monsterId = await createMonster({
         campaignId,
         ...formData,
+        size: formData.size as "Tiny" | "Small" | "Medium" | "Large" | "Huge" | "Gargantuan",
+        hitDice: {
+          count: formData.hitDice.count,
+          die: formData.hitDice.die as "d4" | "d6" | "d8" | "d10" | "d12"
+        },
+        abilityScores: formData.abilityScores,
+        proficiencyBonus: formData.proficiencyBonus,
+        clerkId: user!.id,
       });
       onSuccess(monsterId);
     } catch (error) {
@@ -296,7 +364,7 @@ const MonsterCreationModal: React.FC<MonsterCreationModalProps> = ({
                 <input
                   type="number"
                   id={ability}
-                  value={score}
+                  value={score as number}
                   onChange={(e) => handleNestedInputChange("abilityScores", ability, parseInt(e.target.value))}
                   min="1"
                   max="30"

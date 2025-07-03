@@ -1,94 +1,147 @@
-Task
-Using our existing schema declarations, build two new React/TypeScript components under
-src/components/campaigns/:
-• CampaignList.tsx
-• CampaignDetail.tsx
-Schema & Types
-• Import all types from src/schemas/campaign.ts.
-• Stub out any GraphQL queries/mutations you’ll need (mark them // TODO: implement).
-Functional Requirements
+🧠 System Prompt: User Roles and Campaign Access in D&D 5e Campaign Manager
+Overview:
+This app supports a two-tier user role system and campaign-specific roles for fine-grained access control. Both client-side and server-side enforcement are required. The system is built on Vite + React + TypeScript, using Convex for backend and Clerk for auth.
 
-1. 
-CampaignList
-– Displays a paginated list of campaigns (name + visibility badge).
-– Each row links to its CampaignDetail view.
+👤 Global User Roles
+Roles:
 
+admin: Has full access to all campaigns and resources. Can perform all CRUD operations.
 
-2. 
-CampaignDetail
-– No separate “Create Campaign” form—campaigns are created and updated incrementally here.
-– Mirror the pattern of the existing InteractionsDetail view:
-• Break into collapsible subsections.
-• Each subsection supports inline create/edit/delete.
-– Required subsections & rules:
-• Info: campaign name (required), public/private toggle
-• Timeline Events: exactly three events (start, midpoint, end)
-• Player Characters: ≥ 1
-• Non-Player Characters: ≥ 1
-• Quests: ≥ 1
-• Interactions: ≥ 1
-• Locations: ≥ 1
-• Boss Monsters: ≥ 1
-– Form-level validation: cannot mark “complete” or navigate away until all required fields/counts are satisfied.
+user: Can view public campaigns and campaigns they’ve created. Can create, update their own content. Cannot delete anything. Cannot access hidden or admin-only UI views.
 
+Schema Update:
 
-Styling & Theming
-• Follow the styling guidelines in src/styles/* and existing components.
-• Use the global dark-mode toggle (context or hook).
-• Adhere to our design tokens, CSS variables or styled-components conventions.
-Code Conventions
-• React functional components + hooks (no classes).
-• TypeScript with strict typing.
-• Prettier-compatible (80-column print width).
-• Split out any reusable subsection UIs under src/components/campaigns/subsections/.
-Deliverables
+ts
+Copy
+Edit
+users: defineTable({
+  clerkId: v.string(),
+  email: v.string(),
+  firstName: v.optional(v.string()),
+  lastName: v.optional(v.string()),
+  imageUrl: v.optional(v.string()),
+  createdAt: v.number(),
+  role: v.union(v.literal("admin"), v.literal("user")), // ← new
+});
+🧭 Navigation Behavior
+Admins can see all routes and components (e.g., full campaign list, GM tools, etc.)
 
-1. CampaignList.tsx
-2. CampaignDetail.tsx
-3. Subsection components (e.g. TimelineSection.tsx, PlayersSection.tsx, etc.)
-4. Stubbed GraphQL operations and typed hooks
-––––––––––––––––––––––––––––––––––––––––––
-Clarifications Needed
-We need more detail to align on data sources, UX patterns and styling. Please clarify:
+Users only see:
 
-1. 
-Schema / Database Source of Truth
-• Our campaigns table has optional arrays for timelineEvents, playerCharacters, npcs, quests, locations and monsters.
-• Should we treat these arrays as the canonical state for count validation?
-• If an array is null or undefined, do we auto-initialize it to an empty list?
-• When the user adds a new timeline event or character, should we mutate that array directly or is there a separate join table/API?
+Public campaigns
 
+Campaigns where they are creatorId or listed in the new players field
 
-2. 
-Boss Monsters Filtering Logic
-• In src/schemas/monster.ts there’s an isBoss flag—should the “Boss Monsters” subsection only include monsters where isBoss === true?
-• Or do you want to surface all linked monsters and let the user tag which ones are bosses?
+Their player characters, quests, and journals
 
+All Delete buttons are hidden/disabled for users.
 
-3. 
-Navigation Structure
-• Should “Campaigns” live at a new top-level route /campaigns with its own sidebar nav link?
-• Or should it be nested under an existing section (e.g. /tools/campaigns)?
-• Any breadcrumbs or parent nav items we should hook into?
+🔐 UI-Level Authorization (React + Clerk)
+Load user role and ID via Clerk session
 
+Filter and restrict content like this:
 
-4. 
-Validation & Completion UX
-• When you say “cannot mark complete or navigate away,” do you want:
-– an explicit “Mark as Complete” button that only enables when all rules pass?
-– route-guard logic that blocks navigation and shows a modal warning on unsaved/incomplete data?
-• If you prefer a modal, should it match our existing “unsaved changes” pattern?
+tsx
+Copy
+Edit
+const { user } = useUser(); // from Clerk
+const isAdmin = user?.publicMetadata.role === "admin";
 
+const campaignsToShow = campaigns.filter(
+  (c) =>
+    c.isPublic ||
+    c.creatorId === user?.id ||
+    c.players.includes(user?.id)
+);
+Disable delete buttons if not admin:
 
-5. 
-Styling Approach for New Components
-• Our repo currently uses [styled-components / CSS Modules / global CSS]. Which system should we use for new styles?
-• Any specific design tokens, CSS variables or breakpoints you want us to reference?
+tsx
+Copy
+Edit
+{isAdmin && (
+  <DeleteButton onClick={() => handleDelete()} />
+)}
+Optional reusable component:
 
+tsx
+Copy
+Edit
+export const AdminOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useUser();
+  return user?.publicMetadata.role === "admin" ? <>{children}</> : null;
+};
+🔐 Server-Level Authorization (Convex)
+Perform all critical access control checks inside Convex functions:
 
-6. 
-Pagination Strategy for CampaignList
-• Is simple “Prev / Next” pagination sufficient, or would you prefer:
-– numbered page controls (1, 2, 3 …)
-– infinite scroll with a “Load More” button?
-• What default page size (e.g. 10, 20, 50) and sorting order should we apply?
+ts
+Copy
+Edit
+export const deleteCampaign = mutation({
+  args: { campaignId: v.id("campaigns") },
+  handler: async (ctx, args) => {
+    const user = ctx.user;
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized: Only admins can delete campaigns.");
+    }
+    await ctx.db.delete(args.campaignId);
+  },
+});
+Limit reads:
+
+ts
+Copy
+Edit
+export const listCampaigns = query({
+  handler: async (ctx) => {
+    const user = ctx.user;
+    if (!user) throw new Error("Not authenticated");
+
+    return await ctx.db
+      .query("campaigns")
+      .filter((q) =>
+        q.or(
+          q.eq(q.field("isPublic"), true),
+          q.eq(q.field("creatorId"), user._id),
+          q.contains(q.field("players"), user._id)
+        )
+      )
+      .collect();
+  },
+});
+🧩 Campaign Roles (DM and Players)
+To support per-campaign roles, add two new fields to the campaigns table:
+
+ts
+Copy
+Edit
+campaigns: defineTable({
+  ...
+  dmId: v.string(), // ← Clerk user ID of DM
+  players: v.optional(v.array(v.string())), // ← List of Clerk user IDs
+});
+Rules:
+
+The DM is the primary owner of the campaign.
+
+Players listed in players[] can view the campaign if it’s private.
+
+Only the DM and admins can modify a campaign’s structure.
+
+Players can access player-related components (e.g., character sheets, quests).
+
+UI elements should reflect whether the current user is:
+
+the DM
+
+a player
+
+an admin
+
+✅ Summary of Access Control Logic
+Role/Condition	Can View	Can Edit	Can Delete
+admin	✅ all	✅ all	✅ all
+user (public)	✅ public campaigns	❌	❌
+user (creator)	✅ own campaigns	✅ own	❌
+user (as player)	✅ invited campaigns	✅ character/quests	❌
+Not signed in	✅ public campaigns	❌	❌
+

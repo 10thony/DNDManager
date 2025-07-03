@@ -77,7 +77,7 @@ const QuestList: React.FC = () => {
     if (window.confirm("This will create 5 sample quests with 15 total quest tasks. Continue?")) {
       setIsGenerating(true);
       try {
-        const result = await generateSampleQuests({ creatorId: user.id });
+        const result = await generateSampleQuests({ clerkId: user.id });
         alert(`Successfully created ${result.questsCreated} quests with ${result.tasksCreated} tasks!`);
       } catch (error) {
         console.error("Error generating sample quests:", error);

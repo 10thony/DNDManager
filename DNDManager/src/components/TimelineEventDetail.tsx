@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { useNavigate } from "react-router-dom";
-import { useDarkMode } from "../contexts/DarkModeContext";
+// import { useDarkMode } from "../contexts/DarkModeContext";
 import TimelineEventCreationForm from "./TimelineEventCreationForm";
 import "./TimelineEventDetail.css";
 
@@ -13,7 +13,7 @@ interface TimelineEventDetailProps {
 
 const TimelineEventDetail: React.FC<TimelineEventDetailProps> = ({ timelineEventId }) => {
   const navigate = useNavigate();
-  const { isDarkMode } = useDarkMode();
+  // const { isDarkMode } = useDarkMode();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
@@ -28,7 +28,7 @@ const TimelineEventDetail: React.FC<TimelineEventDetailProps> = ({ timelineEvent
   
   const locations = useQuery(api.locations.list);
   const npcs = useQuery(api.npcs.getAllNpcs);
-  const factions = useQuery(api.factions.getAllFactions);
+  const factions = useQuery(api.factions.getFactions, {});
   const quests = useQuery(api.quests.getAllQuests);
 
   const handleDelete = async () => {

@@ -1,14 +1,23 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 
 // Query to get all maps for a user
 export const getUserMaps = query({
-  args: { userId: v.string() },
+  args: { clerkId: v.string() },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     return await ctx.db
       .query("maps")
-      .filter((q) => q.eq(q.field("createdBy"), args.userId))
+      .filter((q) => q.eq(q.field("createdBy"), user._id))
       .collect();
   },
 });
@@ -27,9 +36,19 @@ export const createMap = mutation({
     name: v.string(),
     width: v.number(),
     height: v.number(),
-    userId: v.string(),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const { width, height } = args;
     
     // Create initial cells array with all cells set to "inbounds"
@@ -49,7 +68,7 @@ export const createMap = mutation({
       width,
       height,
       cells,
-      createdBy: args.userId,
+      createdBy: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

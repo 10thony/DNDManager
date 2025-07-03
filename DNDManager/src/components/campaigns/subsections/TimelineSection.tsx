@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import "./TimelineSection.css";
@@ -15,6 +16,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({
   timelineEventIds = [],
   onUpdate,
 }) => {
+  const { user } = useUser();
   const [isCreating, setIsCreating] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [formData, setFormData] = useState({
@@ -66,6 +68,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({
         description: formData.description,
         date: formData.date,
         type: formData.type,
+        clerkId: user!.id,
       });
 
       await addTimelineEventToCampaign({

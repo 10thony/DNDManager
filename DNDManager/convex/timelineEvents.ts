@@ -22,10 +22,23 @@ export const createTimelineEvent = mutation({
     relatedNpcIds: v.optional(v.array(v.id("npcs"))),
     relatedFactionIds: v.optional(v.array(v.id("factions"))),
     relatedQuestIds: v.optional(v.array(v.id("quests"))),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { clerkId, ...eventData } = args;
     const timelineEventId = await ctx.db.insert("timelineEvents", {
-      ...args,
+      ...eventData,
+      userId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -176,5 +189,78 @@ export const addQuestsToTimelineEvent = mutation({
       relatedQuestIds: updatedQuests,
       updatedAt: Date.now(),
     });
+  },
+});
+
+export const populateSampleTimelineEvents = mutation({
+  args: {
+    creatorId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    // First, create a default campaign for the sample timeline events
+    const defaultCampaignId = await ctx.db.insert("campaigns", {
+      name: "Sample Campaign - The Corruption Saga",
+      creatorId: args.creatorId,
+      description: "A sample campaign showcasing timeline events for demonstration purposes.",
+      worldSetting: "A dark fantasy realm where corruption spreads from ancient ruins.",
+      isPublic: true,
+      dmId: args.creatorId, // Using the same creator ID as DM
+      players: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    const sampleEvents = [
+      {
+        campaignId: defaultCampaignId,
+        title: "The Disappearance in the Woods",
+        description: "A scout vanishes near the Whispering Woods, prompting the local authorities to send adventurers to investigate. This event marks the beginning of a series of strange occurrences and sets the stage for the coming darkness.",
+        date: 1719800000,
+        type: "Discovery" as const,
+        relatedLocationIds: undefined,
+        relatedNpcIds: undefined,
+        relatedFactionIds: undefined,
+        relatedQuestIds: undefined,
+        userId: args.creatorId,
+        createdAt: 1719800000,
+        updatedAt: 1719800000
+      },
+      {
+        campaignId: defaultCampaignId,
+        title: "The Corruption Unleashed",
+        description: "After investigating the woods, adventurers uncover a broken seal in ancient ruins, revealing the source of the spreading corruption. The threat escalates as an ancient force begins to awaken beneath the land.",
+        date: 1719807200,
+        type: "Disaster" as const,
+        relatedLocationIds: undefined,
+        relatedNpcIds: undefined,
+        relatedFactionIds: undefined,
+        relatedQuestIds: undefined,
+        userId: args.creatorId,
+        createdAt: 1719807200,
+        updatedAt: 1719807200
+      },
+      {
+        campaignId: defaultCampaignId,
+        title: "The Final Stand at Black Hollow",
+        description: "As the corruption reaches its peak, the people of Black Hollow rally for a desperate defense against the final wave of darkness. The fate of the region hangs in the balance as heroes and townsfolk unite for a climactic battle.",
+        date: 1719814400,
+        type: "Battle" as const,
+        relatedLocationIds: undefined,
+        relatedNpcIds: undefined,
+        relatedFactionIds: undefined,
+        relatedQuestIds: undefined,
+        userId: args.creatorId,
+        createdAt: 1719814400,
+        updatedAt: 1719814400
+      }
+    ];
+
+    const createdIds = [];
+    for (const event of sampleEvents) {
+      const id = await ctx.db.insert("timelineEvents", event);
+      createdIds.push(id);
+    }
+
+    return { campaignId: defaultCampaignId, timelineEventIds: createdIds };
   },
 }); 

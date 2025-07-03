@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import { useUser } from "@clerk/clerk-react";
 import "./MonsterCreationForm.css";
 
 interface MonsterFormProps {
@@ -16,6 +17,7 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
   onCancel,
   editingMonsterId,
 }) => {
+  const { user } = useUser();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get('returnTo');
@@ -78,12 +80,13 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
     lairActions: [] as Array<{ name: string; description: string }>,
     regionalEffects: [] as Array<{ name: string; description: string }>,
     environment: [] as string[],
+    clerkId: user?.id,
   });
 
   const [errors, setErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const campaigns = useQuery(api.campaigns.getAllCampaigns);
+  const campaigns = useQuery(api.campaigns.getAllCampaigns, { clerkId: user?.id });
   const createMonster = useMutation(api.monsters.createMonster);
   const updateMonster = useMutation(api.monsters.updateMonster);
   const editingMonster = useQuery(
@@ -126,6 +129,7 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
         lairActions: editingMonster.lairActions || [],
         regionalEffects: editingMonster.regionalEffects || [],
         environment: editingMonster.environment || [],
+        clerkId: user?.id,
       });
     }
   }, [editingMonster, editingMonsterId]);
@@ -170,7 +174,10 @@ const MonsterForm: React.FC<MonsterFormProps> = ({
           ...formData,
         });
       } else {
-        await createMonster(formData);
+        await createMonster({
+          ...formData,
+          clerkId: user!.id,
+        });
       }
       onSubmitSuccess();
     } catch (error) {

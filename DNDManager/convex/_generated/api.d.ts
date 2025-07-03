@@ -26,6 +26,7 @@ import type * as monsters from "../monsters.js";
 import type * as npcs from "../npcs.js";
 import type * as questTasks from "../questTasks.js";
 import type * as quests from "../quests.js";
+import type * as sessions from "../sessions.js";
 import type * as timelineEvents from "../timelineEvents.js";
 import type * as users from "../users.js";
 
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   npcs: typeof npcs;
   questTasks: typeof questTasks;
   quests: typeof quests;
+  sessions: typeof sessions;
   timelineEvents: typeof timelineEvents;
   users: typeof users;
 }>;

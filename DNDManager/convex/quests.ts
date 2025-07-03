@@ -6,7 +6,7 @@ export const createQuest = mutation({
     name: v.string(),
     description: v.optional(v.string()),
     campaignId: v.optional(v.id("campaigns")),
-    creatorId: v.string(),
+    clerkId: v.string(),
     status: v.union(
       v.literal("NotStarted"),
       v.literal("InProgress"),
@@ -28,8 +28,20 @@ export const createQuest = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { clerkId, ...questData } = args;
     const questId = await ctx.db.insert("quests", {
-      ...args,
+      ...questData,
+      creatorId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -124,16 +136,25 @@ export const updateQuestStatus = mutation({
 
 export const generateSampleQuests = mutation({
   args: {
-    creatorId: v.string(),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const sampleData = {
       quests: [
         {
           id: "quest1",
           name: "The Missing Scout",
           description: "Find and report back on the whereabouts of a missing scout near the Whispering Woods.",
-          creatorId: args.creatorId,
           status: "NotStarted" as const,
           taskIds: ["task1", "task2", "task3"],
           createdAt: 1719800000
@@ -142,7 +163,6 @@ export const generateSampleQuests = mutation({
           id: "quest2",
           name: "Trouble in the Woods",
           description: "Investigate strange sightings and eliminate threats in the Whispering Woods.",
-          creatorId: args.creatorId,
           status: "NotStarted" as const,
           taskIds: ["task4", "task5", "task6"],
           createdAt: 1719803600
@@ -151,7 +171,6 @@ export const generateSampleQuests = mutation({
           id: "quest3",
           name: "The Broken Seal",
           description: "Explore the ruins and uncover the origin of the corruption.",
-          creatorId: args.creatorId,
           status: "NotStarted" as const,
           taskIds: ["task7", "task8", "task9"],
           createdAt: 1719807200
@@ -160,7 +179,6 @@ export const generateSampleQuests = mutation({
           id: "quest4",
           name: "Secrets of the Deep Crypt",
           description: "Delve into the underground crypt to stop the ancient force awakening.",
-          creatorId: args.creatorId,
           status: "NotStarted" as const,
           taskIds: ["task10", "task11", "task12"],
           createdAt: 1719810800
@@ -169,7 +187,6 @@ export const generateSampleQuests = mutation({
           id: "quest5",
           name: "Final Stand at Black Hollow",
           description: "Defend the town from the final wave of darkness.",
-          creatorId: args.creatorId,
           status: "NotStarted" as const,
           taskIds: ["task13", "task14", "task15"],
           createdAt: 1719814400
@@ -309,7 +326,7 @@ export const generateSampleQuests = mutation({
       const questId = await ctx.db.insert("quests", {
         name: questData.name,
         description: questData.description,
-        creatorId: questData.creatorId,
+        creatorId: user._id,
         status: questData.status,
         taskIds: [], // Will be updated after tasks are created
         createdAt: questData.createdAt,
@@ -328,6 +345,7 @@ export const generateSampleQuests = mutation({
           title: taskData.title,
           type: taskData.type,
           status: taskData.status,
+          userId: user._id,
           createdAt: taskData.createdAt,
           updatedAt: taskData.createdAt,
         });
@@ -336,9 +354,9 @@ export const generateSampleQuests = mutation({
     }
 
     // Finally, update quests with the correct task IDs
-    for (const [questId, taskIds] of Object.entries(questTaskMapping)) {
+    for (const [questIdKey, taskIds] of Object.entries(questTaskMapping)) {
       const actualTaskIds = taskIds.map(taskId => createdTaskIds[taskId]).filter(Boolean);
-      await ctx.db.patch(questId, {
+      await ctx.db.patch(questIdKey as any, {
         taskIds: actualTaskIds,
         updatedAt: Date.now(),
       });

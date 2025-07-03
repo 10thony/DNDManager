@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import EntitySelectionModal from "../../modals/EntitySelectionModal";
@@ -19,6 +20,7 @@ const LocationsSection: React.FC<LocationsSectionProps> = ({
   locationIds = [],
   onUpdate,
 }) => {
+  const { user } = useUser();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -42,10 +44,16 @@ const LocationsSection: React.FC<LocationsSectionProps> = ({
   };
 
   const handleEntitySelect = async (entityId: Id<any>) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentLocations = locationIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         locationIds: [...currentLocations, entityId] 
       });
       onUpdate();
@@ -58,10 +66,16 @@ const LocationsSection: React.FC<LocationsSectionProps> = ({
   };
 
   const handleLocationCreated = async (locationId: Id<"locations">) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentLocations = locationIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         locationIds: [...currentLocations, locationId] 
       });
       onUpdate();
@@ -75,10 +89,16 @@ const LocationsSection: React.FC<LocationsSectionProps> = ({
   };
 
   const handleUnlinkEntity = async (entityId: Id<any>) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentLocations = locationIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         locationIds: currentLocations.filter(id => id !== entityId) 
       });
       onUpdate();

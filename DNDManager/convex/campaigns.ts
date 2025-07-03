@@ -9,6 +9,8 @@ export const createCampaign = mutation({
     worldSetting: v.optional(v.string()),
     startDate: v.optional(v.number()),
     isPublic: v.boolean(),
+    dmId: v.string(), // Clerk user ID of DM
+    players: v.optional(v.array(v.string())), // List of Clerk user IDs
     participantPlayerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     participantUserIds: v.optional(v.array(v.id("users"))),
     tags: v.optional(v.array(v.id("tags"))),
@@ -19,7 +21,21 @@ export const createCampaign = mutation({
   },
   handler: async (ctx, args) => {
     const campaignId = await ctx.db.insert("campaigns", {
-      ...args,
+      name: args.name,
+      creatorId: args.creatorId,
+      description: args.description,
+      worldSetting: args.worldSetting,
+      startDate: args.startDate,
+      isPublic: args.isPublic,
+      dmId: args.dmId,
+      players: args.players,
+      participantPlayerCharacterIds: args.participantPlayerCharacterIds,
+      participantUserIds: args.participantUserIds,
+      tags: args.tags,
+      npcIds: args.npcIds,
+      questIds: args.questIds,
+      locationIds: args.locationIds,
+      monsterIds: args.monsterIds,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -28,8 +44,49 @@ export const createCampaign = mutation({
 });
 
 export const getAllCampaigns = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("campaigns").order("desc").collect();
+  args: { clerkId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (!args.clerkId) {
+      // No clerkId provided, only show public campaigns
+      return await ctx.db
+        .query("campaigns")
+        .filter((q) => q.eq(q.field("isPublic"), true))
+        .order("desc")
+        .collect();
+    }
+
+    // Get user role
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+
+    // Admins can see all campaigns
+    if (user?.role === "admin") {
+      return await ctx.db
+        .query("campaigns")
+        .order("desc")
+        .collect();
+    }
+
+    // Regular users can see public campaigns, their own campaigns, or campaigns they're players in
+    const campaigns = await ctx.db
+      .query("campaigns")
+      .filter((q) =>
+        q.or(
+          q.eq(q.field("isPublic"), true),
+          q.eq(q.field("dmId"), args.clerkId)
+        )
+      )
+      .order("desc")
+      .collect();
+
+    // Filter campaigns where user is a player (client-side filtering for array contains)
+    const campaignsWithPlayerAccess = campaigns.filter(campaign => 
+      campaign.players?.includes(args.clerkId!)
+    );
+
+    return campaignsWithPlayerAccess;
   },
 });
 
@@ -37,13 +94,35 @@ export const getCampaignsWithPagination = query({
   args: {
     page: v.number(),
     pageSize: v.number(),
+    clerkId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { page, pageSize } = args;
+    const { page, pageSize, clerkId } = args;
     const offset = page * pageSize;
     
-    const campaigns = await ctx.db
-      .query("campaigns")
+    let campaignsQuery = ctx.db.query("campaigns");
+    
+    // Apply role-based filtering
+    if (clerkId) {
+      const user = await ctx.db
+        .query("users")
+        .filter((q) => q.eq(q.field("clerkId"), clerkId))
+        .first();
+
+      if (user?.role !== "admin") {
+        campaignsQuery = campaignsQuery        .filter((q) =>
+          q.or(
+            q.eq(q.field("isPublic"), true),
+            q.eq(q.field("dmId"), clerkId)
+          )
+        );
+      }
+    } else {
+      // No clerkId provided, only show public campaigns
+      campaignsQuery = campaignsQuery.filter((q) => q.eq(q.field("isPublic"), true));
+    }
+    
+    const campaigns = await campaignsQuery
       .order("desc")
       .paginate({ numItems: pageSize, cursor: offset.toString() });
     
@@ -52,20 +131,53 @@ export const getCampaignsWithPagination = query({
 });
 
 export const getCampaignById = query({
-  args: { id: v.id("campaigns") },
+  args: { 
+    id: v.id("campaigns"),
+    clerkId: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const campaign = await ctx.db.get(args.id);
+    if (!campaign) return null;
+
+    // If no clerkId provided, only return if campaign is public
+    if (!args.clerkId) {
+      return campaign.isPublic ? campaign : null;
+    }
+
+    // Get user role
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+
+    // Admins can access all campaigns
+    if (user?.role === "admin") {
+      return campaign;
+    }
+
+    // Regular users can access public campaigns, their own campaigns, or campaigns they're players in
+    if (
+      campaign.isPublic ||
+      campaign.dmId === args.clerkId ||
+      campaign.players?.includes(args.clerkId)
+    ) {
+      return campaign;
+    }
+
+    return null; // Access denied
   },
 });
 
 export const updateCampaign = mutation({
   args: {
     id: v.id("campaigns"),
+    clerkId: v.string(), // Required for authorization
     name: v.optional(v.string()),
     description: v.optional(v.string()),
     worldSetting: v.optional(v.string()),
     startDate: v.optional(v.number()),
     isPublic: v.optional(v.boolean()),
+    players: v.optional(v.array(v.string())),
     participantPlayerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     participantUserIds: v.optional(v.array(v.id("users"))),
     tags: v.optional(v.array(v.id("tags"))),
@@ -76,7 +188,26 @@ export const updateCampaign = mutation({
     timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
   },
   handler: async (ctx, args) => {
-    const { id, ...updates } = args;
+    const { id, clerkId, ...updates } = args;
+    
+    // Get campaign and user for authorization
+    const campaign = await ctx.db.get(id);
+    if (!campaign) throw new Error("Campaign not found");
+
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), clerkId))
+      .first();
+
+    // Check authorization: only admins, DM, or creator can update
+    if (
+      user?.role !== "admin" &&
+      campaign.dmId !== clerkId &&
+      campaign.creatorId !== user?._id
+    ) {
+      throw new Error("Unauthorized: Only admins, DM, or creator can update campaigns");
+    }
+
     await ctx.db.patch(id, {
       ...updates,
       updatedAt: Date.now(),
@@ -85,8 +216,24 @@ export const updateCampaign = mutation({
 });
 
 export const deleteCampaign = mutation({
-  args: { id: v.id("campaigns") },
+  args: { 
+    id: v.id("campaigns"),
+    clerkId: v.string(), // Required for authorization
+  },
   handler: async (ctx, args) => {
+    const campaign = await ctx.db.get(args.id);
+    if (!campaign) throw new Error("Campaign not found");
+
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+
+    // Only admins can delete campaigns
+    if (user?.role !== "admin") {
+      throw new Error("Unauthorized: Only admins can delete campaigns");
+    }
+
     await ctx.db.delete(args.id);
   },
 });

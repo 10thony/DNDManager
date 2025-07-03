@@ -43,7 +43,7 @@ const QuestForm: React.FC<QuestFormProps> = ({
   // Fetch related data
   const locations = useQuery(api.locations.list);
   const items = useQuery(api.items.getItems);
-  const npcs = useQuery(api.locations.getNPCs);
+  const npcs = useQuery(api.npcs.getAllNpcs);
   const characters = useQuery(api.characters.getAllCharacters);
   const interactions = useQuery(api.interactions.getAllInteractions);
   
@@ -165,7 +165,7 @@ const QuestForm: React.FC<QuestFormProps> = ({
         // Create new quest
         const questId = await createQuest({
           ...questData,
-          creatorId: user.id,
+          clerkId: user.id,
           taskIds: [],
         });
         navigate(`/quests/${questId}`);

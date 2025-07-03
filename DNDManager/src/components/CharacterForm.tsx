@@ -35,6 +35,11 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, defaultCharact
   const [racialBonusesApplied, setRacialBonusesApplied] = useState(false);
   const [appliedRace, setAppliedRace] = useState<string>("");
 
+  // Get user's database ID
+  const userRecord = useQuery(api.users.getUserByClerkId, 
+    user?.id ? { clerkId: user.id } : "skip"
+  );
+
   const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
     class: "",
@@ -228,6 +233,11 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, defaultCharact
       return;
     }
 
+    if (!userRecord?._id) {
+      setError("User information not found. Please try again.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -264,6 +274,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, defaultCharact
         actions: selectedActions,
         characterType: formData.characterType,
         factionId: formData.factionId ? (formData.factionId as Id<"factions">) : undefined,
+        clerkId: user!.id,
       };
 
       console.log("Character data being sent:", characterData);

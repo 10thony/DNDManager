@@ -32,9 +32,9 @@ const QuestCreationForm: React.FC = () => {
   // Fetch related data
   const locations = useQuery(api.locations.list);
   const items = useQuery(api.items.getItems);
-  const npcs = useQuery(api.locations.getNPCs);
+  const npcs = useQuery(api.npcs.getAllNpcs);
   const characters = useQuery(api.characters.getAllCharacters);
-  const interactions = useQuery(api.interactions.getAllInteractions);
+  // const interactions = useQuery(api.interactions.getAllInteractions);
 
   const [formData, setFormData] = useState<QuestFormData>({
     name: "",
@@ -63,16 +63,16 @@ const QuestCreationForm: React.FC = () => {
     }
   };
 
-  const handleNumberInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value } = e.target;
-    const numValue = value === "" ? undefined : Number(value);
-    setFormData((prev) => ({
-      ...prev,
-      [name]: numValue,
-    }));
-  };
+  // const handleNumberInputChange = (
+  //   e: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   const { name, value } = e.target;
+  //   const numValue = value === "" ? undefined : Number(value);
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [name]: numValue,
+  //   }));
+  // };
 
   const handleMultiSelectChange = (
     field: keyof QuestFormData,
@@ -124,7 +124,6 @@ const QuestCreationForm: React.FC = () => {
       const questData = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
-        creatorId: user.id,
         status: formData.status,
         locationId: formData.locationId,
         taskIds: [] as Id<"questTasks">[], // Will be populated when tasks are created
@@ -133,6 +132,7 @@ const QuestCreationForm: React.FC = () => {
         participantIds: formData.participantIds.length > 0 ? formData.participantIds : undefined,
         interactions: formData.interactions.length > 0 ? formData.interactions : undefined,
         rewards: Object.keys(formData.rewards).length > 0 ? formData.rewards : undefined,
+        clerkId: user.id,
       };
 
       const questId = await createQuest(questData);

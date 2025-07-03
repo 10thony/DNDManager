@@ -112,10 +112,23 @@ export const createMonster = mutation({
       )
     ),
     environment: v.optional(v.array(v.string())),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { clerkId, ...monsterData } = args;
     const monsterId = await ctx.db.insert("monsters", {
-      ...args,
+      ...monsterData,
+      userId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -399,12 +412,24 @@ export const bulkCreateMonsters = mutation({
       ),
       environment: v.optional(v.array(v.string())),
     })),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const monsterIds = [];
     for (const monster of args.monsters) {
       const monsterId = await ctx.db.insert("monsters", {
         ...monster,
+        userId: user._id,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });

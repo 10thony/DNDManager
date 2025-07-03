@@ -1,18 +1,29 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import TimelineEventCreationForm from "./TimelineEventCreationForm";
+import { useRoleAccess } from "../hooks/useRoleAccess";
 import "./TimelineEventList.css";
 
 const TimelineEventList: React.FC = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useRoleAccess();
   const [isCreating, setIsCreating] = useState(false);
   const [editingTimelineEvent, setEditingTimelineEvent] = useState<Id<"timelineEvents"> | null>(null);
   const [isDeleting, setIsDeleting] = useState<Id<"timelineEvents"> | null>(null);
+  const [isPopulating, setIsPopulating] = useState(false);
   const timelineEvents = useQuery(api.timelineEvents.getAllTimelineEvents);
   const deleteTimelineEvent = useMutation(api.timelineEvents.deleteTimelineEvent);
+  const populateSampleEvents = useMutation(api.timelineEvents.populateSampleTimelineEvents);
+  
+  // Get current user's Convex ID
+  const { user } = useUser();
+  const convexUser = useQuery(api.users.getUserByClerkId, 
+    user ? { clerkId: user.id } : "skip"
+  );
 
   const handleDelete = async (id: Id<"timelineEvents">, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
@@ -46,6 +57,26 @@ const TimelineEventList: React.FC = () => {
   const handleSubmitSuccess = () => {
     setIsCreating(false);
     setEditingTimelineEvent(null);
+  };
+
+  const handlePopulateSampleData = async () => {
+    if (!convexUser) {
+      alert("User not found. Please try again.");
+      return;
+    }
+
+    if (window.confirm("This will add 3 sample timeline events to the database. Continue?")) {
+      setIsPopulating(true);
+      try {
+        const result = await populateSampleEvents({ creatorId: convexUser._id });
+        alert(`Sample timeline events have been added successfully! Created ${result.timelineEventIds.length} events in campaign "${result.campaignId}".`);
+      } catch (error) {
+        console.error("Error populating sample data:", error);
+        alert("Failed to populate sample data. Please try again.");
+      } finally {
+        setIsPopulating(false);
+      }
+    }
   };
 
   if (!timelineEvents) {
@@ -94,12 +125,23 @@ const TimelineEventList: React.FC = () => {
           <div className="empty-icon">📅</div>
           <h3>No Timeline Events Yet</h3>
           <p>Get started by creating your first timeline event for your campaign.</p>
-          <button
-            className="create-button"
-            onClick={() => setIsCreating(true)}
-          >
-            Create Your First Timeline Event
-          </button>
+          <div className="empty-state-actions">
+            <button
+              className="create-button"
+              onClick={() => setIsCreating(true)}
+            >
+              Create Your First Timeline Event
+            </button>
+            {isAdmin && (
+              <button
+                className="populate-sample-button"
+                onClick={handlePopulateSampleData}
+                disabled={isPopulating}
+              >
+                {isPopulating ? "🔄 Adding Sample Data..." : "📚 Add Sample Timeline Events"}
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="timeline-events-grid">

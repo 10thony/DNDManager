@@ -7,21 +7,16 @@ import { MapPreview } from './MapPreview';
 interface MapCreatorProps {
   userId: string;
   mapId?: string;
+  onMapCreated?: () => void;
 }
 
 type CellState = 'inbounds' | 'outbounds' | 'occupied';
-
-const CELL_COLORS = {
-  inbounds: 'bg-green-500',
-  outbounds: 'bg-red-500',
-  occupied: 'bg-blue-500',
-};
 
 const DEFAULT_CELL_SIZE = 40; // Default cell size in pixels
 const MIN_CELL_SIZE = 20;
 const MAX_CELL_SIZE = 100;
 
-export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
+export const MapCreator = ({ userId, mapId, onMapCreated }: MapCreatorProps) => {
   const [selectedState, setSelectedState] = useState<CellState>('inbounds');
   const [isCreating, setIsCreating] = useState(!mapId);
   const [mapName, setMapName] = useState('');
@@ -63,9 +58,12 @@ export const MapCreator = ({ userId, mapId }: MapCreatorProps) => {
         name: mapName,
         width,
         height,
-        userId,
+        clerkId: userId,
       });
       setIsCreating(false);
+      if (onMapCreated) {
+        onMapCreated();
+      }
     } catch (error) {
       console.error('Failed to create map:', error);
     }

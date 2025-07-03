@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
 
 export const createFaction = mutation({
   args: {
@@ -19,10 +18,23 @@ export const createFaction = mutation({
         })
       )
     ),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { clerkId, ...factionData } = args;
     const factionId = await ctx.db.insert("factions", {
-      ...args,
+      ...factionData,
+      userId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../convex/_generated/api";
-import { useDarkMode } from "../../contexts/DarkModeContext";
+import { useRoleAccess } from "../../hooks/useRoleAccess";
+import { AdminOnly } from "../AdminOnly";
 import { CampaignValidationState, CampaignCreationRequirements } from "../../schemas/campaign";
 import InfoSection from "./subsections/InfoSection";
 import TimelineSection from "./subsections/TimelineSection";
@@ -14,10 +16,23 @@ import BossMonstersSection from "./subsections/BossMonstersSection";
 import InteractionsSection from "./subsections/InteractionsSection";
 import "./CampaignDetail.css";
 
+// Move requirements outside component to prevent recreation on every render
+const requirements: CampaignCreationRequirements = {
+  timelineEventsRequired: 3,
+  playerCharactersRequired: 1,
+  npcsRequired: 1,
+  questsRequired: 1,
+  locationsRequired: 1,
+  bossMonstersRequired: 1,
+  interactionsRequired: 1,
+};
+
 const CampaignDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { isDarkMode } = useDarkMode();
+  const { user } = useUser();
+  const { isAdmin } = useRoleAccess();
+  
   const [validationState, setValidationState] = useState<CampaignValidationState>({
     hasName: false,
     hasTimelineEvents: false,
@@ -29,25 +44,16 @@ const CampaignDetail: React.FC = () => {
     hasInteractions: false,
   });
 
-  const requirements: CampaignCreationRequirements = {
-    timelineEventsRequired: 3,
-    playerCharactersRequired: 1,
-    npcsRequired: 1,
-    questsRequired: 1,
-    locationsRequired: 1,
-    bossMonstersRequired: 1,
-    interactionsRequired: 1,
-  };
-
+  // For non-admin users, don't pass clerkId to ensure they only see public campaigns
   const campaign = useQuery(
     api.campaigns.getCampaignById,
-    id ? { id: id as any } : "skip"
+    id ? { 
+      id: id as any, 
+      clerkId: isAdmin ? user?.id : undefined 
+    } : "skip"
   );
 
-  const playerCharacters = useQuery(api.characters.getAllCharacters);
-  const npcs = useQuery(api.npcs.getAllNpcs);
-  const quests = useQuery(api.quests.getAllQuests);
-  const locations = useQuery(api.locations.list);
+  // These queries are not currently used but may be needed for future features
   const monsters = useQuery(api.monsters.getAllMonsters);
   const interactions = useQuery(
     api.interactions.getInteractionsByCampaign,
@@ -56,8 +62,8 @@ const CampaignDetail: React.FC = () => {
 
   const updateCampaign = useMutation(api.campaigns.updateCampaign);
 
-  // Calculate boss monsters (CR 10 or higher)
-  const getBossMonsterCount = () => {
+  // Calculate boss monsters (CR 10 or higher) - memoized to prevent recalculation
+  const getBossMonsterCount = useMemo(() => {
     if (!campaign || !monsters) return 0;
     const campaignMonsters = monsters.filter(monster => 
       campaign.monsterIds?.includes(monster._id)
@@ -66,25 +72,28 @@ const CampaignDetail: React.FC = () => {
       const cr = parseFloat(monster.challengeRating);
       return !isNaN(cr) && cr >= 10;
     }).length;
-  };
+  }, [campaign, monsters]);
 
-  // Update validation state when campaign data changes
-  useEffect(() => {
-    if (!campaign) return;
+  // Update validation state when campaign data changes - memoized to prevent unnecessary updates
+  const newValidationState = useMemo(() => {
+    if (!campaign) return validationState;
 
-    const bossMonsterCount = getBossMonsterCount();
-    
-    setValidationState({
+    return {
       hasName: !!campaign.name?.trim(),
       hasTimelineEvents: (campaign.timelineEventIds?.length || 0) >= requirements.timelineEventsRequired,
       hasPlayerCharacters: (campaign.participantPlayerCharacterIds?.length || 0) >= requirements.playerCharactersRequired,
       hasNPCs: (campaign.npcIds?.length || 0) >= requirements.npcsRequired,
       hasQuests: (campaign.questIds?.length || 0) >= requirements.questsRequired,
       hasLocations: (campaign.locationIds?.length || 0) >= requirements.locationsRequired,
-      hasBossMonsters: bossMonsterCount >= requirements.bossMonstersRequired,
+      hasBossMonsters: getBossMonsterCount >= requirements.bossMonstersRequired,
       hasInteractions: (interactions?.length || 0) >= requirements.interactionsRequired,
-    });
-  }, [campaign, monsters, interactions, requirements]);
+    };
+  }, [campaign, getBossMonsterCount, interactions, validationState]);
+
+  // Update validation state only when it actually changes
+  useEffect(() => {
+    setValidationState(newValidationState);
+  }, [newValidationState]);
 
   const isCampaignComplete = Object.values(validationState).every(Boolean);
 
@@ -94,12 +103,13 @@ const CampaignDetail: React.FC = () => {
   };
 
   const handleSaveCampaign = async () => {
-    if (!campaign || !isCampaignComplete) return;
+    if (!campaign || !isCampaignComplete || !user?.id) return;
 
     try {
       // Mark campaign as complete or update status
       await updateCampaign({
         id: campaign._id,
+        clerkId: user.id,
         // Add any completion fields here
       });
       
@@ -110,6 +120,7 @@ const CampaignDetail: React.FC = () => {
     }
   };
 
+  // Check if user has access to this campaign
   if (!campaign) {
     return (
       <div className="campaign-detail-container">
@@ -121,12 +132,41 @@ const CampaignDetail: React.FC = () => {
     );
   }
 
+  // For non-admin users, ensure they can only access public campaigns
+  if (!isAdmin && !campaign.isPublic) {
+    return (
+      <div className="campaign-detail-container">
+        <div className="access-denied">
+          <h2>Access Denied</h2>
+          <p>This campaign is private and not available for public viewing.</p>
+          <button className="back-button" onClick={() => navigate("/campaigns")}>
+            ← Back to Campaigns
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="campaign-detail-container">
       {/* Header Section */}
       <div className="detail-header">
         <div className="header-content">
           <h1 className="campaign-title">{campaign.name || "Untitled Campaign"}</h1>
+          <div className="campaign-badges">
+            <div className={`visibility-badge ${campaign.isPublic ? 'public' : 'private'}`}>
+              {campaign.isPublic ? '🌐 Public' : '🔒 Private'}
+            </div>
+            {campaign.dmId === user?.id && (
+              <div className="role-badge dm">👑 DM</div>
+            )}
+            {user?.id && campaign.players?.includes(user.id) && (
+              <div className="role-badge player">🎲 Player</div>
+            )}
+            {isAdmin && (
+              <div className="role-badge admin">⚡ Admin</div>
+            )}
+          </div>
           <div className="campaign-meta">
             <div className="meta-item">
               <span className="meta-icon">📅</span>
@@ -140,61 +180,88 @@ const CampaignDetail: React.FC = () => {
               <span className="meta-icon">📜</span>
               <span>{campaign.questIds?.length || 0} Quests</span>
             </div>
+            <div className="meta-item">
+              <span className="meta-icon">🎲</span>
+              <span>{campaign.players?.length || 0} Players</span>
+            </div>
           </div>
         </div>
         <div className="header-actions">
           <button className="back-button" onClick={() => navigate("/campaigns")}>
             ← Back to Campaigns
           </button>
+          {(isAdmin || campaign.dmId === user?.id) && (
+            <button 
+              className="edit-button"
+              onClick={() => navigate(`/campaigns/${campaign._id}/edit`)}
+            >
+              ✏️ Edit Campaign
+            </button>
+          )}
+          <AdminOnly>
+            <button 
+              className="delete-button danger"
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this campaign? This action cannot be undone.")) {
+                  // TODO: Implement delete functionality
+                  console.log("Delete campaign:", campaign._id);
+                }
+              }}
+            >
+              🗑️ Delete Campaign
+            </button>
+          </AdminOnly>
         </div>
       </div>
 
-      {/* Validation Status */}
-      <div className={`validation-status ${isCampaignComplete ? 'complete' : 'incomplete'}`}>
-        <div className="validation-header">
-          <h3 className="validation-title">
-            {isCampaignComplete ? '✅ Campaign Complete' : '⚠️ Campaign Incomplete'}
-          </h3>
-          <div className="validation-progress">
-            {Object.values(validationState).filter(Boolean).length} / {Object.keys(validationState).length} requirements met
+      {/* Validation Status - Only show for admins or campaign owners */}
+      {(isAdmin || campaign.dmId === user?.id) && (
+        <div className={`validation-status ${isCampaignComplete ? 'complete' : 'incomplete'}`}>
+          <div className="validation-header">
+            <h3 className="validation-title">
+              {isCampaignComplete ? '✅ Campaign Complete' : '⚠️ Campaign Incomplete'}
+            </h3>
+            <div className="validation-progress">
+              {Object.values(validationState).filter(Boolean).length} / {Object.keys(validationState).length} requirements met
+            </div>
+          </div>
+          
+          <div className="validation-items">
+            <div className={`validation-item ${validationState.hasName ? 'complete' : 'incomplete'}`}>
+              <span className="validation-icon">{validationState.hasName ? '✅' : '❌'}</span>
+              <span className="validation-text">Campaign name is set</span>
+            </div>
+            <div className={`validation-item ${validationState.hasTimelineEvents ? 'complete' : 'incomplete'}`}>
+              <span className="validation-icon">{validationState.hasTimelineEvents ? '✅' : '❌'}</span>
+              <span className="validation-text">Timeline events ({campaign.timelineEventIds?.length || 0}/{requirements.timelineEventsRequired})</span>
+            </div>
+            <div className={`validation-item ${validationState.hasPlayerCharacters ? 'complete' : 'incomplete'}`}>
+              <span className="validation-icon">{validationState.hasPlayerCharacters ? '✅' : '❌'}</span>
+              <span className="validation-text">Player characters ({campaign.participantPlayerCharacterIds?.length || 0}/{requirements.playerCharactersRequired})</span>
+            </div>
+            <div className={`validation-item ${validationState.hasNPCs ? 'complete' : 'incomplete'}`}>
+              <span className="validation-icon">{validationState.hasNPCs ? '✅' : '❌'}</span>
+              <span className="validation-text">NPCs ({campaign.npcIds?.length || 0}/{requirements.npcsRequired})</span>
+            </div>
+            <div className={`validation-item ${validationState.hasQuests ? 'complete' : 'incomplete'}`}>
+              <span className="validation-icon">{validationState.hasQuests ? '✅' : '❌'}</span>
+              <span className="validation-text">Quests ({campaign.questIds?.length || 0}/{requirements.questsRequired})</span>
+            </div>
+            <div className={`validation-item ${validationState.hasLocations ? 'complete' : 'incomplete'}`}>
+              <span className="validation-icon">{validationState.hasLocations ? '✅' : '❌'}</span>
+              <span className="validation-text">Locations ({campaign.locationIds?.length || 0}/{requirements.locationsRequired})</span>
+            </div>
+            <div className={`validation-item ${validationState.hasBossMonsters ? 'complete' : 'incomplete'}`}>
+              <span className="validation-icon">{validationState.hasBossMonsters ? '✅' : '❌'}</span>
+              <span className="validation-text">Boss monsters ({getBossMonsterCount}/{requirements.bossMonstersRequired})</span>
+            </div>
+            <div className={`validation-item ${validationState.hasInteractions ? 'complete' : 'incomplete'}`}>
+              <span className="validation-icon">{validationState.hasInteractions ? '✅' : '❌'}</span>
+              <span className="validation-text">Interactions ({interactions?.length || 0}/{requirements.interactionsRequired})</span>
+            </div>
           </div>
         </div>
-        
-        <div className="validation-items">
-          <div className={`validation-item ${validationState.hasName ? 'complete' : 'incomplete'}`}>
-            <span className="validation-icon">{validationState.hasName ? '✅' : '❌'}</span>
-            <span className="validation-text">Campaign name is set</span>
-          </div>
-          <div className={`validation-item ${validationState.hasTimelineEvents ? 'complete' : 'incomplete'}`}>
-            <span className="validation-icon">{validationState.hasTimelineEvents ? '✅' : '❌'}</span>
-            <span className="validation-text">Timeline events ({campaign.timelineEventIds?.length || 0}/{requirements.timelineEventsRequired})</span>
-          </div>
-          <div className={`validation-item ${validationState.hasPlayerCharacters ? 'complete' : 'incomplete'}`}>
-            <span className="validation-icon">{validationState.hasPlayerCharacters ? '✅' : '❌'}</span>
-            <span className="validation-text">Player characters ({campaign.participantPlayerCharacterIds?.length || 0}/{requirements.playerCharactersRequired})</span>
-          </div>
-          <div className={`validation-item ${validationState.hasNPCs ? 'complete' : 'incomplete'}`}>
-            <span className="validation-icon">{validationState.hasNPCs ? '✅' : '❌'}</span>
-            <span className="validation-text">NPCs ({campaign.npcIds?.length || 0}/{requirements.npcsRequired})</span>
-          </div>
-          <div className={`validation-item ${validationState.hasQuests ? 'complete' : 'incomplete'}`}>
-            <span className="validation-icon">{validationState.hasQuests ? '✅' : '❌'}</span>
-            <span className="validation-text">Quests ({campaign.questIds?.length || 0}/{requirements.questsRequired})</span>
-          </div>
-          <div className={`validation-item ${validationState.hasLocations ? 'complete' : 'incomplete'}`}>
-            <span className="validation-icon">{validationState.hasLocations ? '✅' : '❌'}</span>
-            <span className="validation-text">Locations ({campaign.locationIds?.length || 0}/{requirements.locationsRequired})</span>
-          </div>
-          <div className={`validation-item ${validationState.hasBossMonsters ? 'complete' : 'incomplete'}`}>
-            <span className="validation-icon">{validationState.hasBossMonsters ? '✅' : '❌'}</span>
-            <span className="validation-text">Boss monsters ({getBossMonsterCount()}/{requirements.bossMonstersRequired})</span>
-          </div>
-          <div className={`validation-item ${validationState.hasInteractions ? 'complete' : 'incomplete'}`}>
-            <span className="validation-icon">{validationState.hasInteractions ? '✅' : '❌'}</span>
-            <span className="validation-text">Interactions ({interactions?.length || 0}/{requirements.interactionsRequired})</span>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Campaign Sections */}
       <div className="campaign-sections">
@@ -249,16 +316,18 @@ const CampaignDetail: React.FC = () => {
         />
       </div>
 
-      {/* Save Button */}
-      <div className="save-section">
-        <button
-          className={`save-button ${isCampaignComplete ? 'enabled' : 'disabled'}`}
-          onClick={handleSaveCampaign}
-          disabled={!isCampaignComplete}
-        >
-          {isCampaignComplete ? '💾 Save Campaign' : '⚠️ Complete Requirements to Save'}
-        </button>
-      </div>
+      {/* Save Button - Only show for admins or campaign owners */}
+      {(isAdmin || campaign.dmId === user?.id) && (
+        <div className="save-section">
+          <button
+            className={`save-button ${isCampaignComplete ? 'enabled' : 'disabled'}`}
+            onClick={handleSaveCampaign}
+            disabled={!isCampaignComplete}
+          >
+            {isCampaignComplete ? '💾 Save Campaign' : '⚠️ Complete Requirements to Save'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

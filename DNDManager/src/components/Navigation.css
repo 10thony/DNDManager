@@ -148,4 +148,29 @@
 .main-content.collapsed {
   margin-left: 0;
 }
+
+/* Admin section */
+.nav-separator {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 8px 0;
+}
+
+.dark .nav-separator {
+  background-color: #374151;
+}
+
+.nav-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 16px;
+  margin-top: 8px;
+}
+
+.dark .nav-section-title {
+  color: #9ca3af;
+}
   

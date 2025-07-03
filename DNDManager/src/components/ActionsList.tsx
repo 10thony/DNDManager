@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useUser } from '@clerk/clerk-react';
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import ActionCreationForm from "./ActionCreationForm";
@@ -9,8 +10,14 @@ const ActionsList: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [editingAction, setEditingAction] = useState<Id<"actions"> | null>(null);
   const [isDeleting, setIsDeleting] = useState<Id<"actions"> | null>(null);
+  const [isLoadingSample, setIsLoadingSample] = useState(false);
+  const { user } = useUser();
   const actions = useQuery(api.actions.getAllActions);
+  const userRole = useQuery(api.users.getUserRole, 
+    user?.id ? { clerkId: user.id } : "skip"
+  );
   const deleteAction = useMutation(api.actions.deleteAction);
+  const loadSampleActions = useMutation(api.actions.loadSampleActionsFromJson);
 
   const handleDelete = async (id: Id<"actions">) => {
     if (window.confirm("Are you sure you want to delete this action? This action cannot be undone.")) {
@@ -38,6 +45,24 @@ const ActionsList: React.FC = () => {
   const handleSubmitSuccess = () => {
     setIsCreating(false);
     setEditingAction(null);
+  };
+
+  const handleLoadSampleData = async () => {
+    if (!user?.id) {
+      alert('Please sign in to load sample data');
+      return;
+    }
+
+    setIsLoadingSample(true);
+    try {
+      await loadSampleActions({ clerkId: user.id });
+      alert('Sample actions loaded successfully! Please refresh the page to see them.');
+    } catch (error) {
+      console.error('Error loading sample data:', error);
+      alert(`Failed to load sample data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoadingSample(false);
+    }
   };
 
   if (!actions) {
@@ -86,12 +111,23 @@ const ActionsList: React.FC = () => {
           <div className="empty-icon">⚔️</div>
           <h3>No Actions Yet</h3>
           <p>Get started by creating your first action for your characters.</p>
-          <button
-            className="create-button"
-            onClick={() => setIsCreating(true)}
-          >
-            Create Your First Action
-          </button>
+          <div className="flex gap-4 justify-center">
+            <button
+              className="create-button"
+              onClick={() => setIsCreating(true)}
+            >
+              Create Your First Action
+            </button>
+            {userRole === 'admin' && (
+              <button
+                onClick={handleLoadSampleData}
+                disabled={isLoadingSample}
+                className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoadingSample ? 'Loading Sample Data...' : 'Load Sample Actions Data'}
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="actions-grid">

@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
 
 export const locationTypes = [
   "Town",
@@ -18,51 +17,9 @@ export const locationTypes = [
 
 export type LocationType = typeof locationTypes[number];
 
-// Create a new campaign
-export const createCampaign = mutation({
-  args: {
-    name: v.string(),
-    creatorId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const campaignId = await ctx.db.insert("campaigns", {
-      name: args.name,
-      creatorId: args.creatorId,
-      createdAt: Date.now(),
-    });
-    return campaignId;
-  },
-});
-
-// Get all campaigns
-export const getCampaigns = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("campaigns").collect();
-  },
-});
-
-// Create a new NPC
-export const createNPC = mutation({
-  args: {
-    name: v.string(),
-    creatorId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const npcId = await ctx.db.insert("npcs", {
-      name: args.name,
-      creatorId: args.creatorId,
-      createdAt: Date.now(),
-    });
-    return npcId;
-  },
-});
-
-// Get all NPCs
-export const getNPCs = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("npcs").collect();
-  },
-});
+// Note: These functions are duplicated in other files and should be removed
+// Campaign functions are in campaigns.ts
+// NPC functions are in npcs.ts
 
 // Create a new location (for interaction detail)
 export const createLocation = mutation({
@@ -70,21 +27,31 @@ export const createLocation = mutation({
     name: v.string(),
     description: v.string(),
     type: v.string(),
-    creatorId: v.string(),
-    campaignId: v.optional(v.id("campaigns")),
+    clerkId: v.string(),
+    campaignId: v.id("campaigns"),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const locationId = await ctx.db.insert("locations", {
       name: args.name,
       description: args.description,
       type: args.type as LocationType,
-      campaignId: args.campaignId || null,
+      campaignId: args.campaignId,
       notableNpcIds: [],
       linkedLocations: [],
       interactionsAtLocation: [],
       imageUrls: [],
       secrets: "",
-      creatorId: args.creatorId,
+      creatorId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -104,9 +71,19 @@ export const create = mutation({
     imageUrls: v.array(v.string()),
     secrets: v.string(),
     mapId: v.optional(v.id("maps")),
-    creatorId: v.string(),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const locationId = await ctx.db.insert("locations", {
       campaignId: args.campaignId,
       name: args.name,
@@ -118,7 +95,7 @@ export const create = mutation({
       imageUrls: args.imageUrls,
       secrets: args.secrets,
       mapId: args.mapId,
-      creatorId: args.creatorId,
+      creatorId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

@@ -7,7 +7,7 @@ import "./FactionList.css";
 
 const FactionList: React.FC = () => {
   const navigate = useNavigate();
-  const factions = useQuery(api.factions.getFactions);
+  const factions = useQuery(api.factions.getFactions, {});
   const deleteFaction = useMutation(api.factions.deleteFaction);
   const [isDeleting, setIsDeleting] = useState<Id<"factions"> | null>(null);
 

@@ -1,18 +1,35 @@
 import React, { useState } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../convex/_generated/api";
-import { useDarkMode } from "../../contexts/DarkModeContext";
+import { useRoleAccess } from "../../hooks/useRoleAccess";
+import { AdminOnly } from "../AdminOnly";
 import "./CampaignList.css";
 
 const CampaignList: React.FC = () => {
   const navigate = useNavigate();
-  const { isDarkMode } = useDarkMode();
+  const { user } = useUser();
+  const { isAdmin, canCreateCampaign } = useRoleAccess();
   const [currentPage, setCurrentPage] = useState(0);
   const [expandedCampaigns, setExpandedCampaigns] = useState<Set<string>>(new Set());
+  const [isGeneratingSample, setIsGeneratingSample] = useState(false);
   const pageSize = 10;
 
-  const campaigns = useQuery(api.campaigns.getAllCampaigns);
+  // Get user's database ID - always call this hook
+  const userRecord = useQuery(api.users.getUserByClerkId, 
+    user?.id ? { clerkId: user.id } : "skip"
+  );
+
+  // For non-admin users, only pass clerkId if they're authenticated
+  // This ensures they only see public campaigns
+  const campaigns = useQuery(api.campaigns.getAllCampaigns, { 
+    clerkId: isAdmin ? user?.id : undefined 
+  });
+
+  // Sample data generation mutations
+  const populateSampleTimelineEvents = useMutation(api.timelineEvents.populateSampleTimelineEvents);
+  const generateSampleQuests = useMutation(api.quests.generateSampleQuests);
 
   const toggleCampaignExpansion = (campaignId: string) => {
     setExpandedCampaigns(prev => {
@@ -30,17 +47,45 @@ const CampaignList: React.FC = () => {
     navigate(`/campaigns/${campaignId}`);
   };
 
+  const handleGenerateSampleData = async () => {
+    if (!user?.id || !userRecord?._id) return;
+    
+    setIsGeneratingSample(true);
+    try {
+      // Generate sample timeline events (which creates a sample campaign)
+      const timelineResult = await populateSampleTimelineEvents({ 
+        creatorId: userRecord._id 
+      });
+
+      // Generate sample quests
+      const questsResult = await generateSampleQuests({ 
+        clerkId: user.id 
+      });
+
+      console.log("Sample data generation successful:", { timelineResult, questsResult });
+      alert("Successfully generated sample campaign with timeline events and quests!");
+      
+      // Refresh the page to show the new data
+      window.location.reload();
+    } catch (error) {
+      console.error("Error generating sample data:", error);
+      alert("Error generating sample data. Please try again.");
+    } finally {
+      setIsGeneratingSample(false);
+    }
+  };
+
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString();
   };
 
-  const getBossMonsterCount = (campaign: any) => {
+  const getBossMonsterCount = (_campaign: any) => {
     // TODO: Implement boss monster counting logic
     // For now, return 0 as placeholder
     return 0;
   };
 
-  if (!campaigns) {
+  if (!campaigns || userRecord === undefined) {
     return (
       <div className="campaigns-container">
         <div className="loading-state">
@@ -51,10 +96,24 @@ const CampaignList: React.FC = () => {
     );
   }
 
-  const totalPages = Math.ceil(campaigns.length / pageSize);
+  // Check if any of the queries returned an error
+  if (campaigns === null || userRecord === null) {
+    return (
+      <div className="campaigns-container">
+        <div className="error">Error loading campaigns. Please try again later.</div>
+      </div>
+    );
+  }
+
+  // Filter campaigns for non-admin users to only show public ones
+  const filteredCampaigns = isAdmin 
+    ? campaigns 
+    : campaigns.filter((campaign: any) => campaign.isPublic);
+
+  const totalPages = Math.ceil(filteredCampaigns.length / pageSize);
   const startIndex = currentPage * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentCampaigns = campaigns.slice(startIndex, endIndex);
+  const currentCampaigns = filteredCampaigns.slice(startIndex, endIndex);
 
   return (
     <div className="campaigns-container">
@@ -62,29 +121,54 @@ const CampaignList: React.FC = () => {
         <div className="header-content">
           <h2 className="campaigns-title">Campaigns</h2>
           <p className="campaigns-subtitle">
-            Manage and organize your D&D campaigns
+            {isAdmin 
+              ? "Manage and organize all D&D campaigns" 
+              : "Browse publicly available campaigns"
+            }
           </p>
         </div>
-        <button
-          className="create-button"
-          onClick={() => navigate("/campaigns/new")}
-        >
-          <span className="button-icon">+</span>
-          Create New Campaign
-        </button>
-      </div>
-
-      {campaigns.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">📚</div>
-          <h3>No Campaigns Yet</h3>
-          <p>Get started by creating your first campaign.</p>
+        {canCreateCampaign() && (
           <button
             className="create-button"
             onClick={() => navigate("/campaigns/new")}
           >
-            Create Your First Campaign
+            <span className="button-icon">+</span>
+            Create New Campaign
           </button>
+        )}
+      </div>
+
+      {filteredCampaigns.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">📚</div>
+          <h3>No Campaigns Available</h3>
+          <p>
+            {isAdmin 
+              ? "No campaigns have been created yet." 
+              : "No public campaigns are available at the moment."
+            }
+          </p>
+          <div className="empty-state-actions">
+            {canCreateCampaign() && (
+              <button
+                className="create-button"
+                onClick={() => navigate("/campaigns/new")}
+              >
+                Create Your First Campaign
+              </button>
+            )}
+            <button
+              onClick={handleGenerateSampleData}
+              disabled={isGeneratingSample}
+              className="btn btn-secondary"
+              style={{ marginLeft: '10px' }}
+            >
+              {isGeneratingSample ? "Generating..." : "Generate Sample Data"}
+            </button>
+          </div>
+          <div className="admin-note">
+            <p><em>You can generate sample campaigns with timeline events and quests to get started quickly.</em></p>
+          </div>
         </div>
       ) : (
         <>
@@ -97,8 +181,19 @@ const CampaignList: React.FC = () => {
                 >
                   <div className="campaign-title-section">
                     <h3 className="campaign-name">{campaign.name}</h3>
-                    <div className={`visibility-badge ${campaign.isPublic ? 'public' : 'private'}`}>
-                      {campaign.isPublic ? '🌐 Public' : '🔒 Private'}
+                    <div className="campaign-badges">
+                      <div className={`visibility-badge ${campaign.isPublic ? 'public' : 'private'}`}>
+                        {campaign.isPublic ? '🌐 Public' : '🔒 Private'}
+                      </div>
+                      {campaign.dmId === user?.id && (
+                        <div className="role-badge dm">👑 DM</div>
+                      )}
+                      {campaign.players?.includes(user?.id) && (
+                        <div className="role-badge player">🎲 Player</div>
+                      )}
+                      {isAdmin && (
+                        <div className="role-badge admin">⚡ Admin</div>
+                      )}
                     </div>
                   </div>
                   <div className="campaign-meta">
@@ -178,15 +273,29 @@ const CampaignList: React.FC = () => {
                       >
                         📖 View Details
                       </button>
-                      <button
-                        className="edit-button secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/campaigns/${campaign._id}/edit`);
-                        }}
-                      >
-                        ✏️ Edit Campaign
-                      </button>
+                      {(isAdmin || campaign.dmId === user?.id) && (
+                        <button
+                          className="edit-button secondary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/campaigns/${campaign._id}/edit`);
+                          }}
+                        >
+                          ✏️ Edit Campaign
+                        </button>
+                      )}
+                      <AdminOnly>
+                        <button
+                          className="delete-button danger"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // TODO: Implement delete confirmation
+                            console.log("Delete campaign:", campaign._id);
+                          }}
+                        >
+                          🗑️ Delete Campaign
+                        </button>
+                      </AdminOnly>
                     </div>
                   </div>
                 )}

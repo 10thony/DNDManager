@@ -9,6 +9,7 @@ export default defineSchema({
     lastName: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
     createdAt: v.number(),
+    role: v.union(v.literal("admin"), v.literal("user")),
   }),
   playerCharacters: defineTable({
     name: v.string(),
@@ -50,6 +51,7 @@ export default defineSchema({
     proficiencyBonus: v.float64(),
     actions: v.array(v.id("actions")),
     factionId: v.optional(v.id("factions")),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -92,6 +94,7 @@ export default defineSchema({
     armorClass: v.float64(),
     proficiencyBonus: v.float64(),
     actions: v.array(v.id("actions")),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -181,6 +184,7 @@ export default defineSchema({
       v.literal("Special")
     )),
     maxUses: v.optional(v.union(v.number(), v.string())),
+    userId: v.id("users"),
     createdAt: v.number(),
   }),
   items: defineTable({
@@ -217,6 +221,7 @@ export default defineSchema({
     weight: v.optional(v.number()),
     cost: v.optional(v.number()),
     attunement: v.optional(v.boolean()),
+    userId: v.id("users"),
   }),
   maps: defineTable({
     name: v.string(),
@@ -231,7 +236,7 @@ export default defineSchema({
         v.literal("occupied")
       )
     })),
-    createdBy: v.string(),
+    createdBy: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
@@ -258,7 +263,7 @@ export default defineSchema({
     imageUrls: v.array(v.string()),
     secrets: v.string(),
     mapId: v.optional(v.id("maps")),
-    creatorId: v.string(),
+    creatorId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
@@ -269,6 +274,8 @@ export default defineSchema({
     worldSetting: v.optional(v.string()),
     startDate: v.optional(v.number()),
     isPublic: v.boolean(),
+    dmId: v.string(),
+    players: v.optional(v.array(v.string())),
   
     participantPlayerCharacterIds: v.optional(
       v.array(v.id("playerCharacters"))
@@ -297,7 +304,7 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
     campaignId: v.optional(v.id("campaigns")),
-    creatorId: v.string(),
+    creatorId: v.id("users"),
     status: v.union(
       v.literal("NotStarted"),
       v.literal("InProgress"),
@@ -346,13 +353,14 @@ export default defineSchema({
     targetNpcId: v.optional(v.id("npcs")),
     requiredItemIds: v.optional(v.array(v.id("items"))),
     interactions: v.optional(v.array(v.id("interactions"))),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
   interactions: defineTable({
     name: v.string(),
     description: v.optional(v.string()),
-    creatorId: v.string(),
+    creatorId: v.id("users"),
     campaignId: v.optional(v.id("campaigns")),
     questId: v.optional(v.id("quests")),
     questTaskId: v.optional(v.id("questTasks")),
@@ -386,6 +394,7 @@ export default defineSchema({
       )
     ),
     notes: v.optional(v.string()),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -409,6 +418,7 @@ export default defineSchema({
     relatedNpcIds: v.optional(v.array(v.id("npcs"))),
     relatedFactionIds: v.optional(v.array(v.id("factions"))),
     relatedQuestIds: v.optional(v.array(v.id("quests"))),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -428,6 +438,7 @@ export default defineSchema({
         })
       )
     ),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -557,6 +568,7 @@ export default defineSchema({
 
     environment: v.optional(v.array(v.string())),
 
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -599,6 +611,7 @@ export default defineSchema({
     description: v.string(),
     higherLevel: v.optional(v.string()),
     source: v.string(),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -617,6 +630,7 @@ export default defineSchema({
         })
       )
     ),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -656,6 +670,7 @@ export default defineSchema({
     relatedQuestIds: v.optional(v.array(v.id("quests"))),
     relatedEventIds: v.optional(v.array(v.id("timelineEvents"))),
     tags: v.optional(v.array(v.id("tags"))),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
@@ -675,7 +690,23 @@ export default defineSchema({
     achievedAt: v.optional(v.number()),
     relatedEventIds: v.optional(v.array(v.id("timelineEvents"))),
     relatedQuestIds: v.optional(v.array(v.id("quests"))),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
+  }),
+  userSessions: defineTable({
+    clerkId: v.string(),
+    startTime: v.number(),
+    lastActivity: v.number(),
+    isActive: v.boolean(),
+    userAgent: v.optional(v.string()),
+    ipAddress: v.optional(v.string()),
+  }),
+  userSessionActivities: defineTable({
+    sessionId: v.id("userSessions"),
+    clerkId: v.string(),
+    activityType: v.string(),
+    details: v.any(),
+    timestamp: v.number(),
   }),
 });

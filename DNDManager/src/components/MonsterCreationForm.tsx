@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import { useUser } from "@clerk/clerk-react";
 import "./MonsterCreationForm.css";
 
 interface MonsterCreationFormProps {
@@ -66,6 +67,7 @@ interface MonsterFormData {
   lairActions: Array<{ name: string; description: string }>;
   regionalEffects: Array<{ name: string; description: string }>;
   environment: string[];
+  clerkId?: string;
 }
 
 const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
@@ -73,6 +75,7 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
   onCancel,
   editingMonsterId,
 }) => {
+  const { user } = useUser();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get('returnTo');
@@ -123,12 +126,13 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
     lairActions: [],
     regionalEffects: [],
     environment: [],
+    clerkId: user?.id,
   });
 
   const [errors, setErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const campaigns = useQuery(api.campaigns.getAllCampaigns);
+  const campaigns = useQuery(api.campaigns.getAllCampaigns, { clerkId: user?.id });
   const createMonster = useMutation(api.monsters.createMonster);
   const updateMonster = useMutation(api.monsters.updateMonster);
   const editingMonster = useQuery(
@@ -171,6 +175,7 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
         lairActions: editingMonster.lairActions || [],
         regionalEffects: editingMonster.regionalEffects || [],
         environment: editingMonster.environment || [],
+        clerkId: user?.id,
       });
     }
   }, [editingMonster, editingMonsterId]);
@@ -182,13 +187,13 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
   const handleNestedChange = (parentField: keyof MonsterFormData, childField: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [parentField]: { ...prev[parentField], [childField]: value }
+      [parentField]: { ...(prev[parentField] as Record<string, any>), [childField]: value }
     }));
   };
 
-  const handleArrayChange = (field: keyof MonsterFormData, value: string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  // const handleArrayChange = (field: keyof MonsterFormData, value: string[]) => {
+  //   setFormData(prev => ({ ...prev, [field]: value }));
+  // };
 
   const validateForm = (): boolean => {
     const newErrors: string[] = [];
@@ -219,7 +224,10 @@ const MonsterCreationForm: React.FC<MonsterCreationFormProps> = ({
           ...formData,
         });
       } else {
-        await createMonster(formData);
+        await createMonster({
+          ...formData,
+          clerkId: user!.id,
+        });
       }
       onSubmitSuccess();
     } catch (error) {

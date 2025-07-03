@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import EntitySelectionModal from "../../modals/EntitySelectionModal";
@@ -18,6 +19,7 @@ const PlayerCharactersSection: React.FC<PlayerCharactersSectionProps> = ({
   playerCharacterIds = [],
   onUpdate,
 }) => {
+  const { user } = useUser();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -37,10 +39,16 @@ const PlayerCharactersSection: React.FC<PlayerCharactersSectionProps> = ({
   };
 
   const handleEntitySelect = async (entityId: Id<any>) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentChars = playerCharacterIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         participantPlayerCharacterIds: [...currentChars, entityId] 
       });
       onUpdate();
@@ -53,10 +61,16 @@ const PlayerCharactersSection: React.FC<PlayerCharactersSectionProps> = ({
   };
 
   const handleUnlinkEntity = async (entityId: Id<any>) => {
+    if (!user?.id) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+    
     try {
       const currentChars = playerCharacterIds || [];
       await updateCampaign({ 
-        id: campaignId, 
+        id: campaignId,
+        clerkId: user.id,
         participantPlayerCharacterIds: currentChars.filter(id => id !== entityId) 
       });
       onUpdate();

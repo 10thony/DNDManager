@@ -199,6 +199,30 @@
   @apply text-gray-400;
 }
 
+.empty-state-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.populate-sample-button {
+  @apply bg-green-600 hover:bg-green-700 text-white border-none px-6 py-3 rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 flex items-center gap-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+.dark .populate-sample-button {
+  @apply bg-green-500 hover:bg-green-600;
+}
+
+@media (min-width: 640px) {
+  .empty-state-actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
 .loading-state {
   display: flex;
   flex-direction: column;

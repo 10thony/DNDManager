@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
@@ -12,7 +12,7 @@ export default function LocationList() {
   const [isCreating, setIsCreating] = useState(false);
   const { userId } = useAuth();
   const locations = useQuery(api.locations.list) || [];
-  const maps = useQuery(api.maps.getUserMaps, { userId: userId || "" }) || [];
+  const maps = useQuery(api.maps.getUserMaps, userId ? { clerkId: userId } : "skip") || [];
 
   // Check if we should show creation form based on query parameter
   useEffect(() => {

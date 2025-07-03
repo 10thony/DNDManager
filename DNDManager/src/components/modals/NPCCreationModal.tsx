@@ -44,7 +44,7 @@ const NPCCreationModal: React.FC<NPCCreationModalProps> = ({
   onSuccess
 }) => {
   const { user } = useUser();
-  const createNPC = useMutation(api.characters.createPlayerCharacter);
+  const createNPC = useMutation(api.npcs.createNpc);
   
   const [formData, setFormData] = useState<NPCFormData>({
     name: "",
@@ -101,7 +101,7 @@ const NPCCreationModal: React.FC<NPCCreationModalProps> = ({
   };
 
   const handleArrayChange = (field: keyof NPCFormData, value: string) => {
-    const currentArray = formData[field] as string[];
+    // const currentArray = formData[field] as string[];
     const newArray = value.split(',').map(item => item.trim()).filter(item => item);
     setFormData((prev) => ({
       ...prev,
@@ -173,10 +173,13 @@ const NPCCreationModal: React.FC<NPCCreationModalProps> = ({
         traits: formData.traits,
         languages: formData.languages,
         equipment: formData.equipment,
-        actions: [],
+        actions: [] as Id<"actions">[],
       };
 
-      const npcId = await createNPC(npcData);
+      const npcId = await createNPC({
+        ...npcData,
+        clerkId: user!.id,
+      });
       onSuccess(npcId);
       handleClose();
     } catch (error) {

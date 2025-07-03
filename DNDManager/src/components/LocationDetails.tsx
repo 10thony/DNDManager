@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useParams, Link } from "react-router-dom";
@@ -7,56 +7,11 @@ import { useAuth } from "@clerk/clerk-react";
 import { MapPreview } from "./maps/MapPreview";
 import "./LocationForm.css";
 
-type CellState = 'inbounds' | 'outbounds' | 'occupied';
-
-const CELL_COLORS = {
-  inbounds: 'bg-green-500',
-  outbounds: 'bg-red-500',
-  occupied: 'bg-blue-500',
-};
-
-const DEFAULT_CELL_SIZE = 20; // Smaller cell size for preview
-
-interface MapPreviewProps {
-  map: {
-    width: number;
-    height: number;
-    cells: Array<{
-      x: number;
-      y: number;
-      state: CellState;
-    }>;
-  };
-}
-
-const MapPreview: React.FC<MapPreviewProps> = ({ map }) => {
-  return (
-    <div 
-      className="map-preview-grid"
-      style={{
-        gridTemplateColumns: `repeat(${map.width}, ${DEFAULT_CELL_SIZE}px)`,
-        width: 'fit-content',
-      }}
-    >
-      {map.cells.map((cell) => (
-        <div
-          key={`${cell.x}-${cell.y}`}
-          className={`map-preview-cell ${cell.state}`}
-          style={{
-            width: DEFAULT_CELL_SIZE,
-            height: DEFAULT_CELL_SIZE,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
 export default function LocationDetails() {
   const { userId } = useAuth();
   const { locationId } = useParams();
   const location = useQuery(api.locations.get, { id: locationId as Id<"locations"> });
-  const maps = useQuery(api.maps.getUserMaps, { userId: userId || "" }) || [];
+  const maps = useQuery(api.maps.getUserMaps, userId ? { clerkId: userId } : "skip") || [];
 
   if (location === undefined) {
     return (
@@ -127,7 +82,7 @@ export default function LocationDetails() {
               <h4 className="location-info-label">{associatedMap.name}</h4>
               <div className="map-preview-container">
                 <div className="flex justify-center items-center p-4">
-                  <MapPreview map={associatedMap} cellSize={20} />
+                  <MapPreview map={associatedMap} />
                 </div>
               </div>
               <div className="map-info">

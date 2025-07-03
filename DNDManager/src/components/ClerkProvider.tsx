@@ -1,17 +1,16 @@
-import { ClerkProvider as BaseClerkProvider } from "@clerk/clerk-react";
-import { useConvexAuth } from "convex/react";
+import { ClerkProvider as BaseClerkProvider, useUser } from "@clerk/clerk-react";
 import { useMutation } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 import { useEffect } from "react";
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 export function ClerkProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user } = useConvexAuth();
+  const { user, isSignedIn } = useUser();
   const createOrUpdateUser = useMutation(api.users.createOrUpdateUser);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isSignedIn && user) {
       createOrUpdateUser({
         clerkId: user.id,
         email: user.emailAddresses[0]?.emailAddress || "",
@@ -20,7 +19,7 @@ export function ClerkProvider({ children }: { children: React.ReactNode }) {
         imageUrl: user.imageUrl || undefined,
       });
     }
-  }, [isAuthenticated, user, createOrUpdateUser]);
+  }, [isSignedIn, user, createOrUpdateUser]);
 
   return (
     <BaseClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>

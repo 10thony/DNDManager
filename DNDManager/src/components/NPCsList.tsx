@@ -5,13 +5,17 @@ import { api } from "../../convex/_generated/api";
 import { PlayerCharacter } from "../types/character";
 import { getAbilityModifier } from "../types/dndRules";
 import CharacterForm from "./CharacterForm";
+import { useUser } from "@clerk/clerk-react";
 import "./CharacterList.css";
 
 const NPCsList: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [isCreating, setIsCreating] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const { user } = useUser();
   const npcs = useQuery(api.npcs.getAllNpcs);
   const deleteNpc = useMutation(api.npcs.deleteNpc);
+  const importNpcData = useMutation(api.npcs.importNpcData);
 
   // Check if we should show creation form based on query parameter
   useEffect(() => {
@@ -30,6 +34,25 @@ const NPCsList: React.FC = () => {
       } catch (error) {
         console.error("Error deleting NPC:", error);
       }
+    }
+  };
+
+  const handleImportData = async () => {
+    if (!user) {
+      alert("You must be logged in to import NPCs.");
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      const result = await importNpcData({ clerkId: user.id });
+      console.log("Import successful:", result);
+      alert(`Successfully imported ${result.npcs.length} NPCs!`);
+    } catch (error) {
+      console.error("Error importing data:", error);
+      alert("Error importing data. Please try again.");
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -106,25 +129,42 @@ const NPCsList: React.FC = () => {
   return (
     <div className="character-list">
       <div className="character-list-header">
-        <h1>Your NPCs</h1>
+        <div className="header-content">
+          <h2 className="character-list-title">Your NPCs</h2>
+          <p className="character-list-subtitle">
+            Manage and organize all non-player characters in your campaign
+          </p>
+        </div>
         <button
           className="create-button"
           onClick={() => setIsCreating(true)}
         >
+          <span className="button-icon">+</span>
           Create New NPC
         </button>
       </div>
 
       {npcs.length === 0 ? (
         <div className="empty-state">
-          <h2>No NPCs Yet</h2>
+          <div className="empty-icon">👥</div>
+          <h3>No NPCs Yet</h3>
           <p>Create your first D&D NPC to get started!</p>
-          <button
-            onClick={() => setIsCreating(true)}
-            className="btn btn-primary"
-          >
-            Create NPC
-          </button>
+          <div className="empty-state-buttons">
+            <button
+              onClick={() => setIsCreating(true)}
+              className="create-button"
+            >
+              Create Your First NPC
+            </button>
+            <button
+              onClick={handleImportData}
+              disabled={isImporting}
+              className="import-button"
+              style={{ marginLeft: '10px' }}
+            >
+              {isImporting ? "🔄 Importing..." : "📥 Generate Sample NPCs"}
+            </button>
+          </div>
         </div>
       ) : (
         <div className="characters-grid">

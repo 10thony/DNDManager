@@ -8,7 +8,7 @@ interface MapsListProps {
 }
 
 export const MapsList = ({ userId }: MapsListProps) => {
-  const maps = useQuery(api.maps.getUserMaps, { userId });
+  const maps = useQuery(api.maps.getUserMaps, { clerkId: userId });
   const navigate = useNavigate();
 
   if (!maps) return <div>Loading...</div>;

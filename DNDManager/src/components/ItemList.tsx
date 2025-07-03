@@ -14,7 +14,7 @@ const ItemList: React.FC = () => {
     setIsCreating(false);
   };
 
-  const handleSubmitSuccess = (itemId: string) => {
+  const handleSubmitSuccess = () => {
     setIsCreating(false);
   };
 

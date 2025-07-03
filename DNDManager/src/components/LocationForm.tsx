@@ -20,9 +20,9 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get('returnTo');
   const createLocation = useMutation(api.locations.create);
-  const campaigns = useQuery(api.locations.getCampaigns) || [];
-  const npcs = useQuery(api.locations.getNPCs) || [];
-  const maps = useQuery(api.maps.getUserMaps, { userId: userId || "" }) || [];
+  const campaigns = useQuery(api.campaigns.getAllCampaigns, {}) || [];
+  const npcs = useQuery(api.npcs.getAllNpcs, {}) || [];
+  const maps = useQuery(api.maps.getUserMaps, userId ? { clerkId: userId } : "skip") || [];
 
   const [formData, setFormData] = useState({
     campaignId: "" as Id<"campaigns">,
@@ -48,7 +48,7 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
     try {
       await createLocation({
         ...formData,
-        creatorId: userId,
+        clerkId: userId,
       });
       // Reset form
       setFormData({
@@ -93,7 +93,7 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
             required
           >
             <option value="">Select a campaign</option>
-            {campaigns.map((campaign) => (
+            {campaigns.map((campaign: any) => (
               <option key={campaign._id} value={campaign._id}>
                 {campaign.name}
               </option>
@@ -154,7 +154,7 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
             }}
             className="form-select"
           >
-            {npcs.map((npc) => (
+            {npcs.map((npc: any) => (
               <option key={npc._id} value={npc._id}>
                 {npc.name}
               </option>
@@ -194,7 +194,7 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
               ))}
             </select>
             <Link
-              to="/maps/new"
+              to="/maps/new?returnTo=location-form"
               className="create-map-btn"
             >
               Create New Map
@@ -207,7 +207,7 @@ export default function LocationForm({ onSubmitSuccess, onCancel }: LocationForm
             <h4 className="form-subsection-title">Selected Map Preview</h4>
             <div className="map-preview-container">
               <div className="flex justify-center items-center p-4">
-                <MapPreview map={selectedMap} cellSize={15} />
+                <MapPreview map={selectedMap} />
               </div>
               <div className="map-info">
                 <p><strong>{selectedMap.name}</strong></p>

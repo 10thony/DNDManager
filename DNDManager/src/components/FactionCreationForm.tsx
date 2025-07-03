@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import "./FactionCreationForm.css";
@@ -12,6 +13,7 @@ interface FactionCreationFormProps {
 const FactionCreationForm: React.FC<FactionCreationFormProps> = ({
   editingFactionId,
 }) => {
+  const { user } = useUser();
   const navigate = useNavigate();
   const createFaction = useMutation(api.factions.createFaction);
   const updateFaction = useMutation(api.factions.updateFaction);
@@ -22,7 +24,7 @@ const FactionCreationForm: React.FC<FactionCreationFormProps> = ({
 
   // Fetch NPCs and factions for dropdowns
   const npcs = useQuery(api.npcs.getAllNpcs);
-  const factions = useQuery(api.factions.getFactions);
+  const factions = useQuery(api.factions.getFactions, {});
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +77,7 @@ const FactionCreationForm: React.FC<FactionCreationFormProps> = ({
         await createFaction({
           campaignId: defaultCampaignId,
           ...formData,
+          clerkId: user!.id,
         });
       }
       navigate("/factions");

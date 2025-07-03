@@ -1,0 +1,235 @@
+.admin-users-container {
+  @apply p-8 max-w-7xl mx-auto;
+}
+
+.admin-users-header {
+  @apply mb-8 text-center;
+}
+
+.admin-users-header h1 {
+  @apply text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100;
+}
+
+.admin-users-header p {
+  @apply text-lg text-gray-600 dark:text-gray-400;
+}
+
+.admin-controls {
+  @apply mb-8;
+}
+
+.search-filter {
+  @apply flex gap-4 items-center flex-wrap;
+}
+
+.search-input {
+  @apply flex-1 min-w-80 px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200;
+}
+
+.search-input:focus {
+  @apply outline-none border-blue-500 dark:border-blue-400;
+}
+
+.role-filter {
+  @apply px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-pointer;
+}
+
+.users-stats {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4 mb-8;
+}
+
+.stat-card {
+  @apply bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center transition-all duration-200 hover:transform hover:-translate-y-1 hover:shadow-lg;
+}
+
+.stat-number {
+  @apply block text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2;
+}
+
+.stat-label {
+  @apply text-sm text-gray-600 dark:text-gray-400 uppercase tracking-wider;
+}
+
+.users-table-container {
+  @apply bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-lg;
+}
+
+.users-table {
+  @apply w-full border-collapse;
+}
+
+.users-table th {
+  @apply bg-gray-50 dark:bg-gray-700 px-4 py-4 text-left font-semibold text-gray-900 dark:text-gray-100 border-b-2 border-gray-200 dark:border-gray-600;
+}
+
+.users-table td {
+  @apply px-4 py-4 border-b border-gray-200 dark:border-gray-600 align-middle;
+}
+
+.user-row:hover {
+  @apply bg-gray-50 dark:bg-gray-700;
+}
+
+.user-info {
+  @apply flex items-center gap-4;
+}
+
+.user-avatar {
+  @apply w-12 h-12 rounded-full overflow-hidden flex-shrink-0;
+}
+
+.user-avatar img {
+  @apply w-full h-full object-cover;
+}
+
+.avatar-placeholder {
+  @apply w-full h-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold;
+}
+
+.user-details {
+  @apply flex flex-col gap-1;
+}
+
+.user-name {
+  @apply font-semibold text-gray-900 dark:text-gray-100;
+}
+
+.user-id {
+  @apply text-sm text-gray-500 dark:text-gray-400 font-mono;
+}
+
+.user-email {
+  @apply text-gray-900 dark:text-gray-100 font-medium;
+}
+
+.user-role {
+  @apply min-w-32;
+}
+
+.role-select {
+  @apply px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-pointer transition-colors duration-200;
+}
+
+.role-select:focus {
+  @apply outline-none border-blue-500 dark:border-blue-400;
+}
+
+.role-select.admin {
+  @apply border-red-500 bg-red-50 dark:bg-red-900/20;
+}
+
+.role-select.user {
+  @apply border-green-500 bg-green-50 dark:bg-green-900/20;
+}
+
+.role-select:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
+.user-created {
+  @apply text-gray-500 dark:text-gray-400 text-sm;
+}
+
+.user-actions {
+  @apply text-center;
+}
+
+.delete-btn {
+  @apply bg-transparent border-none text-xl cursor-pointer p-2 rounded-md transition-colors duration-200 hover:bg-red-100 dark:hover:bg-red-900/20;
+}
+
+.current-user-badge {
+  @apply bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase;
+}
+
+.no-users {
+  @apply text-center py-12 text-gray-500 dark:text-gray-400;
+}
+
+.loading {
+  @apply text-center py-12 text-gray-500 dark:text-gray-400 text-lg;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+.delete-confirm-modal {
+  @apply bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-8 max-w-md w-11/12 text-center;
+}
+
+.delete-confirm-modal h3 {
+  @apply mb-4 text-gray-900 dark:text-gray-100 text-2xl;
+}
+
+.delete-confirm-modal p {
+  @apply mb-8 text-gray-600 dark:text-gray-400 leading-relaxed;
+}
+
+.modal-actions {
+  @apply flex gap-4 justify-center;
+}
+
+.cancel-btn {
+  @apply px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-pointer text-base transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-600;
+}
+
+.confirm-delete-btn {
+  @apply px-6 py-3 border-none rounded-lg bg-red-600 text-white cursor-pointer text-base font-semibold transition-colors duration-200 hover:bg-red-700;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-users-container {
+    @apply p-4;
+  }
+  
+  .search-filter {
+    @apply flex-col items-stretch;
+  }
+  
+  .search-input {
+    @apply min-w-0;
+  }
+  
+  .users-stats {
+    @apply grid-cols-1;
+  }
+  
+  .users-table-container {
+    @apply overflow-x-auto;
+  }
+  
+  .users-table {
+    @apply min-w-[600px];
+  }
+  
+  .user-info {
+    @apply flex-col items-start gap-2;
+  }
+  
+  .modal-actions {
+    @apply flex-col;
+  }
+}
+
+/* Dark mode adjustments */
+.dark .stat-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark .users-table-container {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark .users-table th {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-color);
+}
+
+.dark .user-row:hover {
+  background: var(--bg-hover);
+} 

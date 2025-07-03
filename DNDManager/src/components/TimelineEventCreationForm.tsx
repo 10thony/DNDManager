@@ -23,7 +23,7 @@ const TimelineEventCreationForm: React.FC<TimelineEventCreationFormProps> = ({
     api.timelineEvents.getTimelineEventById,
     editingTimelineEventId ? { id: editingTimelineEventId } : "skip"
   );
-  const campaigns = useQuery(api.campaigns.getAllCampaigns);
+  const campaigns = useQuery(api.campaigns.getAllCampaigns, { clerkId: user?.id });
 
   const [formData, setFormData] = useState({
     campaignId: "",
@@ -100,7 +100,10 @@ const TimelineEventCreationForm: React.FC<TimelineEventCreationFormProps> = ({
           ...timelineEventData,
         });
       } else {
-        await createTimelineEvent(timelineEventData);
+        await createTimelineEvent({
+          ...timelineEventData,
+          clerkId: user.id,
+        });
       }
 
       onSubmitSuccess();

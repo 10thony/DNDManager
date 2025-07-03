@@ -14,7 +14,7 @@ const QuestDetail: React.FC = () => {
   const tasks = useQuery(api.questTasks.getQuestTasksByQuest, { questId: questId as Id<"quests"> });
   const locations = useQuery(api.locations.list);
   const items = useQuery(api.items.getItems);
-  const npcs = useQuery(api.locations.getNPCs);
+  const npcs = useQuery(api.npcs.getAllNpcs);
   const characters = useQuery(api.characters.getAllCharacters);
   
   const updateQuestStatus = useMutation(api.quests.updateQuestStatus);

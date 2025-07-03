@@ -5,7 +5,7 @@ export const createInteraction = mutation({
   args: {
     name: v.string(),
     description: v.optional(v.string()),
-    creatorId: v.string(),
+    clerkId: v.string(),
     campaignId: v.optional(v.id("campaigns")),
     questId: v.optional(v.id("quests")),
     questTaskId: v.optional(v.id("questTasks")),
@@ -15,8 +15,20 @@ export const createInteraction = mutation({
     timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { clerkId, ...interactionData } = args;
     const interactionId = await ctx.db.insert("interactions", {
-      ...args,
+      ...interactionData,
+      creatorId: user._id,
       createdAt: Date.now(),
     });
     return interactionId;
@@ -172,5 +184,104 @@ export const getInteractionsByCampaign = query({
       .filter((q) => q.eq(q.field("campaignId"), args.campaignId))
       .order("desc")
       .collect();
+  },
+});
+
+export const generateSampleInteractions = mutation({
+  args: {
+    clerkId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get user record
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    // Sample interaction data
+    const sampleInteractions = [
+      {
+        name: "The Tavern Meeting",
+        description: "The party meets in the local tavern to discuss their next quest. Old Man Harbin approaches them with a mysterious request.",
+        creatorId: user._id,
+        campaignId: undefined,
+        questId: undefined,
+        questTaskId: undefined,
+        playerCharacterIds: [],
+        npcIds: [],
+        monsterIds: [],
+        timelineEventIds: [],
+        createdAt: Date.now(),
+      },
+      {
+        name: "Goblin Ambush",
+        description: "While traveling through the forest, the party is ambushed by a group of goblins. A fierce battle ensues.",
+        creatorId: user._id,
+        campaignId: undefined,
+        questId: undefined,
+        questTaskId: undefined,
+        playerCharacterIds: [],
+        npcIds: [],
+        monsterIds: [],
+        timelineEventIds: [],
+        createdAt: Date.now(),
+      },
+      {
+        name: "Temple Negotiation",
+        description: "The party attempts to negotiate with Sister Garaele at the temple for information about the missing villagers.",
+        creatorId: user._id,
+        campaignId: undefined,
+        questId: undefined,
+        questTaskId: undefined,
+        playerCharacterIds: [],
+        npcIds: [],
+        monsterIds: [],
+        timelineEventIds: [],
+        createdAt: Date.now(),
+      },
+      {
+        name: "Guild Hall Intrigue",
+        description: "A tense meeting with Halia Thornton at the guild hall reveals hidden agendas and political maneuvering.",
+        creatorId: user._id,
+        campaignId: undefined,
+        questId: undefined,
+        questTaskId: undefined,
+        playerCharacterIds: [],
+        npcIds: [],
+        monsterIds: [],
+        timelineEventIds: [],
+        createdAt: Date.now(),
+      },
+      {
+        name: "Rescue Mission",
+        description: "The party attempts to rescue Sildar Hallwinter from the goblin hideout, facing various challenges along the way.",
+        creatorId: user._id,
+        campaignId: undefined,
+        questId: undefined,
+        questTaskId: undefined,
+        playerCharacterIds: [],
+        npcIds: [],
+        monsterIds: [],
+        timelineEventIds: [],
+        createdAt: Date.now(),
+      }
+    ];
+
+    const results = [] as any[];
+
+    // Create sample interactions
+    for (const interaction of sampleInteractions) {
+      const interactionId = await ctx.db.insert("interactions", interaction);
+      results.push(interactionId);
+    }
+
+    return {
+      interactions: results,
+      count: results.length
+    };
   },
 }); 

@@ -1,6 +1,5 @@
 import React from "react";
 import type { Item } from "../types/item";
-import { useDarkMode } from "../contexts/DarkModeContext";
 import "./ItemDetails.css";
 
 interface ItemDetailsProps {
@@ -14,7 +13,6 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const { isDarkMode } = useDarkMode();
 
   const handleDelete = () => {
     if (onDelete && item._id) {

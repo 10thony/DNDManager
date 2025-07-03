@@ -28,10 +28,23 @@ export const createQuestTask = mutation({
     targetNpcId: v.optional(v.id("npcs")),
     requiredItemIds: v.optional(v.array(v.id("items"))),
     interactions: v.optional(v.array(v.id("interactions"))),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get user ID from clerkId
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+      .first();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { clerkId, ...taskData } = args;
     const taskId = await ctx.db.insert("questTasks", {
-      ...args,
+      ...taskData,
+      userId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

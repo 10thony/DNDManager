@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import "./InteractionsSection.css";
@@ -14,6 +15,7 @@ const InteractionsSection: React.FC<InteractionsSectionProps> = ({
   campaignId,
   onUpdate,
 }) => {
+  const { user } = useUser();
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -72,7 +74,7 @@ const InteractionsSection: React.FC<InteractionsSectionProps> = ({
         campaignId,
         name: formData.name,
         description: formData.description,
-        creatorId: "system", // This should come from user context
+        clerkId: user!.id,
       });
 
       setFormData({
