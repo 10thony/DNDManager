@@ -296,6 +296,7 @@ export default defineSchema({
     storyArcIds: v.optional(v.array(v.id("storyArcs"))),
     milestoneIds: v.optional(v.array(v.id("milestones"))),
     timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
+    activeInteractionId: v.optional(v.id("interactions")), // NEW FIELD
   
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
@@ -362,12 +363,63 @@ export default defineSchema({
     description: v.optional(v.string()),
     creatorId: v.id("users"),
     campaignId: v.optional(v.id("campaigns")),
-    questId: v.optional(v.id("quests")),
+    
+    // NEW FIELDS FOR LIVE INTERACTIONS
+    dmUserId: v.id("users"), // DM controlling the interaction
+    relatedLocationId: v.optional(v.id("locations")), // Rename from questId
+    relatedQuestId: v.optional(v.id("quests")), // Keep for quest linking
     questTaskId: v.optional(v.id("questTasks")),
+    status: v.union(
+      v.literal("PENDING_INITIATIVE"),
+      v.literal("INITIATIVE_ROLLED"), 
+      v.literal("WAITING_FOR_PLAYER_TURN"),
+      v.literal("PROCESSING_PLAYER_ACTION"),
+      v.literal("DM_REVIEW"),
+      v.literal("COMPLETED"),
+      v.literal("CANCELLED")
+    ),
+    initiativeOrder: v.optional(v.array(v.object({
+      entityId: v.string(),
+      entityType: v.union(v.literal("playerCharacter"), v.literal("npc"), v.literal("monster")),
+      initiativeRoll: v.number()
+    }))),
+    currentInitiativeIndex: v.optional(v.number()),
+    participantMonsterIds: v.optional(v.array(v.id("monsters"))),
+    participantNpcIds: v.optional(v.array(v.id("npcs"))),
+    participantPlayerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
+    interactionLog: v.optional(v.array(v.any())),
+    interactionState: v.optional(v.any()),
+    rewardItemIds: v.optional(v.array(v.id("items"))),
+    xpAwards: v.optional(v.array(v.object({
+      playerCharacterId: v.id("playerCharacters"),
+      xp: v.number()
+    }))),
     playerCharacterIds: v.optional(v.array(v.id("playerCharacters"))),
     npcIds: v.optional(v.array(v.id("npcs"))),
     monsterIds: v.optional(v.array(v.id("monsters"))),
     timelineEventIds: v.optional(v.array(v.id("timelineEvents"))),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }),
+  playerActions: defineTable({
+    interactionId: v.id("interactions"),
+    playerCharacterId: v.id("playerCharacters"),
+    actionDescription: v.string(),
+    actionType: v.union(
+      v.literal("Dialogue"),
+      v.literal("CombatAction"), 
+      v.literal("PuzzleInput"),
+      v.literal("Custom")
+    ),
+    submittedAt: v.number(),
+    status: v.union(
+      v.literal("PENDING"),
+      v.literal("DM_REVIEW"),
+      v.literal("RESOLVED"),
+      v.literal("SKIPPED")
+    ),
+    dmNotes: v.optional(v.string()),
+    associatedItemId: v.optional(v.id("items")),
     createdAt: v.number(),
   }),
   sessions: defineTable({

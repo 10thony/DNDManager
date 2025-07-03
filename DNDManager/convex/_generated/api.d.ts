@@ -24,6 +24,7 @@ import type * as locations from "../locations.js";
 import type * as maps from "../maps.js";
 import type * as monsters from "../monsters.js";
 import type * as npcs from "../npcs.js";
+import type * as playerActions from "../playerActions.js";
 import type * as questTasks from "../questTasks.js";
 import type * as quests from "../quests.js";
 import type * as sessions from "../sessions.js";
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   maps: typeof maps;
   monsters: typeof monsters;
   npcs: typeof npcs;
+  playerActions: typeof playerActions;
   questTasks: typeof questTasks;
   quests: typeof quests;
   sessions: typeof sessions;

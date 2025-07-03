@@ -173,4 +173,27 @@
 .dark .nav-section-title {
   color: #9ca3af;
 }
+
+/* Live Interaction Active Indicator */
+.nav-link-content {
+  @apply flex items-center justify-between w-full;
+}
+
+.active-indicator {
+  @apply bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center ml-2;
+}
+
+.dark .active-indicator {
+  @apply bg-red-400;
+}
+
+@media (max-width: 768px) {
+  .nav-link-content {
+    @apply flex-col items-center gap-1;
+  }
+
+  .active-indicator {
+    @apply ml-0 mt-1;
+  }
+}
   

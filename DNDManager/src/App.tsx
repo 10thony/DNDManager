@@ -29,6 +29,8 @@ import TimelineEventDetail from "./components/TimelineEventDetail";
 import CampaignList from "./components/campaigns/CampaignList";
 import CampaignDetail from "./components/campaigns/CampaignDetail";
 import CampaignCreationForm from "./components/campaigns/CampaignCreationForm";
+import { LiveInteractionDashboard } from "./components/live-interactions/LiveInteractionDashboard";
+import { LiveInteractionCreationForm } from "./components/live-interactions/LiveInteractionCreationForm";
 import AdminUsers from "./pages/AdminUsers";
 import { UserSync } from "./components/UserSync";
 import { UserDebug } from "./components/UserDebug";
@@ -134,6 +136,23 @@ const App: React.FC = () => {
                   <Route path="/campaigns/new" element={
                     <ProtectedRoute>
                       <CampaignCreationForm />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Live Interaction routes - accessible to all authenticated users */}
+                  <Route path="/campaigns/:id/live-interaction" element={
+                    <ProtectedRoute>
+                      <LiveInteractionWrapper />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/campaigns/:id/live-interaction/create" element={
+                    <ProtectedRoute>
+                      <LiveInteractionCreationWrapper />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/live-interactions/:id" element={
+                    <ProtectedRoute>
+                      <LiveInteractionDetailWrapper />
                     </ProtectedRoute>
                   } />
                   
@@ -400,6 +419,116 @@ const MapCreationWrapper: React.FC = () => {
         </button>
       </div>
       <MapCreator userId={user.id} onMapCreated={handleMapCreated} />
+    </div>
+  );
+};
+
+// Wrapper component for live interaction dashboard
+const LiveInteractionWrapper: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useUser();
+  const navigate = useNavigate();
+  
+  if (!user?.id || !id) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      <div className="live-interaction-header" style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '1rem', 
+        borderBottom: '1px solid #e5e7eb',
+        marginBottom: '1rem'
+      }}>
+        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Live Interaction Dashboard</h2>
+        <button 
+          onClick={() => navigate(`/campaigns/${id}`)}
+          className="btn-secondary"
+        >
+          Back to Campaign
+        </button>
+      </div>
+      <LiveInteractionDashboard 
+        campaignId={id as Id<"campaigns">}
+        userId={user.id as Id<"users">}
+        isDM={true} // TODO: Determine if user is DM for this campaign
+      />
+    </div>
+  );
+};
+
+// Wrapper component for live interaction creation
+const LiveInteractionCreationWrapper: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  
+  if (!id) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      <div className="live-interaction-creation-header" style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '1rem', 
+        borderBottom: '1px solid #e5e7eb',
+        marginBottom: '1rem'
+      }}>
+        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Create Live Interaction</h2>
+        <button 
+          onClick={() => navigate(`/campaigns/${id}`)}
+          className="btn-secondary"
+        >
+          Cancel
+        </button>
+      </div>
+      <LiveInteractionCreationForm 
+        campaignId={id as Id<"campaigns">}
+        onSuccess={() => navigate(`/campaigns/${id}/live-interaction`)}
+        onCancel={() => navigate(`/campaigns/${id}`)}
+      />
+    </div>
+  );
+};
+
+// Wrapper component for live interaction detail
+const LiveInteractionDetailWrapper: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useUser();
+  const navigate = useNavigate();
+  
+  if (!user?.id || !id) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      <div className="live-interaction-detail-header" style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '1rem', 
+        borderBottom: '1px solid #e5e7eb',
+        marginBottom: '1rem'
+      }}>
+        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Live Interaction</h2>
+        <button 
+          onClick={() => navigate("/live-interactions")}
+          className="btn-secondary"
+        >
+          Back to Live Interactions
+        </button>
+      </div>
+      <LiveInteractionDashboard 
+        campaignId={"" as Id<"campaigns">} // TODO: Get campaign ID from interaction
+        userId={user.id as Id<"users">}
+        isDM={true} // TODO: Determine if user is DM for this interaction
+      />
     </div>
   );
 };

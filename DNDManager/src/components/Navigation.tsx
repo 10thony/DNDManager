@@ -19,6 +19,9 @@ const Navigation: React.FC<NavigationProps> = ({ isCollapsed, setIsCollapsed }) 
     clerkId: user?.id || "" 
   });
 
+  // Query for active interactions to show indicator
+  const activeInteractions = useQuery(api.interactions.getAllActiveInteractions);
+
   const isAdmin = userRole === "admin";
   const isAuthenticated = !!user;
 
@@ -57,6 +60,24 @@ const Navigation: React.FC<NavigationProps> = ({ isCollapsed, setIsCollapsed }) 
               title="Characters"
             >
               {isCollapsed ? "👥" : "Characters"}
+            </Link>
+            
+            {/* Live Interactions - accessible to all authenticated users */}
+            <Link
+              to="/live-interactions"
+              className={`nav-link ${
+                location.pathname.startsWith("/live-interactions") ? "active" : ""
+              }`}
+              title="Live Interactions"
+            >
+              <span className="nav-link-content">
+                {isCollapsed ? "🎲" : "Live Interactions"}
+                {activeInteractions && activeInteractions.length > 0 && (
+                  <span className="active-indicator">
+                    {activeInteractions.length}
+                  </span>
+                )}
+              </span>
             </Link>
             
             {/* Admin-only navigation items */}

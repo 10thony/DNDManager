@@ -14,6 +14,8 @@ import QuestsSection from "./subsections/QuestsSection";
 import LocationsSection from "./subsections/LocationsSection";
 import BossMonstersSection from "./subsections/BossMonstersSection";
 import InteractionsSection from "./subsections/InteractionsSection";
+import { LiveInteractionCreationForm } from "../live-interactions/LiveInteractionCreationForm";
+import LiveInteractionDashboard from "../live-interactions/LiveInteractionDashboard";
 import "./CampaignDetail.css";
 
 // Move requirements outside component to prevent recreation on every render
@@ -44,6 +46,8 @@ const CampaignDetail: React.FC = () => {
     hasInteractions: false,
   });
 
+  const [showLiveInteractionModal, setShowLiveInteractionModal] = useState(false);
+
   // For non-admin users, don't pass clerkId to ensure they only see public campaigns
   const campaign = useQuery(
     api.campaigns.getCampaignById,
@@ -51,6 +55,12 @@ const CampaignDetail: React.FC = () => {
       id: id as any, 
       clerkId: isAdmin ? user?.id : undefined 
     } : "skip"
+  );
+
+  // Query for active interaction
+  const activeInteraction = useQuery(
+    api.interactions.getActiveInteractionByCampaign,
+    id ? { campaignId: id as any } : "skip"
   );
 
   // These queries are not currently used but may be needed for future features
@@ -214,6 +224,48 @@ const CampaignDetail: React.FC = () => {
         </div>
       </div>
 
+      {/* Live Interaction Section */}
+      {(isAdmin || campaign.dmId === user?.id) && (
+        <div className="live-interaction-section">
+          {activeInteraction ? (
+            <div className="active-interaction-status">
+              <div className="status-header">
+                <h3>🎲 Active Live Interaction</h3>
+                <span className={`status-badge ${activeInteraction.status.toLowerCase()}`}>
+                  {activeInteraction.status.replace(/_/g, ' ')}
+                </span>
+              </div>
+              <div className="interaction-info">
+                <p><strong>Name:</strong> {activeInteraction.name}</p>
+                <p><strong>Status:</strong> {activeInteraction.status.replace(/_/g, ' ')}</p>
+                {activeInteraction.currentInitiativeIndex !== undefined && (
+                  <p><strong>Current Turn:</strong> {activeInteraction.currentInitiativeIndex + 1} of {activeInteraction.initiativeOrder?.length || 0}</p>
+                )}
+              </div>
+              <div className="interaction-actions">
+                <button 
+                  className="join-interaction-button"
+                  onClick={() => navigate(`/campaigns/${campaign._id}/live-interaction`)}
+                >
+                  🎮 Join Live Interaction
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="no-active-interaction">
+              <h3>🎲 Live Interactions</h3>
+              <p>No active live interaction for this campaign.</p>
+              <button 
+                className="start-interaction-button"
+                onClick={() => setShowLiveInteractionModal(true)}
+              >
+                🚀 Start Live Interaction
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Validation Status - Only show for admins or campaign owners */}
       {(isAdmin || campaign.dmId === user?.id) && (
         <div className={`validation-status ${isCampaignComplete ? 'complete' : 'incomplete'}`}>
@@ -326,6 +378,34 @@ const CampaignDetail: React.FC = () => {
           >
             {isCampaignComplete ? '💾 Save Campaign' : '⚠️ Complete Requirements to Save'}
           </button>
+        </div>
+      )}
+
+      {/* Live Interaction Creation Modal */}
+      {showLiveInteractionModal && (
+        <div className="modal-overlay">
+          <div className="modal-content live-interaction-modal">
+            <div className="modal-header">
+              <h2>Create Live Interaction</h2>
+              <button 
+                className="modal-close"
+                onClick={() => setShowLiveInteractionModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body">
+              <LiveInteractionCreationForm
+                campaignId={campaign._id}
+                onSuccess={() => {
+                  setShowLiveInteractionModal(false);
+                  // Refresh the page to show the new active interaction
+                  window.location.reload();
+                }}
+                onCancel={() => setShowLiveInteractionModal(false)}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
